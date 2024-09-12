@@ -2,7 +2,7 @@ name: CI
 on:
   push:
     branches:
-      - main
+      - master
     tags: ['*']
   pull_request:
   workflow_dispatch:
@@ -24,7 +24,6 @@ jobs:
       matrix:
         version:
           - '1.10'
-          - '1.6'
           - 'pre'
         os:
           - ubuntu-latest

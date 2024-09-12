@@ -1,13 +1,12 @@
 name = "POMP"
-uuid = "9bb39625-5a10-460f-ab4b-ef8792750c80"
-authors = ["Aaron A. King"]
-version = "1.0.0-DEV"
+uuid = "32433216-4d85-4b2d-94ed-a614743ba12b"
+authors = ["Aaron A. King <kingaa@umich.edu>"]
+version = "0.1.0"
 
-[compat]
-julia = "1.6.7"
-
-[extras]
+[deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+InvertedIndices = "41ab1584-1d38-5bbf-9106-f11c6c58b48f"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["Test"]
