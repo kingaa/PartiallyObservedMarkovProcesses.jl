@@ -1,6 +1,8 @@
 export coef, coef!
 
 """
+    coef(object,names...)
+
 `coef` extracts the parameters stored in a *PompObject*.
 """
 coef = function (
@@ -17,6 +19,8 @@ coef = function (
 end
 
 """
+    coef!(object,params,reset=false)
+
 `coef!` alters, appends, or (optionally) replaces the parameters stored in a *PompObject*.
 """
 coef! = function (

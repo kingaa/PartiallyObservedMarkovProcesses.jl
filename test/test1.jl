@@ -1,26 +1,26 @@
 using POMP
 using DataFrames
-using CSV
 using Distributions
 using Random
 using Test
 
-dat = DataFrame(CSV.File("parus.csv",comment="#",delim=";"));
+dat = include("parus.jl");
 
-ri = function (;a,b,_...)
-    d = NegativeBinomial(b,a)
+rnb = function (;μ,k,_...)
+    d = NegativeBinomial(k,k/(k+μ))
     (x=rand(d), y=rand(d))
 end
 
-P = pomp(dat,times=:year,t0=0,params=(a=0.5,b=8));
-@test rinit(P) broken=true
+P = pomp(dat,times=:year,t0=0,params=(μ=3,k=8));
+@test_throws "basic component is undefined" rinit(P)
 
 P = pomp(dat,times=:year,t0=0);
 @test isa(coef(P),Nothing)
 
-@test pomp(dat,times=:year,t0=1999) broken=true
+@test_throws "cannot be later than" pomp(dat,times=:year,t0=1999)
+@test_throws "times must be nondecreasing" pomp(sort(dat,:pop),times=:year,t0=1940)
 
-P = pomp(dat,times=:year,t0=0,params=(a=0.5,b=8),rinit=ri);
+P = pomp(dat,times=:year,t0=0,params=(μ=10,k=0.1),rinit=rnb);
 @test isa(P,POMP.PompObject)
 
 x = rinit(P)
@@ -30,14 +30,14 @@ x = rinit(P)
 @test length(x[1])==2
 @test keys(x[1])==(:x,:y)
 
-x = rinit(P,params=(b=9,a=0.1,))
+x = rinit(P,params=(k=9,μ=0.1,))
 @test isa(x,Vector)
 @test length(x)==1
 @test isa(x[1],NamedTuple)
 @test length(x[1])==2
 @test keys(x[1])==(:x,:y)
 
-x = rinit(P,params=(b=9,a=0.2,),nsim=50)
+x = rinit(P,params=(μ=9,k=2,),nsim=50);
 @test isa(x,Vector)
 @test length(x)==50
 @test isa(x[10],NamedTuple)
@@ -47,20 +47,20 @@ x = rinit(P,params=(b=9,a=0.2,),nsim=50)
 p = coef(P)
 @test isa(p,NamedTuple)
 @test length(p)==2
-@test keys(p)==(:a,:b)
+@test keys(p)==(:μ,:k)
 
-p = coef(P,:b,:a,:c)
+p = coef(P,:k,:μ,:r)
 @test isa(p,NamedTuple)
 @test length(p)==2
-@test keys(p)==(:b,:a)
+@test keys(p)==(:k,:μ)
 
-pomp!(P,params=(a=0.1,b=200))
+pomp!(P,params=(k=0.1,μ=200))
 p = coef(P)
-@test p==(a=0.1,b=200)
+@test p==(k=0.1,μ=200)
 
-coef!(P,(a=13,c=22))
-@test coef(P)==(a=13,c=22,b=200)
-coef!(P,(a=13,c=22),reset=true)
-@test coef(P)==(a=13,c=22)
+coef!(P,(μ=13,c=22))
+@test coef(P)==(μ=13,c=22,k=0.1)
+coef!(P,(μ=13,c=22),reset=true)
+@test coef(P)==(μ=13,c=22)
 coef!(P,reset=true)
 @test isa(coef(P),Nothing)

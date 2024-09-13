@@ -1,7 +1,7 @@
 export pomp, pomp!
 
 mutable struct PompObject
-    data::Union{DataFrame,Nothing}
+    data::Union{Vector{NamedTuple},Nothing}
     t0::Real
     time::Vector{Real}
     params::Union{NamedTuple,Nothing}
@@ -16,16 +16,18 @@ pomp = function (
     t0::Real,
     times::Symbol,
     params::Union{NamedTuple,Nothing} = nothing,
-    rinit::Union{Function,Nothing} = default_rinit
+    rinit::Union{Function,Nothing} = nothing
     )
-    data = sort(data,times)
     time = getproperty(data,times)
     if (t0 > time[1])
-        error(""" `t0` cannot be later than `time[1]`""")
+        error("`t0` cannot be later than `time[1]`.")
     end
-    data = DataFrames.select(data,Not(times))
+    if (any(diff(time).<0))
+        error("observation times must be nondecreasing.")
+    end
+    data = select(data,Not(times))
     PompObject(
-        data,
+        NamedTuple.(eachrow(data)),
         t0,
         time,
         params,
@@ -44,8 +46,4 @@ pomp! = function (
     if !isnothing(params) object.params = params end
     if !isnothing(rinit) object.rinit = rinit end
     nothing
-end
-
-default_rinit = function (;_...)
-    error(""""rinit" not defined""")
 end
