@@ -4,6 +4,10 @@ on:
     branches:
       - master
     tags: ['*']
+    path:
+      - Project.yml
+      - src/**
+      - test/**
   pull_request:
   workflow_dispatch:
 concurrency:
@@ -13,8 +17,8 @@ concurrency:
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
-    runs-on: ${{ matrix.os }}
+    name: Julia ${{ matrix.config.version }} - ${{ matrix.config.os }} - ${{ matrix.config.arch }} - ${{ github.event_name }}
+    runs-on: ${{ matrix.config.os }}
     timeout-minutes: 60
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
       actions: write
@@ -22,19 +26,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version:
-          - '1.10'
-          - 'pre'
-        os:
-          - ubuntu-latest
-        arch:
-          - x64
+        config:
+          - {os: ubuntu-latest,  version: 'pre',  arch: 'x64'}
+          - {os: ubuntu-latest,  version: '1.10', arch: 'x64'}
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2
         with:
-          version: ${{ matrix.version }}
-          arch: ${{ matrix.arch }}
+          version: ${{ matrix.config.version }}
+          arch: ${{ matrix.config.arch }}
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
