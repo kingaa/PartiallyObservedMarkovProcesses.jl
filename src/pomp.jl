@@ -7,6 +7,7 @@ mutable struct PompObject
     params::Union{NamedTuple,Nothing}
     rinit::Union{Function,Nothing}
     rmeasure::Union{Function,Nothing}
+    rprocess::Union{Function,Nothing}
 end
 
 """
@@ -18,7 +19,8 @@ pomp = function (
     times::Symbol,
     params::Union{NamedTuple,Nothing} = nothing,
     rinit::Union{Function,Nothing} = nothing,
-    rmeasure::Union{Function,Nothing} = nothing
+    rmeasure::Union{Function,Nothing} = nothing,
+    rprocess::Union{Function,Nothing} = nothing
     )
     time = getproperty(data,times)
     if (t0 > time[1])
@@ -27,14 +29,15 @@ pomp = function (
     if (any(diff(time).<0))
         error("observation times must be nondecreasing.")
     end
-    data = select(data,Not(times))
+    data = NamedTuple.(eachrow(select(data,Not(times))))
     PompObject(
-        NamedTuple.(eachrow(data)),
+        data,
         t0,
         time,
         params,
         rinit,
-        rmeasure
+        rmeasure,
+        rprocess
     )
 end
 
@@ -45,10 +48,12 @@ pomp! = function (
     object::PompObject;
     params::Union{NamedTuple,Nothing} = nothing,
     rinit::Union{Function,Nothing} = nothing,
-    rmeasure::Union{Function,Nothing} = nothing
+    rmeasure::Union{Function,Nothing} = nothing,
+    rprocess::Union{Function,Nothing} = nothing
     )
     if !isnothing(params) object.params = params end
     if !isnothing(rinit) object.rinit = rinit end
     if !isnothing(rmeasure) object.rmeasure = rmeasure end
+    if !isnothing(rprocess) object.rprocess = rprocess end
     nothing
 end

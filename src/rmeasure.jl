@@ -11,19 +11,19 @@ Calling `rmeasure` in the absence of a user-supplied *rmeasure* component result
 """
 rmeasure = function (
     object::PompObject;
-    state::Union{NamedTuple,Array{<:NamedTuple,3}},
+    x::Union{NamedTuple,Vector{<:NamedTuple},Array{<:NamedTuple,N}},
     params::Union{NamedTuple,Vector{<:NamedTuple}} = object.params,
     time::Union{Real,Vector{Real}} = object.time
-    )
+    ) where N
     if isnothing(object.rmeasure)
         error("The *rmeasure* basic component is undefined.")
     end
     try
         time = time_vector(time)
-        params = param_vector(params)
-        state = state_array(state,length(params),length(time))
-        [object.rmeasure(;t=time[k],state[i,j,k]...,params[j]...)
-         for i ∈ axes(state,1), j ∈ eachindex(params), k ∈ eachindex(time)]
+        params = val_array(params)
+        x = val_array(x,length(params),length(time))
+        [object.rmeasure(;t=time[k],x[i,j,k]...,params[j]...)
+         for i ∈ axes(x,1), j ∈ eachindex(params), k ∈ eachindex(time)]
     catch e
         if isa(e,UndefKeywordError)
             error("in `rmeasure`: parameter " * e.var * " undefined.")

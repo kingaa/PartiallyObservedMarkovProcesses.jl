@@ -11,5 +11,6 @@ include("pomp.jl")
 include("coef.jl")
 include("rinit.jl")
 include("rmeasure.jl")
+include("rprocess.jl")
 
 end # module

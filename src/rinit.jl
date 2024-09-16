@@ -27,9 +27,9 @@ rinit = function (
         error("The *rinit* basic component is undefined.")
     end
     try
-        params = param_vector(params)
+        params = val_array(params)
         [object.rinit(;params[j]...,t0=t0)
-         for i ∈ 1:nsim, j ∈ eachindex(params), k ∈ 1:1]
+         for i ∈ 1:nsim, j ∈ eachindex(params)]
     catch e
         if isa(e,UndefKeywordError)
             error("in `rinit`: parameter " * e.var * " undefined.")

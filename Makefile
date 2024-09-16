@@ -1,3 +1,6 @@
+session: build
+	julia --project=@.
+
 test:
 	julia --project=@. -e 'import Pkg; Pkg.test()'
 
@@ -10,4 +13,4 @@ clean:
 build:
 	julia --project=@. -e 'import Pkg; Pkg.build()'
 
-.PHONY: coverage clean build test
+.PHONY: coverage clean build test session

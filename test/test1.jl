@@ -26,12 +26,12 @@ P = pomp(dat,times=:year,t0=0,params=(μ=10,k=0.1),rinit=rnb);
 x = rinit(P)
 @test isa(x,Array)
 @test length(x)==1
-@test size(x)==(1,1,1)
+@test size(x)==(1,1)
 @test isa(x[1],NamedTuple)
 @test length(x[1])==2
 @test keys(x[1])==(:x,:y)
 
-@test_throws "basic component is undefined" rmeasure(P,state=x)
+@test_throws "basic component is undefined" rmeasure(P,x=x)
 
 x = rinit(P,params=(k=9,μ=0.1,))
 @test isa(x,Array)
@@ -42,14 +42,14 @@ x = rinit(P,params=(k=9,μ=0.1,))
 
 x = rinit(P,params=(μ=9,k=2,),nsim=50);
 @test isa(x,Array)
-@test size(x)==(50,1,1)
+@test size(x)==(50,1)
 @test isa(x[10],NamedTuple)
 @test length(x[10])==2
 @test keys(x[10])==(:x,:y)
 
 x = rinit(P,params=[(μ=9,k=2,),(k=3,μ=1)],nsim=21);
 @test isa(x,Array)
-@test size(x)==(21,2,1)
+@test size(x)==(21,2)
 @test isa(x[10],NamedTuple)
 @test length(x[10])==2
 @test keys(x[36])==(:x,:y)
@@ -76,5 +76,5 @@ coef!(P,reset=true)
 @test isa(coef(P),Nothing)
 
 pomp!(P,rmeasure=function(;x,y,k,_...) x+y+k end,params=(μ=13,k=3))
-y = rmeasure(P,state=rinit(P),time=0)
+y = rmeasure(P,x=rinit(P),time=0)
 @test size(y)==(1,1,1)
