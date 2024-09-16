@@ -1,7 +1,7 @@
 export rinit
 
 """
-    rinit(object, params=object.params, t0=object.t0, nsim=1)
+    rinit(object; params=object.params, t0=object.t0, nsim=1)
 
 `rinit` is the workhorse for the simulator of the initial-state distribution.
 
@@ -19,7 +19,7 @@ Calling `rinit()` in the absence of a user-supplied *rinit* component results in
 """
 rinit = function (
     object::PompObject;
-    params::NamedTuple = object.params,
+    params::Union{NamedTuple,Vector{<:NamedTuple}} = object.params,
     t0::Real = object.t0,
     nsim::Integer = 1
     )
@@ -27,7 +27,9 @@ rinit = function (
         error("The *rinit* basic component is undefined.")
     end
     try
-        [object.rinit(;params...,t0=t0) for _ ∈ 1:nsim]
+        params = param_vector(params)
+        [object.rinit(;params[j]...,t0=t0)
+         for i ∈ 1:nsim, j ∈ eachindex(params), k ∈ 1:1]
     catch e
         if isa(e,UndefKeywordError)
             error("in `rinit`: parameter " * e.var * " undefined.")

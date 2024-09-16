@@ -6,6 +6,7 @@ mutable struct PompObject
     time::Vector{Real}
     params::Union{NamedTuple,Nothing}
     rinit::Union{Function,Nothing}
+    rmeasure::Union{Function,Nothing}
 end
 
 """
@@ -16,7 +17,8 @@ pomp = function (
     t0::Real,
     times::Symbol,
     params::Union{NamedTuple,Nothing} = nothing,
-    rinit::Union{Function,Nothing} = nothing
+    rinit::Union{Function,Nothing} = nothing,
+    rmeasure::Union{Function,Nothing} = nothing
     )
     time = getproperty(data,times)
     if (t0 > time[1])
@@ -31,7 +33,8 @@ pomp = function (
         t0,
         time,
         params,
-        rinit
+        rinit,
+        rmeasure
     )
 end
 
@@ -41,9 +44,11 @@ end
 pomp! = function (
     object::PompObject;
     params::Union{NamedTuple,Nothing} = nothing,
-    rinit::Union{Function,Nothing} = nothing
+    rinit::Union{Function,Nothing} = nothing,
+    rmeasure::Union{Function,Nothing} = nothing
     )
     if !isnothing(params) object.params = params end
     if !isnothing(rinit) object.rinit = rinit end
+    if !isnothing(rmeasure) object.rmeasure = rmeasure end
     nothing
 end
