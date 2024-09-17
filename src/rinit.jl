@@ -32,7 +32,7 @@ rinit = function (
          for i ∈ 1:nsim, j ∈ eachindex(params)]
     catch e
         if isa(e,UndefKeywordError)
-            error("in `rinit`: parameter " * e.var * " undefined.")
+            error("in `rinit`: parameter " * string(e.var) * " undefined.")
         elseif hasproperty(e,:msg)
             error("in `rinit`: " * e.msg)
         else

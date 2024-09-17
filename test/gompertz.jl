@@ -2,7 +2,7 @@ using POMP
 using Distributions
 using Random
 using DataFrames
-using Plots
+using RCall
 using Test
 
 dat = include("parus.jl");
@@ -51,4 +51,12 @@ coef!(P,(r=0.2,σₘ=0,σₚ=0))
 coef(P)
 X = rprocess(P,x0=rinit(P));
 d = hcat(DataFrame(t=P.time),DataFrame(X))
-plot(d.t,d.x)
+R"""
+library(tidyverse)
+$d |>
+  mutate(t=unlist(t),x=unlist(x)) |>
+  ggplot(aes(x=t,y=x))+
+  geom_point()+
+  geom_line()+
+  theme_bw()
+"""

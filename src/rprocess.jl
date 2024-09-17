@@ -35,7 +35,7 @@ rprocess = function (
         X
     catch e
         if isa(e,UndefKeywordError)
-            error("in `rprocess`: parameter " * e.var * " undefined.")
+            error("in `rprocess`: parameter " * string(e.var) * " undefined.")
         elseif hasproperty(e,:msg)
             error("in `rprocess`: " * e.msg)
         else

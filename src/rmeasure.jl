@@ -26,7 +26,7 @@ rmeasure = function (
          for i ∈ axes(x,1), j ∈ eachindex(params), k ∈ eachindex(time)]
     catch e
         if isa(e,UndefKeywordError)
-            error("in `rmeasure`: parameter " * e.var * " undefined.")
+            error("in `rmeasure`: parameter " * string(e.var) * " undefined.")
         elseif hasproperty(e,:msg)
             error("in `rmeasure`: " * e.msg)
         else

@@ -13,15 +13,15 @@ end
 """
 `pomp` is the constructor for the *PompObject* class.
 """
-pomp = function (
-    data::Union{DataFrame,Nothing};
+pomp(
+    data::DataFrame;
     t0::Real,
     times::Symbol,
     params::Union{NamedTuple,Nothing} = nothing,
     rinit::Union{Function,Nothing} = nothing,
     rmeasure::Union{Function,Nothing} = nothing,
-    rprocess::Union{Function,Nothing} = nothing
-    )
+    rprocess::Union{Function,Nothing} = nothing,
+) = begin
     time = getproperty(data,times)
     if (t0 > time[1])
         error("`t0` cannot be later than `time[1]`.")
@@ -42,18 +42,27 @@ pomp = function (
 end
 
 """
-`pomp!` modifies a *PompObject*.
+`pomp` returns a modified copy of a *PompObject*.
 """
-pomp! = function (
+pomp(
     object::PompObject;
-    params::Union{NamedTuple,Nothing} = nothing,
-    rinit::Union{Function,Nothing} = nothing,
-    rmeasure::Union{Function,Nothing} = nothing,
-    rprocess::Union{Function,Nothing} = nothing
-    )
-    if !isnothing(params) object.params = params end
-    if !isnothing(rinit) object.rinit = rinit end
-    if !isnothing(rmeasure) object.rmeasure = rmeasure end
-    if !isnothing(rprocess) object.rprocess = rprocess end
-    nothing
+    args...,
+) = pomp!(deepcopy(object);args...)
+
+"""
+`pomp!` modifies a *PompObject* in place.
+One can replace or unset individual fields.
+"""
+pomp!(
+    object::PompObject;
+    params::Union{NamedTuple,Nothing,Missing} = missing,
+    rinit::Union{Function,Nothing,Missing} = missing,
+    rmeasure::Union{Function,Nothing,Missing} = missing,
+    rprocess::Union{Function,Nothing,Missing} = missing,
+) = begin
+    if !ismissing(params) object.params = params end
+    if !ismissing(rinit) object.rinit = rinit end
+    if !ismissing(rmeasure) object.rmeasure = rmeasure end
+    if !ismissing(rprocess) object.rprocess = rprocess end
+    object
 end
