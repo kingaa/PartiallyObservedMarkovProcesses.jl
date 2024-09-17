@@ -13,5 +13,6 @@ include("time.jl")
 include("rinit.jl")
 include("rmeasure.jl")
 include("rprocess.jl")
+include("simulate.jl")
 
 end # module
