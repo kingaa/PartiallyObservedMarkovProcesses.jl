@@ -2,7 +2,6 @@ using POMP
 using Distributions
 using Random
 using DataFrames
-using RCall
 using Test
 
 dat = include("parus.jl");
@@ -54,12 +53,3 @@ d1 = hcat(DataFrame(t=P.time),DataFrame(X))
 
 Q = simulate(P;params=(r=0.3,σₘ=0,σₚ=0.2,x₀=0.1,K=1))
 d2 = hcat(DataFrame(t=Q.time),DataFrame(Q.state))
-R"""
-library(tidyverse)
-bind_rows(d1=$d1,d2=$d2,.id="sim") |>
-  mutate(t=unlist(t),x=unlist(x)) |>
-  ggplot(aes(x=t,y=x,color=sim))+
-  geom_point()+
-  geom_line()+
-  theme_bw()
-"""
