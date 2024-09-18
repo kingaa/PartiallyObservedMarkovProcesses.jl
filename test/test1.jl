@@ -4,6 +4,8 @@ using Distributions
 using Random
 using Test
 
+Random.seed!(263260083)
+
 dat = include("parus.jl");
 
 rnb = function (;μ,k,_...)

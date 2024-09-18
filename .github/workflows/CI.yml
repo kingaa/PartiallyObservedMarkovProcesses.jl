@@ -2,7 +2,7 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - '*'
     tags: ['*']
     path:
       - Project.yml
@@ -31,6 +31,10 @@ jobs:
           - {os: ubuntu-latest,  version: '1.10', arch: 'x64'}
     steps:
       - uses: actions/checkout@v4
+      - name: install lcov and R
+        run: |
+          sudo apt-get -y install lcov r-base r-cran-tidyverse \
+          r-cran-png r-cran-cairo
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.config.version }}

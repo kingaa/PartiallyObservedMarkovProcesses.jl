@@ -2,7 +2,10 @@ using POMP
 using Distributions
 using Random
 using DataFrames
+using RCall
 using Test
+
+Random.seed!(1558102772)
 
 dat = include("parus.jl");
 
@@ -93,3 +96,20 @@ coef!(Q,(σₚ=0.2,K=1),reset=true)
 @test_throws "in `simulate!`: in `rinit`: yikes!" simulate!(Q,rinit=function(;_...) error("yikes!") end)
 @test_throws "in `simulate`: in `rprocess`: yikes!" simulate(P,rprocess=function(;_...) error("yikes!") end)
 @test_throws "in `simulate`: in `rmeasure`: yikes!" simulate(P,rmeasure=function(;_...) error("yikes!") end)
+
+R"""
+library(tidyverse)
+bind_rows(
+    d1=$d1,
+    d2=$d2,
+    d3=$d3,
+    d4=$d4,
+    .id="sim"
+  ) |>
+  pivot_longer(-c(sim,t)) |>
+  mutate(t=unlist(t),value=unlist(value)) |>
+  ggplot(aes(x=t,y=value,color=sim,linetype=name))+
+  geom_point()+
+  geom_line()+
+  theme_bw()
+"""
