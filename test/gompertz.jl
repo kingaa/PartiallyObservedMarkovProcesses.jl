@@ -56,16 +56,16 @@ Q = simulate(P;params=(r=0.3,σₘ=0,σₚ=0.2,x₀=0.1,K=1));
 @test isa(Q,POMP.AbstractPompObject)
 @test isa(Q,POMP.SimPompObject)
 @test !isa(Q,POMP.PompObject)
-d2 = hcat(DataFrame(t=times(Q)),DataFrame(states(Q)))
+d2 = hcat(DataFrame(t=times(Q)),DataFrame(states(Q)),DataFrame(obs(Q)))
 Q = simulate(Q);
 simulate!(Q)
 @test isa(Q,POMP.SimPompObject)
-d3 = hcat(DataFrame(t=times(Q)),DataFrame(states(Q)))
+d3 = hcat(DataFrame(t=times(Q)),DataFrame(states(Q)),DataFrame(obs(Q)))
 @test values(coef(Q,:σₘ,:σₚ)) == (0,0.2)
-simulate!(Q;params=(r=0.3,σₘ=0.2,σₚ=0,x₀=0.1,K=1));
-@test values(coef(Q,:σₘ,:σₚ)) == (0.2,0)
+simulate!(Q;params=(r=0.3,σₘ=0.1,σₚ=0,x₀=0.1,K=1));
+@test values(coef(Q,:σₘ,:σₚ)) == (0.1,0)
 @test isa(Q,POMP.SimPompObject)
-d4 = hcat(DataFrame(t=times(Q)),DataFrame(states(Q)))
+d4 = hcat(DataFrame(t=times(Q)),DataFrame(states(Q)),DataFrame(obs(Q)))
 
 x0 = rinit(Q,nsim=3);
 @test size(x0)==(3,1)
