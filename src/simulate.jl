@@ -1,25 +1,22 @@
-export simulate
+export simulate, states
 
 mutable struct SimPompObject
-    data::Union{Vector{NamedTuple},Nothing}
-    t0::Real
-    time::Vector{Real}
-    params::Union{NamedTuple,Nothing}
-    rinit::Union{Function,Nothing}
-    rmeasure::Union{Function,Nothing}
-    rprocess::Union{Function,Nothing}
-    state::Array{<:NamedTuple,N} where N
+    pompobj::PompObject
+    states::Array{<:NamedTuple,N} where N
 end
 
-convert(::Type{PompObject},object::SimPompObject) = PompObject(
-    object.data,
-    object.t0,
-    object.time,
-    object.params,
-    object.rinit,
-    object.rmeasure,
-    object.rprocess
-)
+convert(::Type{PompObject},object::SimPompObject) = object.pompobj
+
+pomp(object::SimPompObject;args...) = pomp(object.pompobj;args...)
+pomp!(object::SimPompObject;args...) = pomp!(object.pompobj;args...)
+times(object::SimPompObject;args...) = times(object.pompobj;args...)
+obs(object::SimPompObject;args...) = obs(object.pompobj;args...)
+coef(object::SimPompObject;args...) = coef(object.pompobj;args...)
+coef!(object::SimPompObject;args...) = coef!(object.pompobj;args...)
+rinit(object::SimPompObject;args...) = rinit(object.pompobj;args...)
+rmeasure(object::SimPompObject;args...) = rmeasure(object.pompobj;args...)
+rprocess(object::SimPompObject;args...) = rprocess(object.pompobj;args...)
+states(object::SimPompObject) = object.states
 
 """
     simulate(object; args...)
@@ -29,7 +26,7 @@ convert(::Type{PompObject},object::SimPompObject) = PompObject(
 """
 simulate(
     object::PompObject;
-    args...
+    args...,
 ) = begin
     try
         object = pomp(object;args...)
@@ -37,21 +34,40 @@ simulate(
         x = rprocess(object,x0=x0)
         y = rmeasure(object,x=x)
         object.data = reshape(y,length(y))
-        SimPompObject(
-            object.data,
-            object.t0,
-            object.time,
-            object.params,
-            object.rinit,
-            object.rmeasure,
-            object.rprocess,
-            x
-        )
+        SimPompObject(object,x)
     catch e
         if isa(e,UndefKeywordError)
             error("in `simulate`: parameter " * string(e.var) * " undefined.")
         elseif hasproperty(e,:msg)
             error("in `simulate`: " * e.msg)
+        else
+            throw(e)
+        end
+    end
+end
+
+"""
+    simulate!(object; args...)
+
+`simulate!` simulates in place.
+`args...` can be used to modify or unset fields.
+"""
+simulate!(
+    object::SimPompObject;
+    args...,
+) = begin
+    try
+        pomp!(object;args...)
+        x0 = rinit(object)
+        x = rprocess(object,x0=x0)
+        y = rmeasure(object,x=x)
+        object.object.data = reshape(y,length(y))
+        object.states = x
+    catch e
+        if isa(e,UndefKeywordError)
+            error("in `simulate!`: parameter " * string(e.var) * " undefined.")
+        elseif hasproperty(e,:msg)
+            error("in `simulate!`: " * e.msg)
         else
             throw(e)
         end

@@ -9,12 +9,12 @@ The user can supply an *rmeasure* component as a function that takes states, par
 
 Calling `rmeasure` in the absence of a user-supplied *rmeasure* component results in an error.
 """
-rmeasure = function (
+rmeasure(
     object::PompObject;
     x::Union{NamedTuple,Vector{<:NamedTuple},Array{<:NamedTuple,N}},
-    params::Union{NamedTuple,Vector{<:NamedTuple}} = object.params,
-    time::Union{Real,Vector{Real}} = object.time
-    ) where N
+    params::Union{NamedTuple,Vector{<:NamedTuple}} = coef(object),
+    time::Union{Real,Vector{Real}} = times(object),
+) where N = begin
     if isnothing(object.rmeasure)
         error("The *rmeasure* basic component is undefined.")
     end

@@ -9,13 +9,13 @@ The user can supply an *rprocess* component as a function that takes states, par
 
 Calling `rprocess` in the absence of a user-supplied *rprocess* component results in an error.
 """
-rprocess = function (
+rprocess(
     object::PompObject;
-    t0::Real = object.t0,
-    time::Union{Real,Vector{Real}} = object.time,
+    t0::Real = timezero(object),
+    time::Union{Real,Vector{Real}} = times(object),
     x0::Union{NamedTuple,Vector{<:NamedTuple},Array{<:NamedTuple,N}},
-    params::Union{NamedTuple,Vector{<:NamedTuple}} = object.params
-    ) where N
+    params::Union{NamedTuple,Vector{<:NamedTuple}} = coef(object),
+) where N = begin
     if isnothing(object.rprocess)
         error("The *rprocess* basic component is undefined.")
     end

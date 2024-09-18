@@ -49,7 +49,7 @@ y = rmeasure(P,x=x,params=[coef(P) for _ = 1:2],time=3)
 coef!(P,(r=0.2,σₘ=0,σₚ=0))
 coef(P)
 X = rprocess(P,x0=rinit(P));
-d1 = hcat(DataFrame(t=P.time),DataFrame(X))
+d1 = hcat(DataFrame(t=times(P)),DataFrame(X))
 
-Q = simulate(P;params=(r=0.3,σₘ=0,σₚ=0.2,x₀=0.1,K=1))
-d2 = hcat(DataFrame(t=Q.time),DataFrame(Q.state))
+Q = simulate(P;params=(r=0.3,σₘ=0,σₚ=0.2,x₀=0.1,K=1));
+d2 = hcat(DataFrame(t=times(Q)),DataFrame(states(Q)))

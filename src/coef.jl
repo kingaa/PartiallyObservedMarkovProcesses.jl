@@ -5,11 +5,11 @@ export coef, coef!
 
 `coef` extracts the parameters stored in a *PompObject*.
 """
-coef = function (
+coef(
     object::PompObject,
     name::Union{Symbol,Nothing} = nothing,
-    names...
-        )
+    names...,
+) = begin
     if isnothing(name)
         object.params
     else
@@ -23,11 +23,11 @@ end
 
 `coef!` alters, appends, or (optionally) replaces the parameters stored in a *PompObject*.
 """
-coef! = function (
+coef!(
     object::PompObject,
     params::Union{NamedTuple,Nothing} = nothing;
-    reset::Bool = false
-    )
+    reset::Bool = false,
+) = begin
     if reset
         object.params = params
     elseif !isnothing(params)

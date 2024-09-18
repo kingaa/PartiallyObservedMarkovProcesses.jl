@@ -3,7 +3,7 @@ export pomp, pomp!
 mutable struct PompObject
     data::Union{Vector{NamedTuple},Nothing}
     t0::Real
-    time::Vector{Real}
+    times::Vector{Real}
     params::Union{NamedTuple,Nothing}
     rinit::Union{Function,Nothing}
     rmeasure::Union{Function,Nothing}
