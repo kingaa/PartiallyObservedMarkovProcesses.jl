@@ -76,7 +76,7 @@ coef!(P,reset=true)
 @test isa(coef(P),Nothing)
 
 pomp!(P,rmeasure=function(;x,y,k,_...) x+y+k end,params=(μ=13,k=3))
-y = rmeasure(P,x=rinit(P),time=0)
+y = rmeasure(P,x=rinit(P),times=0)
 @test size(y)==(1,1,1)
 @test coef(P)==(μ=13,k=3)
 
@@ -84,3 +84,19 @@ Q = pomp(P,params=(μ=13,k=9),rmeasure=nothing)
 @test coef(P,:k)==(k=3,)
 @test coef(Q,:k)==(k=9,)
 @test_throws "basic component is undefined" rmeasure(Q,x=x)
+
+y = obs(P);
+@test isa(y,Vector{<:NamedTuple})
+@test length(y)==27
+@test length(y[1])==1
+@test_throws "not defined" obs!(P,y)
+
+@test_throws "is not defined" POMP.time_vector("yes")
+@test_throws "is not defined" POMP.val_array("yes")
+@test size(POMP.val_array(y,3,3))==(3,3,3)
+@test_throws "size mismatch" POMP.val_array(y,3,2)
+
+pomp!(P,rmeasure=function(;_...) error("yikes!") end)
+@test_throws "in `rmeasure`: yikes!" rmeasure(P,x=rinit(P),times=0)
+pomp!(P,rinit=function(;_...) error("yikes!") end)
+@test_throws "in `rinit`: yikes!" rinit(P)

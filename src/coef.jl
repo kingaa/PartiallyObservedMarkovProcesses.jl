@@ -18,6 +18,8 @@ coef(
     end
 end
 
+coef(object::AbstractPompObject,args...) = coef(pomp(object),args...)
+
 """
     coef!(object,params,reset=false)
 
@@ -25,7 +27,7 @@ end
 """
 coef!(
     object::PompObject,
-    params::Union{NamedTuple,Nothing} = nothing;
+    params::Union{<:NamedTuple,Nothing} = nothing;
     reset::Bool = false,
 ) = begin
     if reset
@@ -36,5 +38,11 @@ coef!(
         old = setdiff(existing,new)
         object.params = (;params[new]...,object.params[old]...)
     end
-    nothing
+    nothing                     # COV_EXCL_LINE
 end
+
+coef!(
+    object::AbstractPompObject,
+    args...;
+    reset::Bool = false,
+) = coef!(pomp(object),args...,reset=reset)

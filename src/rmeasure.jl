@@ -1,7 +1,7 @@
 export rmeasure
 
 """
-    rmeasure(object; state, params=object.params, time=object.time)
+    rmeasure(object; x, times=times(object), params=coef(object))
 
 `rmeasure` is the workhorse for the simulator of the measurement distribution.
 
@@ -12,25 +12,27 @@ Calling `rmeasure` in the absence of a user-supplied *rmeasure* component result
 rmeasure(
     object::PompObject;
     x::Union{NamedTuple,Vector{<:NamedTuple},Array{<:NamedTuple,N}},
-    params::Union{NamedTuple,Vector{<:NamedTuple}} = coef(object),
-    time::Union{Real,Vector{Real}} = times(object),
+    times::Union{<:Real,Vector{<:Real}} = times(object),
+    params::Union{<:NamedTuple,Vector{<:NamedTuple}} = coef(object),
 ) where N = begin
     if isnothing(object.rmeasure)
         error("The *rmeasure* basic component is undefined.")
     end
     try
-        time = time_vector(time)
+        times = time_vector(times)
         params = val_array(params)
-        x = val_array(x,length(params),length(time))
-        [object.rmeasure(;t=time[k],x[i,j,k]...,params[j]...)
-         for i ∈ axes(x,1), j ∈ eachindex(params), k ∈ eachindex(time)]
+        x = val_array(x,length(params),length(times))
+        [object.rmeasure(;t=times[k],x[i,j,k]...,params[j]...)
+         for i ∈ axes(x,1), j ∈ eachindex(params), k ∈ eachindex(times)]
     catch e
         if isa(e,UndefKeywordError)
             error("in `rmeasure`: parameter " * string(e.var) * " undefined.")
         elseif hasproperty(e,:msg)
             error("in `rmeasure`: " * e.msg)
         else
-            throw(e)
+            throw(e)            # COV_EXCL_LINE
         end
     end
 end
+
+rmeasure(object::AbstractPompObject;args...) = rmeasure(pomp(object);args...)

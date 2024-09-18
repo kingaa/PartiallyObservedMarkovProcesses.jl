@@ -1,22 +1,15 @@
-export simulate, states
+export simulate, simulate!, states
 
-mutable struct SimPompObject
+abstract type AbstractSimPompObject <: AbstractPompObject end
+
+mutable struct SimPompObject <: AbstractSimPompObject
     pompobj::PompObject
     states::Array{<:NamedTuple,N} where N
 end
 
-convert(::Type{PompObject},object::SimPompObject) = object.pompobj
-
-pomp(object::SimPompObject;args...) = pomp(object.pompobj;args...)
-pomp!(object::SimPompObject;args...) = pomp!(object.pompobj;args...)
-times(object::SimPompObject;args...) = times(object.pompobj;args...)
-obs(object::SimPompObject;args...) = obs(object.pompobj;args...)
-coef(object::SimPompObject;args...) = coef(object.pompobj;args...)
-coef!(object::SimPompObject;args...) = coef!(object.pompobj;args...)
-rinit(object::SimPompObject;args...) = rinit(object.pompobj;args...)
-rmeasure(object::SimPompObject;args...) = rmeasure(object.pompobj;args...)
-rprocess(object::SimPompObject;args...) = rprocess(object.pompobj;args...)
+pomp(object::SimPompObject) = object.pompobj
 states(object::SimPompObject) = object.states
+## convert(::Type{PompObject},object::SimPompObject) = object.pompobj
 
 """
     simulate(object; args...)
@@ -25,7 +18,7 @@ states(object::SimPompObject) = object.states
 `args...` can be used to modify or unset fields.
 """
 simulate(
-    object::PompObject;
+    object::AbstractPompObject;
     args...,
 ) = begin
     try
@@ -33,15 +26,13 @@ simulate(
         x0 = rinit(object)
         x = rprocess(object,x0=x0)
         y = rmeasure(object,x=x)
-        object.data = reshape(y,length(y))
-        SimPompObject(object,x)
+        obs!(object,reshape(y,length(y)))
+        SimPompObject(pomp(object),x)
     catch e
-        if isa(e,UndefKeywordError)
-            error("in `simulate`: parameter " * string(e.var) * " undefined.")
-        elseif hasproperty(e,:msg)
+        if hasproperty(e,:msg)
             error("in `simulate`: " * e.msg)
         else
-            throw(e)
+            throw(e)            # COV_EXCL_LINE
         end
     end
 end
@@ -53,7 +44,7 @@ end
 `args...` can be used to modify or unset fields.
 """
 simulate!(
-    object::SimPompObject;
+    object::AbstractSimPompObject;
     args...,
 ) = begin
     try
@@ -61,15 +52,14 @@ simulate!(
         x0 = rinit(object)
         x = rprocess(object,x0=x0)
         y = rmeasure(object,x=x)
-        object.object.data = reshape(y,length(y))
-        object.states = x
+        obs!(object,reshape(y,length(y)))
+        object.states=x
+        object
     catch e
-        if isa(e,UndefKeywordError)
-            error("in `simulate!`: parameter " * string(e.var) * " undefined.")
-        elseif hasproperty(e,:msg)
+        if hasproperty(e,:msg)
             error("in `simulate!`: " * e.msg)
         else
-            throw(e)
+            throw(e)            # COV_EXCL_LINE
         end
     end
 end

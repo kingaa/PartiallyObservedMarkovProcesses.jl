@@ -2,6 +2,6 @@ using POMP
 using Test
 
 @testset "POMP.jl" begin
-    include("test1.jl")
-    include("gompertz.jl")
+    @time include("test1.jl")
+    @time include("gompertz.jl")
 end

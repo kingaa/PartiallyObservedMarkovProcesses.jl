@@ -1,7 +1,7 @@
 export rinit
 
 """
-    rinit(object; params=coef(object), t0=timezero(object), nsim=1)
+    rinit(object; t0=timezero(object), params=coef(object), nsim=1)
 
 `rinit` is the workhorse for the simulator of the initial-state distribution.
 
@@ -19,8 +19,8 @@ Calling `rinit()` in the absence of a user-supplied *rinit* component results in
 """
 rinit(
     object::PompObject;
-    params::Union{NamedTuple,Vector{<:NamedTuple}} = coef(object),
     t0::Real = timezero(object),
+    params::Union{<:NamedTuple,Vector{<:NamedTuple}} = coef(object),
     nsim::Integer = 1,
 ) = begin
     if isnothing(object.rinit)
@@ -36,7 +36,9 @@ rinit(
         elseif hasproperty(e,:msg)
             error("in `rinit`: " * e.msg)
         else
-            throw(e)
+            throw(e)            # COV_EXCL_LINE
         end
     end
 end
+
+rinit(object::AbstractPompObject;args...) = rinit(pomp(object);args...)

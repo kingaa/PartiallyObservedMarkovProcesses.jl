@@ -1,7 +1,9 @@
 export pomp, pomp!
 
-mutable struct PompObject
-    data::Union{Vector{NamedTuple},Nothing}
+abstract type AbstractPompObject end
+
+mutable struct PompObject <: AbstractPompObject
+    data::Union{Vector{<:NamedTuple},Nothing}
     t0::Real
     times::Vector{Real}
     params::Union{NamedTuple,Nothing}
@@ -42,14 +44,6 @@ pomp(
 end
 
 """
-`pomp` returns a modified copy of a *PompObject*.
-"""
-pomp(
-    object::PompObject;
-    args...,
-) = pomp!(deepcopy(object);args...)
-
-"""
 `pomp!` modifies a *PompObject* in place.
 One can replace or unset individual fields.
 """
@@ -64,5 +58,22 @@ pomp!(
     if !ismissing(rinit) object.rinit = rinit end
     if !ismissing(rmeasure) object.rmeasure = rmeasure end
     if !ismissing(rprocess) object.rprocess = rprocess end
-    object
+    object                      # COV_EXCL_LINE
 end
+
+pomp!(
+    object::AbstractPompObject;
+    args...
+) = pomp!(pomp(object);args...)
+
+"""
+`pomp` returns a the *PompObject* underlying an *AbstractPompObject*,
+potentially with modifications.
+If modifications are made, the original is not changed.
+"""
+pomp(object::PompObject) = object
+
+pomp(
+    object::AbstractPompObject;
+    args...,
+) = pomp!(deepcopy(pomp(object));args...)
