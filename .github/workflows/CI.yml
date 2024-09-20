@@ -31,9 +31,10 @@ jobs:
           - {os: ubuntu-latest,  version: '1.10', arch: 'x64'}
     steps:
       - uses: actions/checkout@v4
-      - name: install packages
-        run: |
-          sudo apt-get -y install lcov r-base r-cran-tidyverse
+      - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: tidyverse
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.config.version }}
