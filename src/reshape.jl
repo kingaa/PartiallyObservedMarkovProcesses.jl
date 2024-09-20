@@ -4,10 +4,10 @@ time_vector(t,_...) = throw(ArgumentError("`time_vector` is not defined for type
 
 val_array(x::Union{Vector{<:NamedTuple},Array{<:NamedTuple,N}},dim...) where N = begin
     n = prod(dim)
-    if (mod(length(x),n)!=0)
+    if mod(length(x),n) != 0
         error("size mismatch in `val_array`")
     else
-        reshape(x,div(length(x),n),dim...)
+        reshape(x,dim...,div(length(x),n))
     end
 end
 val_array(x::NamedTuple,_...) = reshape([x],1,1,1)

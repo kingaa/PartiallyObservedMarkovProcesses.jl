@@ -11,7 +11,7 @@ Calling `rmeasure` in the absence of a user-supplied *rmeasure* component result
 """
 rmeasure(
     object::PompObject;
-    x::Union{NamedTuple,Vector{<:NamedTuple},Array{<:NamedTuple,N}},
+    x::Array{<:NamedTuple,N},
     times::Union{<:Real,Vector{<:Real}} = times(object),
     params::Union{<:NamedTuple,Vector{<:NamedTuple}} = coef(object),
 ) where N = begin
@@ -21,9 +21,20 @@ rmeasure(
     try
         times = time_vector(times)
         params = val_array(params)
-        x = val_array(x,length(params),length(times))
-        [object.rmeasure(;t=times[k],x[i,j,k]...,params[j]...)
-         for i ∈ axes(x,1), j ∈ eachindex(params), k ∈ eachindex(times)]
+        m, n, sx... = size(x)
+        if length(sx)==0
+            error("in `rmeasure`: x should be an array with at least 3 dimensions.")
+        end
+        if m != length(times)
+            error("in `rmeasure`: x-times dimension mismatch.")
+        end
+        if n != length(params)
+            error("in `rmeasure`: x-params dimension mismatch.")
+        end
+        x = val_array(x,m,n)
+        y = [object.rmeasure(;t=times[k],x[k,j,i]...,params[j]...)
+             for k ∈ eachindex(times), j ∈ eachindex(params), i ∈ axes(x,3)]
+        reshape(y,m,n,sx...)
     catch e
         if isa(e,UndefKeywordError)
             error("in `rmeasure`: parameter " * string(e.var) * " undefined.")

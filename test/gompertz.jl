@@ -36,22 +36,23 @@ P = pomp(
 @test isa(P,POMP.PompObject)
 
 x = rinit(P,nsim=5)
-@test size(x)==(5,1)
+@test size(x)==(1,1,5)
 @test keys(x[1])==(:x,)
 
 y = rmeasure(P,x=x,times=3)
-@test size(y)==(5,1,1)
+@test size(y)==(1,1,5)
 @test keys(y[2])==(:y,)
 
 x = rinit(P,params=[coef(P) for _ = 1:2],nsim=3)
 y = rmeasure(P,x=x,params=[coef(P) for _ = 1:2],times=3)
-@test size(x)==(3,2)
-@test size(y)==(3,2,1)
+@test size(x)==(1,2,3)
+@test size(y)==(1,2,3)
 @test keys(y[2])==(:y,)
 
 coef!(P,(r=0.2,σₘ=0,σₚ=0))
 coef(P)
 X = rprocess(P,x0=rinit(P));
+@test size(X)==(27,1,1)
 d1 = hcat(DataFrame(t=times(P)),DataFrame(X))
 
 Q = simulate(P;params=(r=0.3,σₘ=0,σₚ=0.2,x₀=0.1,K=1));
@@ -61,7 +62,7 @@ Q = simulate(P;params=(r=0.3,σₘ=0,σₚ=0.2,x₀=0.1,K=1));
 @test !isa(Q,POMP.PompObject)
 d2 = hcat(DataFrame(t=times(Q)),DataFrame(states(Q)),DataFrame(obs(Q)))
 Q = simulate(Q);
-simulate!(Q)
+simulate!(Q);
 @test isa(Q,POMP.SimPompObject)
 d3 = hcat(DataFrame(t=times(Q)),DataFrame(states(Q)),DataFrame(obs(Q)))
 @test values(coef(Q,:σₘ,:σₚ)) == (0,0.2)
@@ -71,10 +72,10 @@ simulate!(Q;params=(r=0.3,σₘ=0.1,σₚ=0,x₀=0.1,K=1));
 d4 = hcat(DataFrame(t=times(Q)),DataFrame(states(Q)),DataFrame(obs(Q)))
 
 x0 = rinit(Q,nsim=3);
-@test size(x0)==(3,1)
-x = rprocess(Q,x0=x0[1:2,:],times=timezero(Q).+[3,5,9]);
-@test size(x)==(2,1,3)
-y = rmeasure(Q,x=x[:,:,1:2],times=timezero(Q).+[3,5]);
+@test size(x0)==(1,1,3)
+x = rprocess(Q,x0=x0[:,:,1:2],times=timezero(Q).+[3,5,9]);
+@test size(x)==(3,1,2)
+y = rmeasure(Q,x=x[1:2,:,:],times=timezero(Q).+[3,5]);
 @test size(y)==(2,1,2)
 @test isa(obs(Q),Vector{<:NamedTuple})
 @test length(obs(Q))==27

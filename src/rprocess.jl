@@ -11,7 +11,7 @@ Calling `rprocess` in the absence of a user-supplied *rprocess* component result
 """
 rprocess(
     object::PompObject;
-    x0::Union{<:NamedTuple,Vector{<:NamedTuple},Array{<:NamedTuple,N}},
+    x0::Array{<:NamedTuple,N},
     t0::Real = timezero(object),
     times::Union{<:Real,Vector{<:Real}} = times(object),
     params::Union{<:NamedTuple,Vector{<:NamedTuple}} = coef(object),
@@ -22,17 +22,27 @@ rprocess(
     try
         times = time_vector(times)
         params = val_array(params)
-        x0 = val_array(x0,length(params),1)
-        tx = typeof(x0)
-        X = tx(undef,size(x0,1),length(params),length(times))
-        t = t0
-        for k ∈ eachindex(times), j = eachindex(params), i = axes(x0,1)
-            while (t < times[k])
-                (t,x0[i,j,1]...) = object.rprocess(;t=t,x0[i,j,1]...,params[j]...)
-            end
-            X[i,j,k] = x0[i,j,1]
+        m, n, sx... = size(x0)
+        if m != 1
+            error("in `rprocess`: we must have size(x0,1)==1.")
         end
-        X
+        if n != length(params)
+            error("in `rprocess`: x0-params dimension mismatch.")
+        end
+        x0 = val_array(x0,length(params))
+        tx = eltype(x0)
+        X = Array{tx}(undef,length(times),length(params),size(x0,2))
+        for i ∈ axes(x0,2), j ∈ eachindex(params)
+            t = t0
+            x = x0[j,i]
+            for k ∈ eachindex(times)
+                while t < times[k]
+                    (t,x...) = object.rprocess(;t=t,x...,params[j]...)
+                end
+                X[k,j,i] = x
+            end
+        end
+        reshape(X,length(times),length(params),sx...)
     catch e
         if isa(e,UndefKeywordError)
             error("in `rprocess`: parameter " * string(e.var) * " undefined.")

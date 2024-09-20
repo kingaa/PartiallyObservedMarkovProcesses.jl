@@ -19,7 +19,7 @@ Calling `rinit()` in the absence of a user-supplied *rinit* component results in
 """
 rinit(
     object::PompObject;
-    t0::Real = timezero(object),
+    t0::Union{<:Real,Vector{<:Real}} = timezero(object),
     params::Union{<:NamedTuple,Vector{<:NamedTuple}} = coef(object),
     nsim::Integer = 1,
 ) = begin
@@ -27,9 +27,10 @@ rinit(
         error("The *rinit* basic component is undefined.")
     end
     try
+        t0 = time_vector(t0)
         params = val_array(params)
-        [object.rinit(;params[j]...,t0=t0)
-         for i ∈ 1:nsim, j ∈ eachindex(params)]
+        [object.rinit(;params[j]...,t0=t0[k])
+         for k ∈ eachindex(t0), j ∈ eachindex(params), i ∈ 1:nsim]
     catch e
         if isa(e,UndefKeywordError)
             error("in `rinit`: parameter " * string(e.var) * " undefined.")
