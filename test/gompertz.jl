@@ -112,4 +112,5 @@ bind_rows(
   geom_point()+
   geom_line()+
   theme_bw()
+ggsave(filename="gompertz-01.pdf",width=7,height=4)
 """
