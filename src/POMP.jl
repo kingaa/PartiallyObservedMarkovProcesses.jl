@@ -14,5 +14,6 @@ include("rinit.jl")
 include("rmeasure.jl")
 include("rprocess.jl")
 include("simulate.jl")
+include("melt.jl")
 
 end # module

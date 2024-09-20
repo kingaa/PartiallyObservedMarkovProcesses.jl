@@ -51,25 +51,26 @@ y = rmeasure(P,x=x,params=[coef(P) for _ = 1:2],times=3)
 
 coef!(P,(r=0.2,σₘ=0,σₚ=0))
 coef(P)
+melt(P)
 X = rprocess(P,x0=rinit(P));
 @test size(X)==(27,1,1)
-d1 = hcat(DataFrame(t=times(P)),DataFrame(X))
+d1 = melt(X,time=times(P))
 
 Q = simulate(P;params=(r=0.3,σₘ=0,σₚ=0.2,x₀=0.1,K=1));
 @test isa(Q,POMP.AbstractSimPompObject)
 @test isa(Q,POMP.AbstractPompObject)
 @test isa(Q,POMP.SimPompObject)
 @test !isa(Q,POMP.PompObject)
-d2 = hcat(DataFrame(t=times(Q)),DataFrame(states(Q)),DataFrame(obs(Q)))
+d2 = melt(Q);
 Q = simulate(Q);
 simulate!(Q);
 @test isa(Q,POMP.SimPompObject)
-d3 = hcat(DataFrame(t=times(Q)),DataFrame(states(Q)),DataFrame(obs(Q)))
+d3 = melt(Q);
 @test values(coef(Q,:σₘ,:σₚ)) == (0,0.2)
 simulate!(Q;params=(r=0.3,σₘ=0.1,σₚ=0,x₀=0.1,K=1));
 @test values(coef(Q,:σₘ,:σₚ)) == (0.1,0)
 @test isa(Q,POMP.SimPompObject)
-d4 = hcat(DataFrame(t=times(Q)),DataFrame(states(Q)),DataFrame(obs(Q)))
+d4 = melt(Q);
 
 x0 = rinit(Q,nsim=3);
 @test size(x0)==(1,1,3)
@@ -107,9 +108,9 @@ bind_rows(
     d4=$d4,
     .id="sim"
   ) |>
-  pivot_longer(-c(sim,t)) |>
-  mutate(t=unlist(t),value=unlist(value)) |>
-  ggplot(aes(x=t,y=value,color=sim,linetype=name))+
+  mutate(time=as.numeric(time)) |>
+  pivot_longer(-c(sim,time)) |>
+  ggplot(aes(x=time,y=value,color=sim,linetype=name))+
   geom_point()+
   geom_line()+
   theme_bw()
