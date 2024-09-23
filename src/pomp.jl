@@ -1,11 +1,12 @@
 export pomp, pomp!
 
-abstract type AbstractPompObject end
+## T is the type of time (T <: Real)
+abstract type AbstractPompObject{T} end
 
-mutable struct PompObject <: AbstractPompObject
+mutable struct PompObject{T} <: AbstractPompObject{T}
     data::Union{Vector{<:NamedTuple},Nothing}
-    t0::Real
-    times::Vector{Real}
+    t0::T
+    times::Vector{T}
     params::Union{NamedTuple,Nothing}
     rinit::Union{Function,Nothing}
     rmeasure::Union{Function,Nothing}
@@ -19,13 +20,13 @@ end
 """
 pomp(
     data::DataFrame;
-    t0::Real,
+    t0::T,
     times::Symbol,
     params::Union{NamedTuple,Nothing} = nothing,
     rinit::Union{Function,Nothing} = nothing,
     rmeasure::Union{Function,Nothing} = nothing,
     rprocess::Union{Function,Nothing} = nothing,
-) = begin
+) where {T<:Real} = begin
     time = getproperty(data,times)
     if (t0 > time[1])
         error("`t0` cannot be later than `time[1]`.")
@@ -34,7 +35,7 @@ pomp(
         error("observation times must be nondecreasing.")
     end
     data = NamedTuple.(eachrow(select(data,Not(times))))
-    PompObject(
+    PompObject{T}(
         data,
         t0,
         time,
