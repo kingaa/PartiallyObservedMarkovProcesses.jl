@@ -16,4 +16,6 @@ include("rprocess.jl")
 include("simulate.jl")
 include("melt.jl")
 
+include("examples/Examples.jl")
+
 end # module

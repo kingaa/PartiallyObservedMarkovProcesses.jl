@@ -1,7 +1,9 @@
 using DataFrames: DataFrame
 using CSV: File
 
-DataFrame(
+export parus_data
+
+const parus_data = DataFrame(
     File(
         IOBuffer("""
 ## Parus major (Great Tit) census (all individuals)

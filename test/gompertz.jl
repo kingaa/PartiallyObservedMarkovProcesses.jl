@@ -1,40 +1,14 @@
 using POMP
-using Distributions
 using Random
-using DataFrames
 using RCall
 using Test
 
 Random.seed!(1558102772)
 
-dat = include("parus.jl");
-
-rlni = function (;x₀,_...)
-    (;x=x₀,)
-end
-
-rmeas = function (;x,σₘ,_...)
-    d = LogNormal(log(x),σₘ)
-    (;y=rand(d),)
-end
-
-rproc = function (;t,x,σₚ,r,K,_...)
-    s = exp(-r)
-    d = LogNormal(s*log(x)+(1-s)*log(K),σₚ)
-    (;t=t+1,x=rand(d),)
-end
-
-P = pomp(
-    dat,
-    t0=1960,
-    times=:year,
-    params=(x₀=0.1,σₘ=0.1,σₚ=0.2,r=0.1,K=1),
-    rinit=rlni,
-    rmeasure=rmeas,
-    rprocess=rproc
-);
+P = gompertz()
 @test isa(P,POMP.PompObject)
 @test isnothing(states(P))
+print(P)
 
 x0 = rinit(P,nsim=5);
 @test size(x0)==(1,5)
@@ -46,7 +20,7 @@ x = rprocess(P,x0=x0);
 
 y = rmeasure(P,x=x);
 @test size(y)==(27,1,5)
-@test keys(y[2])==(:y,)
+@test keys(y[2])==(:pop,)
 
 @test_throws "with at least 3 dimensions" rmeasure(P,x=x[3,:,:],times=1970)
 
@@ -64,14 +38,14 @@ y = rmeasure(P,x=x[3:4,:,:],params=p,times=times(P)[3:4]);
 @test_throws "x-times dimension mismatch" rmeasure(P,x=x[3:5,:,:],params=p,times=times(P)[3:4])
 @test_throws "x-params dimension mismatch" rmeasure(P,x=x[3:4,:,:],params=p[2],times=times(P)[3:4])
 
-coef!(P,(r=0.2,σₘ=0,σₚ=0))
+coef!(P,(σₘ=0,σₚ=0))
 coef(P)
 melt(P);
 X = rprocess(P,x0=rinit(P));
 @test size(X)==(27,1,1)
 d1 = melt(X,time=times(P));
 
-Q = simulate(P;params=(r=0.3,σₘ=0,σₚ=0.2,x₀=0.1,K=1));
+Q = simulate(P;params=(r=4,σₘ=0,σₚ=0.7,x₀=0.1,K=210.0));
 @test isa(Q,POMP.AbstractPompObject)
 @test isa(Q,POMP.PompObject)
 d2 = melt(Q);
@@ -79,9 +53,9 @@ Q = simulate(Q);
 simulate!(Q);
 @test isa(Q,POMP.PompObject)
 d3 = melt(Q);
-@test values(coef(Q,:σₘ,:σₚ)) == (0,0.2)
-simulate!(Q;params=(r=0.3,σₘ=0.1,σₚ=0,x₀=0.1,K=1));
-@test values(coef(Q,:σₘ,:σₚ)) == (0.1,0)
+@test values(coef(Q,:σₘ,:σₚ)) == (0,0.7)
+simulate!(Q;params=(r=4.5,σₘ=0.7,σₚ=0,x₀=0.1,K=210.0));
+@test values(coef(Q,:σₘ,:σₚ)) == (0.7,0)
 @test isa(Q,POMP.PompObject)
 d4 = melt(Q);
 
@@ -121,7 +95,6 @@ bind_rows(
     d4=$d4,
     .id="sim"
   ) |>
-  mutate(time=as.numeric(time)) |>
   pivot_longer(-c(sim,time)) |>
   ggplot(aes(x=time,y=value,color=sim,linetype=name))+
   geom_point()+

@@ -6,8 +6,6 @@ using Test
 
 Random.seed!(263260083)
 
-dat = include("parus.jl");
-
 rin = function(;x₀,_...)
     d = Poisson(x₀)
     (x=rand(d),)
@@ -23,13 +21,13 @@ rmeas = function (;x,k,_...)
     (pop=rand(d),)
 end
 
-P = pomp(dat,times=:year,t0=1960);
+P = pomp(parus_data,times=:year,t0=1960)
 @test isa(P,POMP.PompObject)
 
-P = pomp(dat,times=:year,t0=1960);
+P = pomp(parus_data,times=:year,t0=1960)
 @test isa(P,POMP.PompObject)
 @test timezero(P)==1960
-@test isa(times(P),Vector{Real})
+@test isa(times(P),Vector{<:Real})
 @test length(times(P))==27
 y=obs(P);
 @test isa(y,Array{<:NamedTuple,3})
@@ -38,11 +36,11 @@ y=obs(P);
 @test keys(y[1])==(:pop,)
 @test_throws "not defined" obs!(P,y)
 
-@test_throws "cannot be later than" pomp(dat,times=:year,t0=1999)
-@test_throws "times must be nondecreasing" pomp(sort(dat,:pop),times=:year,t0=1940)
+@test_throws "cannot be later than" pomp(parus_data,times=:year,t0=1999)
+@test_throws "times must be nondecreasing" pomp(sort(parus_data,:pop),times=:year,t0=1940)
 
 @test_throws "basic component is undefined" rinit(P,params=(a=1,k=3,x0=5))
-P = pomp(dat,times=:year,t0=1960,rinit=rin);
+P = pomp(parus_data,times=:year,t0=1960,rinit=rin);
 @test isa(P,POMP.PompObject)
 
 x0 = rinit(P,params=[(x₀=9,),(x₀=3,)],nsim=7);
