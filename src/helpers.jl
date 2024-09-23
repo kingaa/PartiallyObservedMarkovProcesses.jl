@@ -35,6 +35,9 @@ states(object::AbstractPompObject) = begin
     end
 end
 
+Base.show(io::IO,object::AbstractPompObject) =
+    println(io,"object of type <" * string(typeof(object)) * ">.")
+
 ## For internal use (not exported):
 
 obs!(
