@@ -8,97 +8,82 @@ Random.seed!(263260083)
 
 dat = include("parus.jl");
 
-rnb = function (;μ,k,_...)
-    d = NegativeBinomial(k,k/(k+μ))
-    (x=rand(d), y=rand(d))
+rin = function(;x₀,_...)
+    d = Poisson(x₀)
+    (x=rand(d),)
 end
 
-P = pomp(dat,times=:year,t0=0,params=(μ=3,k=8));
-@test_throws "basic component is undefined" rinit(P)
+rlin = function (;t,a,x,_...)
+    d = Poisson(a*x)
+    (t=t+1,x=rand(d))
+end
 
-P = pomp(dat,times=:year,t0=0);
-@test isa(coef(P),Nothing)
+rmeas = function (;x,k,_...)
+    d = NegativeBinomial(k,k/(k+x))
+    (pop=rand(d),)
+end
+
+P = pomp(dat,times=:year,t0=1960);
+@test isa(P,POMP.PompObject)
+
+P = pomp(dat,times=:year,t0=1960);
+@test isa(P,POMP.PompObject)
+@test timezero(P)==1960
+@test isa(times(P),Vector{Real})
+@test length(times(P))==27
+y=obs(P);
+@test isa(y,Array{<:NamedTuple,3})
+@test size(y)==(27,1,1)
+@test length(y[1])==1
+@test keys(y[1])==(:pop,)
+@test_throws "not defined" obs!(P,y)
 
 @test_throws "cannot be later than" pomp(dat,times=:year,t0=1999)
 @test_throws "times must be nondecreasing" pomp(sort(dat,:pop),times=:year,t0=1940)
 
-P = pomp(dat,times=:year,t0=0,params=(μ=10,k=0.1),rinit=rnb);
+@test_throws "basic component is undefined" rinit(P,params=(a=1,k=3,x0=5))
+P = pomp(dat,times=:year,t0=1960,rinit=rin);
 @test isa(P,POMP.PompObject)
 
-x = rinit(P)
-@test isa(x,Array)
-@test length(x)==1
-@test size(x)==(1,1,1)
-@test isa(x[1],NamedTuple)
-@test length(x[1])==2
-@test keys(x[1])==(:x,:y)
+x0 = rinit(P,params=[(x₀=9,),(x₀=3,)],nsim=7);
+@test isa(x0,Array)
+@test size(x0)==(2,7)
+@test isa(x0[10],NamedTuple)
+@test length(x0[11])==1
+@test keys(x0[11])==(:x,)
 
-@test_throws "basic component is undefined" rmeasure(P,x=x)
+x0 = rinit(P,params=(a=1,k=3,x₀=5),nsim=5);
+@test isa(x0,Array)
+@test length(x0)==5
+@test size(x0)==(1,5)
+@test isa(x0[1],NamedTuple)
+@test length(x0[1])==1
+@test keys(x0[1])==(:x,)
 
-x = rinit(P,params=(k=9,μ=0.1,))
-@test isa(x,Array)
-@test length(x)==1
-@test isa(x[1],NamedTuple)
-@test length(x[1])==2
-@test keys(x[1])==(:x,:y)
+@test_throws "basic component is undefined" rprocess(P,params=(a=1,k=3,x₀=5),x0=x0)
+pomp!(P,rprocess=rlin)
+x = rprocess(P,x0=x0,params=(a=1,k=3,x₀=5));
+@test isa(x,Array{<:NamedTuple})
+@test size(x)==(27,1,5)
+@test length(x[17])==1
+@test keys(x[17])==(:x,)
 
-x = rinit(P,params=(μ=9,k=2,),nsim=50);
-@test isa(x,Array)
-@test size(x)==(1,1,50)
-@test isa(x[10],NamedTuple)
-@test length(x[10])==2
-@test keys(x[10])==(:x,:y)
+@test_throws "basic component is undefined" rmeasure(P,params=(a=1,k=3,x₀=5),x=x)
+P = pomp(P,rmeasure=rmeas,rprocess=nothing);
+y = rmeasure(P,x=x,params=(a=1,k=3,x₀=5));
+@test isa(y,Array{<:NamedTuple})
+@test size(y)==(27,1,5)
+@test length(y[37])==1
+@test keys(y[37])==(:pop,)
+@test_throws "basic component is undefined" rprocess(P,params=(a=1,k=3,x₀=5),x0=x0)
 
-x = rinit(P,params=[(μ=9,k=2,),(k=3,μ=1)],nsim=21);
-@test isa(x,Array)
-@test size(x)==(1,2,21)
-@test isa(x[10],NamedTuple)
-@test length(x[10])==2
-@test keys(x[36])==(:x,:y)
-
-p = coef(P)
-@test isa(p,NamedTuple)
-@test length(p)==2
-@test keys(p)==(:μ,:k)
-
-p = coef(P,:k,:μ,:r)
-@test isa(p,NamedTuple)
-@test length(p)==2
-@test keys(p)==(:k,:μ)
-
-pomp!(P,params=(k=0.1,μ=200))
-p = coef(P)
-@test p==(k=0.1,μ=200)
-
-coef!(P,(μ=13,c=22))
-@test coef(P)==(μ=13,c=22,k=0.1)
-coef!(P,(μ=13,c=22),reset=true)
-@test coef(P)==(μ=13,c=22)
-coef!(P,reset=true)
-@test isa(coef(P),Nothing)
-
-pomp!(P,rmeasure=function(;x,y,k,_...) x+y+k end,params=(μ=13,k=3))
-y = rmeasure(P,x=rinit(P),times=0)
-@test size(y)==(1,1,1)
-@test coef(P)==(μ=13,k=3)
-
-Q = pomp(P,params=(μ=13,k=9),rmeasure=nothing)
-@test coef(P,:k)==(k=3,)
-@test coef(Q,:k)==(k=9,)
-@test_throws "basic component is undefined" rmeasure(Q,x=x)
-
-y = obs(P);
-@test isa(y,Vector{<:NamedTuple})
-@test length(y)==27
-@test length(y[1])==1
-@test_throws "not defined" obs!(P,y)
-
-@test_throws "is not defined" POMP.time_vector("yes")
 @test_throws "is not defined" POMP.val_array("yes")
-@test size(POMP.val_array(y,3,3))==(3,3,3)
+@test size(POMP.val_array(y,3,3))==(3,3,15)
 @test_throws "size mismatch" POMP.val_array(y,3,2)
 
-pomp!(P,rmeasure=function(;_...) error("yikes!") end)
-@test_throws "in `rmeasure`: yikes!" rmeasure(P,x=rinit(P),times=0)
 pomp!(P,rinit=function(;_...) error("yikes!") end)
-@test_throws "in `rinit`: yikes!" rinit(P)
+@test_throws "in `rinit`: yikes!" rinit(P,params=(x₀=3,))
+pomp!(P,rmeasure=function(;_...) error("yikes!") end)
+@test_throws "in `rmeasure`: yikes!" rmeasure(P,params=(a=1,),x=x)
+pomp!(P,rprocess=function(;_...) error("yikes!") end)
+@test_throws "in `rprocess`: yikes!" rprocess(P,params=(x₀=3,),x0=x0)

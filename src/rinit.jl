@@ -18,19 +18,18 @@ The user can supply an *rinit* component as a function that takes parameters and
 Calling `rinit()` in the absence of a user-supplied *rinit* component results in an error.
 """
 rinit(
-    object::PompObject;
-    t0::Union{<:Real,Vector{<:Real}} = timezero(object),
+    object::AbstractPompObject;
+    t0::Real = timezero(object),
     params::Union{<:NamedTuple,Vector{<:NamedTuple}} = coef(object),
     nsim::Integer = 1,
 ) = begin
-    if isnothing(object.rinit)
+    if isnothing(pomp(object).rinit)
         error("The *rinit* basic component is undefined.")
     end
     try
-        t0 = time_vector(t0)
         params = val_array(params)
-        [object.rinit(;params[j]...,t0=t0[k])
-         for k ∈ eachindex(t0), j ∈ eachindex(params), i ∈ 1:nsim]
+        [pomp(object).rinit(;params[j]...,t0=t0)
+         for j ∈ eachindex(params), i ∈ 1:nsim]
     catch e
         if isa(e,UndefKeywordError)
             error("in `rinit`: parameter " * string(e.var) * " undefined.")
@@ -41,5 +40,3 @@ rinit(
         end
     end
 end
-
-rinit(object::AbstractPompObject;args...) = rinit(pomp(object);args...)

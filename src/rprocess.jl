@@ -10,22 +10,19 @@ The user can supply an *rprocess* component as a function that takes states, par
 Calling `rprocess` in the absence of a user-supplied *rprocess* component results in an error.
 """
 rprocess(
-    object::PompObject;
-    x0::Array{<:NamedTuple,N},
+    object::AbstractPompObject;
+    x0::Array{<:NamedTuple,2},
     t0::Real = timezero(object),
     times::Union{<:Real,Vector{<:Real}} = times(object),
     params::Union{<:NamedTuple,Vector{<:NamedTuple}} = coef(object),
-) where N = begin
-    if isnothing(object.rprocess)
+) = begin
+    if isnothing(pomp(object).rprocess)
         error("The *rprocess* basic component is undefined.")
     end
     try
-        times = time_vector(times)
+        times = vectorize(times)
         params = val_array(params)
-        m, n, sx... = size(x0)
-        if m != 1
-            error("in `rprocess`: we must have size(x0,1)==1.")
-        end
+        n, sx... = size(x0)
         if n != length(params)
             error("in `rprocess`: x0-params dimension mismatch.")
         end
@@ -37,7 +34,7 @@ rprocess(
             x = x0[j,i]
             for k ∈ eachindex(times)
                 while t < times[k]
-                    (t,x...) = object.rprocess(;t=t,x...,params[j]...)
+                    (t,x...) = pomp(object).rprocess(;t=t,x...,params[j]...)
                 end
                 X[k,j,i] = x
             end
@@ -53,5 +50,3 @@ rprocess(
         end
     end
 end
-
-rprocess(object::AbstractPompObject;args...) = rprocess(pomp(object);args...)

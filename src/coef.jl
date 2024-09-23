@@ -6,19 +6,16 @@ export coef, coef!
 `coef` extracts the parameters stored in a *PompObject*.
 """
 coef(
-    object::PompObject,
-    name::Union{Symbol,Nothing} = nothing,
+    object::AbstractPompObject,
     names...,
 ) = begin
-    if isnothing(name)
-        object.params
+    if length(names)==0
+        pomp(object).params
     else
-        nm = intersect((name,names...),keys(object.params))
-        object.params[nm]
+        nm = intersect(names,keys(pomp(object).params))
+        pomp(object).params[nm]
     end
 end
-
-coef(object::AbstractPompObject,args...) = coef(pomp(object),args...)
 
 """
     coef!(object,params,reset=false)
@@ -26,23 +23,17 @@ coef(object::AbstractPompObject,args...) = coef(pomp(object),args...)
 `coef!` alters, appends, or (optionally) replaces the parameters stored in a *PompObject*.
 """
 coef!(
-    object::PompObject,
+    object::AbstractPompObject,
     params::Union{<:NamedTuple,Nothing} = nothing;
     reset::Bool = false,
 ) = begin
     if reset
-        object.params = params
+        pomp(object).params = params
     elseif !isnothing(params)
-        existing = keys(object.params)
+        existing = keys(pomp(object).params)
         new = keys(params)
         old = setdiff(existing,new)
-        object.params = (;params[new]...,object.params[old]...)
+        pomp(object).params = (;params[new]...,object.params[old]...)
     end
     nothing                     # COV_EXCL_LINE
 end
-
-coef!(
-    object::AbstractPompObject,
-    args...;
-    reset::Bool = false,
-) = coef!(pomp(object),args...,reset=reset)

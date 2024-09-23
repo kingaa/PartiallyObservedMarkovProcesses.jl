@@ -10,16 +10,16 @@ The user can supply an *rmeasure* component as a function that takes states, par
 Calling `rmeasure` in the absence of a user-supplied *rmeasure* component results in an error.
 """
 rmeasure(
-    object::PompObject;
+    object::AbstractPompObject;
     x::Array{<:NamedTuple,N},
     times::Union{<:Real,Vector{<:Real}} = times(object),
     params::Union{<:NamedTuple,Vector{<:NamedTuple}} = coef(object),
 ) where N = begin
-    if isnothing(object.rmeasure)
+    if isnothing(pomp(object).rmeasure)
         error("The *rmeasure* basic component is undefined.")
     end
     try
-        times = time_vector(times)
+        times = vectorize(times)
         params = val_array(params)
         m, n, sx... = size(x)
         if length(sx)==0
@@ -32,7 +32,7 @@ rmeasure(
             error("in `rmeasure`: x-params dimension mismatch.")
         end
         x = val_array(x,m,n)
-        y = [object.rmeasure(;t=times[k],x[k,j,i]...,params[j]...)
+        y = [pomp(object).rmeasure(;t=times[k],x[k,j,i]...,params[j]...)
              for k ∈ eachindex(times), j ∈ eachindex(params), i ∈ axes(x,3)]
         reshape(y,m,n,sx...)
     catch e
@@ -45,5 +45,3 @@ rmeasure(
         end
     end
 end
-
-rmeasure(object::AbstractPompObject;args...) = rmeasure(pomp(object);args...)

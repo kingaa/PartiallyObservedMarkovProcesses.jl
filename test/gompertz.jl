@@ -34,52 +34,65 @@ P = pomp(
     rprocess=rproc
 );
 @test isa(P,POMP.PompObject)
+@test isnothing(states(P))
 
-x = rinit(P,nsim=5)
-@test size(x)==(1,1,5)
-@test keys(x[1])==(:x,)
+x0 = rinit(P,nsim=5);
+@test size(x0)==(1,5)
+@test keys(x0[1])==(:x,)
 
-y = rmeasure(P,x=x,times=3)
-@test size(y)==(1,1,5)
+x = rprocess(P,x0=x0);
+@test size(x)==(27,1,5)
+@test keys(x[33])==(:x,)
+
+y = rmeasure(P,x=x);
+@test size(y)==(27,1,5)
 @test keys(y[2])==(:y,)
 
-x = rinit(P,params=[coef(P) for _ = 1:2],nsim=3)
-y = rmeasure(P,x=x,params=[coef(P) for _ = 1:2],times=3)
-@test size(x)==(1,2,3)
-@test size(y)==(1,2,3)
-@test keys(y[2])==(:y,)
+@test_throws "with at least 3 dimensions" rmeasure(P,x=x[3,:,:],times=1970)
+
+y1 = rmeasure(P,x=x[[3],:,:],times=1970);
+@test size(y1)==(1,1,5)
+
+p = [coef(P) for _ = 1:2];
+x0 = rinit(P,params=p,nsim=3);
+x = rprocess(P,x0=x0,params=p);
+y = rmeasure(P,x=x[3:4,:,:],params=p,times=times(P)[3:4]);
+@test size(x0)==(2,3)
+@test size(x)==(27,2,3)
+@test size(y)==(2,2,3)
+@test_throws "x0-params dimension mismatch" rprocess(P,x0=x0,params=p[1])
+@test_throws "x-times dimension mismatch" rmeasure(P,x=x[3:5,:,:],params=p,times=times(P)[3:4])
+@test_throws "x-params dimension mismatch" rmeasure(P,x=x[3:4,:,:],params=p[2],times=times(P)[3:4])
 
 coef!(P,(r=0.2,σₘ=0,σₚ=0))
 coef(P)
-melt(P)
+melt(P);
 X = rprocess(P,x0=rinit(P));
 @test size(X)==(27,1,1)
-d1 = melt(X,time=times(P))
+d1 = melt(X,time=times(P));
 
 Q = simulate(P;params=(r=0.3,σₘ=0,σₚ=0.2,x₀=0.1,K=1));
-@test isa(Q,POMP.AbstractSimPompObject)
 @test isa(Q,POMP.AbstractPompObject)
-@test isa(Q,POMP.SimPompObject)
-@test !isa(Q,POMP.PompObject)
+@test isa(Q,POMP.PompObject)
 d2 = melt(Q);
 Q = simulate(Q);
 simulate!(Q);
-@test isa(Q,POMP.SimPompObject)
+@test isa(Q,POMP.PompObject)
 d3 = melt(Q);
 @test values(coef(Q,:σₘ,:σₚ)) == (0,0.2)
 simulate!(Q;params=(r=0.3,σₘ=0.1,σₚ=0,x₀=0.1,K=1));
 @test values(coef(Q,:σₘ,:σₚ)) == (0.1,0)
-@test isa(Q,POMP.SimPompObject)
+@test isa(Q,POMP.PompObject)
 d4 = melt(Q);
 
 x0 = rinit(Q,nsim=3);
-@test size(x0)==(1,1,3)
-x = rprocess(Q,x0=x0[:,:,1:2],times=timezero(Q).+[3,5,9]);
+@test size(x0)==(1,3)
+x = rprocess(Q,x0=x0[:,1:2],times=timezero(Q).+[3,5,9]);
 @test size(x)==(3,1,2)
 y = rmeasure(Q,x=x[1:2,:,:],times=timezero(Q).+[3,5]);
 @test size(y)==(2,1,2)
-@test isa(obs(Q),Vector{<:NamedTuple})
-@test length(obs(Q))==27
+@test isa(obs(Q),Array{<:NamedTuple,3})
+@test size(obs(Q))==(27,1,1)
 
 coef!(Q,(r=3,))
 @test coef(Q,:r).r == 3
@@ -114,5 +127,6 @@ bind_rows(
   geom_point()+
   geom_line()+
   theme_bw()
-ggsave(filename="gompertz-01.png",width=7,height=4)
 """
+
+R"""ggsave(filename="gompertz-01.png",width=7,height=4)"""
