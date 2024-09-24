@@ -23,13 +23,13 @@ rmeasure(
         params = val_array(params)
         m, n, sx... = size(x)
         if length(sx)==0
-            error("in `rmeasure`: x should be an array with at least 3 dimensions.")
+            error("x should be an array with at least 3 dimensions.")
         end
         if m != length(times)
-            error("in `rmeasure`: x-times dimension mismatch.")
+            error("x-times size mismatch.")
         end
         if n != length(params)
-            error("in `rmeasure`: x-params dimension mismatch.")
+            error("x-params size mismatch.")
         end
         x = val_array(x,m,n)
         y = [pomp(object).rmeasure(;t=times[k],x[k,j,i]...,params[j]...)

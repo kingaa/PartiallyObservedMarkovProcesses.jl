@@ -43,6 +43,7 @@ simulate!(
         x0 = rinit(object)
         x = rprocess(object,x0=x0)
         y = rmeasure(object,x=x)
+        statezero!(object,x0)
         states!(object,x)
         obs!(object,y)
         nothing

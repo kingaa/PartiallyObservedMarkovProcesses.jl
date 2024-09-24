@@ -24,7 +24,7 @@ rprocess(
         params = val_array(params)
         n, sx... = size(x0)
         if n != length(params)
-            error("in `rprocess`: x0-params dimension mismatch.")
+            error("x0-params size mismatch.")
         end
         x0 = val_array(x0,length(params))
         tx = eltype(x0)

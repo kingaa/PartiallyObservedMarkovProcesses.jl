@@ -21,6 +21,11 @@ rmeas = function (;x,k,_...)
     (pop=rand(d),)
 end
 
+dmeas = function (;x,pop,k,_...)
+    d = NegativeBinomial(k,k/(k+x))
+    logpdf(d,pop)
+end
+
 P = pomp(parus_data,times=:year,t0=1960)
 @test isa(P,POMP.PompObject)
 
@@ -67,12 +72,23 @@ x = rprocess(P,x0=x0,params=(a=1,k=3,x₀=5));
 @test keys(x[17])==(:x,)
 
 @test_throws "basic component is undefined" rmeasure(P,params=(a=1,k=3,x₀=5),x=x)
-P = pomp(P,rmeasure=rmeas,rprocess=nothing);
+P = pomp(P,rmeasure=rmeas);
 y = rmeasure(P,x=x,params=(a=1,k=3,x₀=5));
 @test isa(y,Array{<:NamedTuple})
 @test size(y)==(27,1,5)
 @test length(y[37])==1
 @test keys(y[37])==(:pop,)
+
+@test_throws "basic component is undefined" dmeasure(P,x=x,params=(a=1,k=3,x₀=5))
+pomp!(P,dmeasure=dmeas,params=(a=1,k=3,x₀=5))
+ell = dmeasure(P,y=y[:,:,[1]],x=x);
+@test isa(ell,Array{<:Real,3})
+@test size(ell)==(27,1,5)
+simulate!(P,dmeasure=dmeas,params=(a=1,k=3,x₀=5))
+ell = dmeasure(P)
+@test size(ell)==(27,1,1)
+
+pomp!(P,rprocess=nothing);
 @test_throws "basic component is undefined" rprocess(P,params=(a=1,k=3,x₀=5),x0=x0)
 
 @test_throws "is not defined" POMP.val_array("yes")
@@ -83,5 +99,8 @@ pomp!(P,rinit=function(;_...) error("yikes!") end)
 @test_throws "in `rinit`: yikes!" rinit(P,params=(x₀=3,))
 pomp!(P,rmeasure=function(;_...) error("yikes!") end)
 @test_throws "in `rmeasure`: yikes!" rmeasure(P,params=(a=1,),x=x)
+pomp!(P,dmeasure=function(;_...) error("yikes!") end)
+@test_throws "in `dmeasure`: yikes!" dmeasure(P,params=(a=1,),x=x)
 pomp!(P,rprocess=function(;_...) error("yikes!") end)
 @test_throws "in `rprocess`: yikes!" rprocess(P,params=(x₀=3,),x0=x0)
+

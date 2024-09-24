@@ -9,8 +9,9 @@ mutable struct PompObject{T} <: AbstractPompObject{T}
     times::Vector{T}
     params::Union{NamedTuple,Nothing}
     rinit::Union{Function,Nothing}
-    rmeasure::Union{Function,Nothing}
     rprocess::Union{Function,Nothing}
+    rmeasure::Union{Function,Nothing}
+    dmeasure::Union{Function,Nothing}
     x0::Union{NamedTuple,Nothing}
     states::Union{Vector{<:NamedTuple},Nothing}
 end
@@ -24,8 +25,9 @@ pomp(
     times::Symbol,
     params::Union{NamedTuple,Nothing} = nothing,
     rinit::Union{Function,Nothing} = nothing,
-    rmeasure::Union{Function,Nothing} = nothing,
     rprocess::Union{Function,Nothing} = nothing,
+    rmeasure::Union{Function,Nothing} = nothing,
+    dmeasure::Union{Function,Nothing} = nothing,
 ) where {T<:Real} = begin
     time = getproperty(data,times)
     if (t0 > time[1])
@@ -41,8 +43,9 @@ pomp(
         time,
         params,
         rinit,
-        rmeasure,
         rprocess,
+        rmeasure,
+        dmeasure,
         nothing,
         nothing
     )
@@ -56,26 +59,32 @@ pomp!(
     object::PompObject;
     params::Union{NamedTuple,Nothing,Missing} = missing,
     rinit::Union{Function,Nothing,Missing} = missing,
-    rmeasure::Union{Function,Nothing,Missing} = missing,
     rprocess::Union{Function,Nothing,Missing} = missing,
+    rmeasure::Union{Function,Nothing,Missing} = missing,
+    dmeasure::Union{Function,Nothing,Missing} = missing,
 ) = begin
+    reset_x::Bool = false
     if !ismissing(params)
         object.params = params
-        object.x0 = nothing
-        object.states = nothing
+        reset_x = true
     end
     if !ismissing(rinit)
         object.rinit = rinit
-        object.x0 = nothing
-        object.states = nothing
-    end
-    if !ismissing(rmeasure)
-        object.rmeasure = rmeasure
-        object.x0 = nothing
-        object.states = nothing
+        reset_x = true
     end
     if !ismissing(rprocess)
         object.rprocess = rprocess
+        reset_x = true
+    end
+    if !ismissing(rmeasure)
+        object.rmeasure = rmeasure
+        reset_x = true
+    end
+    if !ismissing(dmeasure)
+        object.dmeasure = dmeasure
+        reset_x = true
+    end
+    if reset_x
         object.x0 = nothing
         object.states = nothing
     end

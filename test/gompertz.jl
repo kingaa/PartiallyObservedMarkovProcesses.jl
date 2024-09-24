@@ -34,9 +34,9 @@ y = rmeasure(P,x=x[3:4,:,:],params=p,times=times(P)[3:4]);
 @test size(x0)==(2,3)
 @test size(x)==(27,2,3)
 @test size(y)==(2,2,3)
-@test_throws "x0-params dimension mismatch" rprocess(P,x0=x0,params=p[1])
-@test_throws "x-times dimension mismatch" rmeasure(P,x=x[3:5,:,:],params=p,times=times(P)[3:4])
-@test_throws "x-params dimension mismatch" rmeasure(P,x=x[3:4,:,:],params=p[2],times=times(P)[3:4])
+@test_throws "x0-params size mismatch" rprocess(P,x0=x0,params=p[1])
+@test_throws "x-times size mismatch" rmeasure(P,x=x[3:5,:,:],params=p,times=times(P)[3:4])
+@test_throws "x-params size mismatch" rmeasure(P,x=x[3:4,:,:],params=p[2],times=times(P)[3:4])
 
 coef!(P,(σₘ=0,σₚ=0))
 coef(P)
@@ -45,19 +45,24 @@ X = rprocess(P,x0=rinit(P));
 @test size(X)==(27,1,1)
 d1 = melt(X,time=times(P));
 
-Q = simulate(P;params=(r=4,σₘ=0,σₚ=0.7,x₀=0.1,K=210.0));
+@time Q = simulate(P;params=(r=4,σₘ=0,σₚ=0.7,x₀=0.1,K=210.0));
 @test isa(Q,POMP.AbstractPompObject)
 @test isa(Q,POMP.PompObject)
 d2 = melt(Q);
-Q = simulate(Q);
-simulate!(Q);
+@time Q = simulate(Q);
+@time simulate!(Q);
 @test isa(Q,POMP.PompObject)
 d3 = melt(Q);
 @test values(coef(Q,:σₘ,:σₚ)) == (0,0.7)
-simulate!(Q;params=(r=4.5,σₘ=0.7,σₚ=0,x₀=0.1,K=210.0));
+@time simulate!(Q;params=(r=4.5,σₘ=0.7,σₚ=0,x₀=0.1,K=210.0));
+@time simulate!(Q);
 @test values(coef(Q,:σₘ,:σₚ)) == (0.7,0)
 @test isa(Q,POMP.PompObject)
 d4 = melt(Q);
+
+ell = dmeasure(Q);
+@test isa(ell,Array{Float64,3})
+@test size(ell)==(27,1,1)
 
 x0 = rinit(Q,nsim=3);
 @test size(x0)==(1,3)
@@ -67,11 +72,21 @@ y = rmeasure(Q,x=x[1:2,:,:],times=timezero(Q).+[3,5]);
 @test size(y)==(2,1,2)
 @test isa(obs(Q),Array{<:NamedTuple,3})
 @test size(obs(Q))==(27,1,1)
+@test_throws "replicate data not allowed" dmeasure(Q,y=y,x=x[1:2,:,:],times=timezero(Q).+[3,5]);
+@test_throws "y-params size mismatch" dmeasure(Q,y=y,params=p,x=x[1:2,:,:],times=timezero(Q).+[3,5]);
+@test_throws "y-times size mismatch" dmeasure(Q,y=y[[1],:,:],x=x[[1],:,:],times=timezero(Q).+[3,5]);
+@test_throws "x-y size mismatch" dmeasure(Q,y=y[:,:,[1]],x=x[1:3,:,:],times=timezero(Q).+[3,5]);
+@test_throws "at least 3 dimensions" dmeasure(Q,y=y[:,:,1],x=x[1:2,:,:],times=timezero(Q).+[3,5]);
+@test_throws "at least 3 dimensions" dmeasure(Q,y=y,x=x[1:2,:,1],times=timezero(Q).+[3,5]);
+ell = dmeasure(Q,y=y[:,:,[1]],x=x[1:2,:,:],times=timezero(Q).+[3,5]);
+@test size(ell)==(2,1,2)
 
 coef!(Q,(r=3,))
 @test coef(Q,:r).r == 3
 @test coef(Q).x₀ == 0.1
 
+coef!(Q,(r=0.4,σₚ=0.2,x₀=0.1,K=1),reset=true)
+@test_throws r"parameter .* undefined" dmeasure(Q)
 coef!(Q,(σₘ=0,σₚ=0.2,x₀=0.1,K=1),reset=true)
 @test_throws "parameter r undefined" rprocess(Q,x0=rinit(Q))
 coef!(Q,(σₚ=0.2,x₀=0.1,K=1),reset=true)

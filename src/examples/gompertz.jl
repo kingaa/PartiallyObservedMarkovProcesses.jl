@@ -23,14 +23,18 @@ gompertz = function(r::Float64=4.5, K::Float64=210.0, σₚ::Float64=0.7,
         rinit = function (;x₀,_...)
             (;x=x₀,)
         end,
-        rmeasure = function (;x,σₘ,_...)
-            d = LogNormal(log(x),σₘ)
-            (;pop=rand(d),)
-        end,
         rprocess = function (;t,x,σₚ,r,K,_...)
             s = exp(-r)
             d = LogNormal(s*log(x)+(1-s)*log(K),σₚ)
             (;t=t+1,x=rand(d),)
+        end,
+        rmeasure = function (;x,σₘ,_...)
+            d = LogNormal(log(x),σₘ)
+            (;pop=rand(d),)
+        end,
+        dmeasure = function (;pop,x,σₘ,_...)
+            d = LogNormal(log(x),σₘ)
+            logpdf(d,pop)
         end
     )
 end
