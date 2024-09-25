@@ -6,35 +6,24 @@ export rmeasure
 `rmeasure` is the workhorse for the simulator of the measurement distribution.
 
 The user can supply an *rmeasure* component as a function that takes states, parameters, and, optionally, `t`, the current time.
-
-Calling `rmeasure` in the absence of a user-supplied *rmeasure* component results in an error.
 """
 rmeasure(
-    object::AbstractPompObject;
-    x::Array{<:NamedTuple,N},
-    times::Union{<:Real,Vector{<:Real}} = times(object),
-    params::Union{<:NamedTuple,Vector{<:NamedTuple}} = coef(object),
-) where N = begin
-    if isnothing(pomp(object).rmeasure)
-        error("The *rmeasure* basic component is undefined.")
-    end
+    object::AbstractPompObject{T};
+    x::Array{X,N},
+    times::Union{T,Vector{T}} = times(object),
+    params::Union{P,Vector{P}},
+) where {N,T,X<:NamedTuple,P<:NamedTuple} = begin
     try
-        times = vectorize(times)
+        times = val_array(times)
         params = val_array(params)
-        m, n, sx... = size(x)
-        if length(sx)==0
-            error("x should be an array with at least 3 dimensions.")
+        x = val_array(x,length(params),length(times))
+        f = pomp(object).rmeasure
+        if isnothing(f)
+            Array{NamedTuple}(undef,size(x)...)
+        else
+            [f(;t=times[k],x[i,j,k]...,params[j]...)
+             for i ∈ axes(x,1), j ∈ eachindex(params), k ∈ eachindex(times)]
         end
-        if m != length(times)
-            error("x-times size mismatch.")
-        end
-        if n != length(params)
-            error("x-params size mismatch.")
-        end
-        x = val_array(x,m,n)
-        y = [pomp(object).rmeasure(;t=times[k],x[k,j,i]...,params[j]...)
-             for k ∈ eachindex(times), j ∈ eachindex(params), i ∈ axes(x,3)]
-        reshape(y,m,n,sx...)
     catch e
         if isa(e,UndefKeywordError)
             error("in `rmeasure`: parameter " * string(e.var) * " undefined.")

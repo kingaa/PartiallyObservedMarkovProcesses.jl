@@ -7,39 +7,38 @@ export rprocess
 
 The user can supply an *rprocess* component as a function that takes states, parameters, and current time (`t`) and returns the updated time and state.
 
-Calling `rprocess` in the absence of a user-supplied *rprocess* component results in an error.
+If there is no user-supplied *rprocess* component, the dynamics are trivial.
 """
 rprocess(
-    object::AbstractPompObject;
-    x0::Array{<:NamedTuple,2},
-    t0::Real = timezero(object),
-    times::Union{<:Real,Vector{<:Real}} = times(object),
-    params::Union{<:NamedTuple,Vector{<:NamedTuple}} = coef(object),
-) = begin
-    if isnothing(pomp(object).rprocess)
-        error("The *rprocess* basic component is undefined.")
-    end
+    object::AbstractPompObject{T};
+    x0::Array{X,N},
+    t0::T = timezero(object),
+    times::Union{T,Vector{T}} = times(object),
+    params::Union{P,Vector{P}},
+) where {T,N,X,P<:NamedTuple} = begin
     try
-        times = vectorize(times)
+        times = val_array(times)
         params = val_array(params)
-        n, sx... = size(x0)
-        if n != length(params)
-            error("x0-params size mismatch.")
-        end
         x0 = val_array(x0,length(params))
-        tx = eltype(x0)
-        X = Array{tx}(undef,length(times),length(params),size(x0,2))
-        for i ∈ axes(x0,2), j ∈ eachindex(params)
-            t = t0
-            x = x0[j,i]
+        x = Array{X}(undef,size(x0)...,length(times))
+        f = pomp(object).rprocess
+        if isnothing(f)         # default behavior is persistence
             for k ∈ eachindex(times)
-                while t < times[k]
-                    (t,x...) = pomp(object).rprocess(;t=t,x...,params[j]...)
+                x[:,:,k] = x0
+            end
+        else
+            for i ∈ axes(x0,1), j ∈ eachindex(params)
+                t = t0
+                xx = x0[i,j]
+                for k ∈ eachindex(times)
+                    while t < times[k]
+                        (t,xx...) = f(;t=t,xx...,params[j]...)
+                    end
+                    x[i,j,k] = xx
                 end
-                X[k,j,i] = x
             end
         end
-        reshape(X,length(times),length(params),sx...)
+        x
     catch e
         if isa(e,UndefKeywordError)
             error("in `rprocess`: parameter " * string(e.var) * " undefined.")

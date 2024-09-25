@@ -14,22 +14,22 @@ The user can supply an *rinit* component as a function that takes parameters and
 - `t0`: the time at which `rinit` is to be simulated.
   This should be a single scalar.
 - `nsim`: the number of simulations desired.
-
-Calling `rinit()` in the absence of a user-supplied *rinit* component results in an error.
 """
 rinit(
-    object::AbstractPompObject;
-    t0::Real = timezero(object),
-    params::Union{<:NamedTuple,Vector{<:NamedTuple}} = coef(object),
+    object::AbstractPompObject{T};
+    t0::T = timezero(object),
+    params::Union{P,Vector{P}},
     nsim::Integer = 1,
-) = begin
-    if isnothing(pomp(object).rinit)
-        error("The *rinit* basic component is undefined.")
-    end
+) where {T,P<:NamedTuple} = begin
     try
         params = val_array(params)
-        [pomp(object).rinit(;params[j]...,t0=t0)
-         for j ∈ eachindex(params), i ∈ 1:nsim]
+        f = pomp(object).rinit
+        if isnothing(f)
+            [() for i ∈ 1:nsim, j ∈ eachindex(params)]
+        else
+            [f(;params[j]...,t0=t0)
+             for i ∈ 1:nsim, j ∈ eachindex(params)]
+        end
     catch e
         if isa(e,UndefKeywordError)
             error("in `rinit`: parameter " * string(e.var) * " undefined.")

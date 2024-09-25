@@ -8,7 +8,6 @@ import InvertedIndices: Not
 
 include("reshape.jl")
 include("pomp.jl")
-include("coef.jl")
 include("helpers.jl")
 include("rinit.jl")
 include("rprocess.jl")

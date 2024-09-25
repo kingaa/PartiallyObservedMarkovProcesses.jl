@@ -1,16 +1,12 @@
-vectorize(t::Vector{T}) where T = t
-
-vectorize(t) = [t]
-
-val_array(x::Union{Vector{<:NamedTuple},Array{<:NamedTuple,N}},dim...) where N = begin
+val_array(x::Array{T,N},dim...) where {T,N} = begin
     n = prod(dim)
     if mod(length(x),n) != 0
         error("size mismatch in `val_array`")
     else
-        reshape(x,dim...,div(length(x),n))
+        reshape(x,div(length(x),n),dim...)
     end
 end
 
-val_array(x::NamedTuple,_...) = reshape([x],1,1,1)
-
-val_array(x,_...) = throw(ArgumentError("`val_array` is not defined for type '"*string(typeof(x))*"'."))
+val_array(x,dim...) = begin
+    val_array([x],dim...)
+end

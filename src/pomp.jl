@@ -7,13 +7,10 @@ mutable struct PompObject{T} <: AbstractPompObject{T}
     data::Union{Vector{<:NamedTuple},Nothing}
     t0::T
     times::Vector{T}
-    params::Union{NamedTuple,Nothing}
     rinit::Union{Function,Nothing}
     rprocess::Union{Function,Nothing}
     rmeasure::Union{Function,Nothing}
     dmeasure::Union{Function,Nothing}
-    x0::Union{NamedTuple,Nothing}
-    states::Union{Vector{<:NamedTuple},Nothing}
 end
 
 """
@@ -23,7 +20,6 @@ pomp(
     data::DataFrame;
     t0::T,
     times::Symbol,
-    params::Union{NamedTuple,Nothing} = nothing,
     rinit::Union{Function,Nothing} = nothing,
     rprocess::Union{Function,Nothing} = nothing,
     rmeasure::Union{Function,Nothing} = nothing,
@@ -31,7 +27,7 @@ pomp(
 ) where {T<:Real} = begin
     time = getproperty(data,times)
     if (t0 > time[1])
-        error("`t0` cannot be later than `time[1]`.")
+        error("`t0` must be no later than first observation time.")
     end
     if (any(diff(time).<0))
         error("observation times must be nondecreasing.")
@@ -41,13 +37,36 @@ pomp(
         data,
         t0,
         time,
-        params,
         rinit,
         rprocess,
         rmeasure,
-        dmeasure,
+        dmeasure
+    )
+end
+
+pomp(
+    ;t0::T,
+    times::Union{T,Vector{T}},
+    rinit::Union{Function,Nothing} = nothing,
+    rprocess::Union{Function,Nothing} = nothing,
+    rmeasure::Union{Function,Nothing} = nothing,
+    dmeasure::Union{Function,Nothing} = nothing,
+) where {T<:Real} = begin
+    times = val_array(times)
+    if (t0 > times[1])
+        error("`t0` must be no later than first observation time.")
+    end
+    if (any(diff(times).<0))
+        error("observation times must be nondecreasing.")
+    end
+    PompObject{T}(
         nothing,
-        nothing
+        t0,
+        times,
+        rinit,
+        rprocess,
+        rmeasure,
+        dmeasure
     )
 end
 
@@ -57,36 +76,22 @@ One can replace or unset individual fields.
 """
 pomp!(
     object::PompObject;
-    params::Union{NamedTuple,Nothing,Missing} = missing,
     rinit::Union{Function,Nothing,Missing} = missing,
     rprocess::Union{Function,Nothing,Missing} = missing,
     rmeasure::Union{Function,Nothing,Missing} = missing,
     dmeasure::Union{Function,Nothing,Missing} = missing,
 ) = begin
-    reset_x::Bool = false
-    if !ismissing(params)
-        object.params = params
-        reset_x = true
-    end
     if !ismissing(rinit)
         object.rinit = rinit
-        reset_x = true
     end
     if !ismissing(rprocess)
         object.rprocess = rprocess
-        reset_x = true
     end
     if !ismissing(rmeasure)
         object.rmeasure = rmeasure
-        reset_x = true
     end
     if !ismissing(dmeasure)
         object.dmeasure = dmeasure
-        reset_x = true
-    end
-    if reset_x
-        object.x0 = nothing
-        object.states = nothing
     end
     object                      # COV_EXCL_LINE
 end
