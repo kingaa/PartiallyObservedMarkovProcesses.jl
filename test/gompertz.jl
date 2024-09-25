@@ -45,7 +45,7 @@ library(tidyverse)
 bind_rows($s,$d) |>
   mutate(data=rep==0) |>
   ggplot(aes(x=time,group=rep,color=factor(rep)))+
-  geom_point(aes(y=pop,size=data))+
+  geom_point(aes(y=pop,shape=data))+
   geom_line(aes(y=x))+
   guides(color="none",size="none")+
   scale_y_sqrt()+

@@ -10,24 +10,22 @@ The user can supply a *dmeasure* component as a function that takes data, states
 dmeasure(
     object::AbstractPompObject{T};
     times::Union{T,Vector{T}} = times(object),
-    y::Array{Y,M} = obs(object),
-    x::Array{X,N},
+    y::Union{Y,Array{Y,M}} = obs(object),
+    x::Union{X,Array{X,N}},
     params::Union{P,Vector{P}},
+    log::Bool = false
 ) where {M,N,T,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
     try
         times = val_array(times)
         params = val_array(params)
-        if length(x)!=length(y)
-            error("x and y should be of the same size.")
-        end
         x = val_array(x,length(params),length(times))
         y = val_array(y,length(params),length(times))
         f = pomp(object).dmeasure
         if isnothing(f)         # default behavior is no information
-            zeros(Float64,size(x)...)
+            zeros(Float64,size(y,1),size(x)...)
         else
-            [f(;t=times[k],y[i,j,k]...,x[i,j,k]...,params[j]...)
-             for i ∈ axes(x,1), j ∈ eachindex(params), k ∈ eachindex(times)]
+            [f(;t=times[k],y[iy,j,k]...,x[ix,j,k]...,params[j]...,log=log)
+             for iy ∈ axes(y,1), ix ∈ axes(x,1), j ∈ eachindex(params), k ∈ eachindex(times)]
         end
     catch e
         if isa(e,UndefKeywordError)

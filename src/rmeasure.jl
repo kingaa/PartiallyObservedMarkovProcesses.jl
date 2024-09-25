@@ -9,7 +9,7 @@ The user can supply an *rmeasure* component as a function that takes states, par
 """
 rmeasure(
     object::AbstractPompObject{T};
-    x::Array{X,N},
+    x::Union{X,Array{X,N}},
     times::Union{T,Vector{T}} = times(object),
     params::Union{P,Vector{P}},
 ) where {N,T,X<:NamedTuple,P<:NamedTuple} = begin

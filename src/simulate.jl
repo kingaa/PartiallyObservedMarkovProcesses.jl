@@ -72,6 +72,37 @@ simulate(
 end
 
 simulate(
+    ;t0::T,
+    times::Union{T,Vector{T}},
+    params::Union{P,Vector{P}},
+    nsim::Integer = 1,
+    args...,
+) where {T,P<:NamedTuple} = begin
+    try
+        object = pomp(;t0=t0,times=times,args...)
+        params = val_array(params)
+        x0 = rinit(object,params=params,nsim=nsim)
+        x = rprocess(object,x0=x0,params=params)
+        y = rmeasure(object,x=x,params=params)
+        X = eltype(x)
+        Y = eltype(y)
+        SimPompObject{T,X,Y}(
+            object,
+            x0,
+            x,
+            y,
+            params
+        )
+    catch e
+        if hasproperty(e,:msg)               # COV_EXCL_LINE
+            error("in `simulate`: " * e.msg) # COV_EXCL_LINE
+        else
+            throw(e)            # COV_EXCL_LINE
+        end
+    end
+end
+
+simulate(
     object::SimPompObject{T,X,Y};
     params::Union{P,Vector{P}} = coef(object),
     nsim::Integer = 1,

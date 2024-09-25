@@ -15,52 +15,30 @@ end
 
 """
 `pomp` is the constructor for the *PompObject* class.
+
+The default constructor takes a vector of NamedTuples as data.
 """
 pomp(
-    data::DataFrame;
+    data::Union{Vector{Y},Nothing} = nothing;
     t0::T,
-    times::Symbol,
-    rinit::Union{Function,Nothing} = nothing,
-    rprocess::Union{Function,Nothing} = nothing,
-    rmeasure::Union{Function,Nothing} = nothing,
-    dmeasure::Union{Function,Nothing} = nothing,
-) where {T<:Real} = begin
-    time = getproperty(data,times)
-    if (t0 > time[1])
-        error("`t0` must be no later than first observation time.")
-    end
-    if (any(diff(time).<0))
-        error("observation times must be nondecreasing.")
-    end
-    data = NamedTuple.(eachrow(select(data,Not(times))))
-    PompObject{T}(
-        data,
-        t0,
-        time,
-        rinit,
-        rprocess,
-        rmeasure,
-        dmeasure
-    )
-end
-
-pomp(
-    ;t0::T,
     times::Union{T,Vector{T}},
     rinit::Union{Function,Nothing} = nothing,
     rprocess::Union{Function,Nothing} = nothing,
     rmeasure::Union{Function,Nothing} = nothing,
     dmeasure::Union{Function,Nothing} = nothing,
-) where {T<:Real} = begin
+) where {Y<:NamedTuple,T<:Real} = begin
     times = val_array(times)
-    if (t0 > times[1])
+    if !isnothing(data) && length(data) != length(times)
+        error("data and times must be of the same length.")
+    end
+    if t0 > times[1]
         error("`t0` must be no later than first observation time.")
     end
-    if (any(diff(times).<0))
+    if any(diff(times).<0)
         error("observation times must be nondecreasing.")
     end
     PompObject{T}(
-        nothing,
+        data,
         t0,
         times,
         rinit,
@@ -69,6 +47,32 @@ pomp(
         dmeasure
     )
 end
+
+"""
+Alternatively, one can construct a *PompObject* from a DataFrame.
+"""
+pomp(
+    data::DataFrame;
+    t0::T,
+    times::Symbol,
+    args...,
+) where {T<:Real} = begin
+    time = getproperty(data,times)
+    data = NamedTuple.(eachrow(select(data,Not(times))))
+    pomp(data;t0=t0,times=time,args...)
+end
+
+"""
+`pomp` returns a the *PompObject* underlying an *AbstractPompObject*,
+potentially with modifications to the basic model components.
+If modifications are made, the original is not changed.
+"""
+pomp(object::PompObject) = object
+
+pomp(
+    object::AbstractPompObject;
+    args...,
+) = pomp!(deepcopy(pomp(object));args...)
 
 """
 `pomp!` modifies a *PompObject* in place.
@@ -95,15 +99,3 @@ pomp!(
     end
     object                      # COV_EXCL_LINE
 end
-
-"""
-`pomp` returns a the *PompObject* underlying an *AbstractPompObject*,
-potentially with modifications.
-If modifications are made, the original is not changed.
-"""
-pomp(object::PompObject) = object
-
-pomp(
-    object::AbstractPompObject;
-    args...,
-) = pomp!(deepcopy(pomp(object));args...)

@@ -22,9 +22,13 @@ rmeas = function (;x,k,_...)
     (y=rand(d),)
 end
 
-dmeas = function (;x,y,k,_...)
+dmeas = function (;x,y,k,log,_...)
     d = NegativeBinomial(k,k/(k+x))
-    logpdf(d,y)
+    if log
+        logpdf(d,y)
+    else
+        pdf(d,y)
+    end
 end
 
 @test_throws "must be no later than" pomp(times=[t for t in 0:20],t0=5)
@@ -80,19 +84,18 @@ y = rmeasure(P,x=x,params=[p1;p2]);
 @test_throws r"parameter .* undefined" rmeasure(P,x=x[1,:,:],params=(a=1.0,))
 
 ell = dmeasure(P,x=x,y=y,params=[p1;p2]);
-@test isa(ell,Array{Float64,3})
-@test size(ell)==size(y)
+@test isa(ell,Array{Float64,4})
+@test size(ell)==(size(y,1),size(x)...)
 @test all(ell.==0)
 
 pomp!(P,dmeasure=dmeas)
-ell = dmeasure(P,x=x,y=y,params=[p1;p2]);
-@test isa(ell,Array{Float64,3})
-@test size(ell)==size(y)
+ell = dmeasure(P,x=x,y=y,params=[p1;p2],log=true);
+@test isa(ell,Array{Float64,4})
+@test size(ell)==(size(y,1),size(x)...)
 @test all(ell.<=0)
-@test_throws "should be of the same size" dmeasure(P,x=x[1:3,:,:],y=y,params=[p1;p2])
 @test_throws r"parameter .* undefined" dmeasure(P,y=y,x=x,params=(a=1.0,))
 
-POMP.val_array("yes")
+@test POMP.val_array("yes")==["yes"]
 @test_throws "size mismatch" POMP.val_array(y,11,2)
 
 p = [p1;p2];
@@ -144,3 +147,5 @@ pomp!(P,rmeasure=function(;_...) error("yikes!") end)
 @test_throws "in `rmeasure`: yikes!" rmeasure(P,params=(a=1,),x=x)
 pomp!(P,dmeasure=function(;_...) error("yikes!") end)
 @test_throws "in `dmeasure`: yikes!" dmeasure(P,params=(a=1,),x=x,y=y)
+
+@test_throws "must be of the same length" pomp([(a=1,);(a=2,);(c=3,)];times=[1;2],t0=0)

@@ -11,7 +11,7 @@ If there is no user-supplied *rprocess* component, the dynamics are trivial.
 """
 rprocess(
     object::AbstractPompObject{T};
-    x0::Array{X,N},
+    x0::Union{X,Array{X,N}},
     t0::T = timezero(object),
     times::Union{T,Vector{T}} = times(object),
     params::Union{P,Vector{P}},

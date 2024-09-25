@@ -14,6 +14,8 @@ include("rprocess.jl")
 include("rmeasure.jl")
 include("dmeasure.jl")
 include("simulate.jl")
+include("resample.jl")
+include("pfilter.jl")
 include("melt.jl")
 
 include("examples/Examples.jl")
