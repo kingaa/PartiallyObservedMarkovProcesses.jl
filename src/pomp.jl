@@ -20,13 +20,16 @@ The default constructor takes a vector of NamedTuples as data.
 """
 pomp(
     data::Union{Vector{Y},Nothing} = nothing;
-    t0::T,
+    t0::T1,
     times::Union{T,Vector{T}},
     rinit::Union{Function,Nothing} = nothing,
     rprocess::Union{Function,Nothing} = nothing,
     rmeasure::Union{Function,Nothing} = nothing,
     dmeasure::Union{Function,Nothing} = nothing,
-) where {Y<:NamedTuple,T<:Real} = begin
+) where {Y<:NamedTuple,T1<:Real,T<:Real} = begin
+    if T != T1
+        error("`t0` and time-vector must have the same elementary type.")
+    end
     times = val_array(times)
     if !isnothing(data) && length(data) != length(times)
         error("data and times must be of the same length.")

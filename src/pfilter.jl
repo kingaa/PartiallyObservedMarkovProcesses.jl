@@ -54,7 +54,7 @@ pfilter(
         cond_logLik = Array{Float64}(undef,length(t))
         for k ∈ eachindex(t)
             xx = rprocess(object,x0=xx,t0=t0,times=t[k],params=params)
-            ell = dmeasure(object,times=t[k],y=y[k],x=xx,params=params,log=false)
+            ell = dmeasure(object,times=t[k],y=y[k],x=xx,params=params,give_log=false)
             cond_logLik[k] = log(mean(ell))
             p = systematic_resample(ell,Np)
             x[:,:,k] = xx[p,:,:]

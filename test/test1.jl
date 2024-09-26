@@ -22,9 +22,9 @@ rmeas = function (;x,k,_...)
     (y=rand(d),)
 end
 
-dmeas = function (;x,y,k,log,_...)
+dmeas = function (;x,y,k,give_log,_...)
     d = NegativeBinomial(k,k/(k+x))
-    if log
+    if give_log
         logpdf(d,y)
     else
         pdf(d,y)
@@ -33,6 +33,7 @@ end
 
 @test_throws "must be no later than" pomp(times=[t for t in 0:20],t0=5)
 @test_throws "times must be nondecreasing" pomp(t0=0,times=[-t for t in 0:7])
+@test_throws "same elementary type" pomp(times=[t for t in 0:20],t0=0.0)
 
 P = pomp(times=[t for t in 0:20],t0=0)
 @test isa(P,POMP.PompObject)
@@ -89,7 +90,7 @@ ell = dmeasure(P,x=x,y=y,params=[p1;p2]);
 @test all(ell.==0)
 
 pomp!(P,dmeasure=dmeas)
-ell = dmeasure(P,x=x,y=y,params=[p1;p2],log=true);
+ell = dmeasure(P,x=x,y=y,params=[p1;p2],give_log=true);
 @test isa(ell,Array{Float64,4})
 @test size(ell)==(size(y,1),size(x)...)
 @test all(ell.<=0)

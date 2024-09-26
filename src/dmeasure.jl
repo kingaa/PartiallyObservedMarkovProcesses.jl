@@ -13,7 +13,7 @@ dmeasure(
     y::Union{Y,Array{Y,M}} = obs(object),
     x::Union{X,Array{X,N}},
     params::Union{P,Vector{P}},
-    log::Bool = false
+    give_log::Bool = false
 ) where {M,N,T,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
     try
         times = val_array(times)
@@ -24,7 +24,7 @@ dmeasure(
         if isnothing(f)         # default behavior is no information
             zeros(Float64,size(y,1),size(x)...)
         else
-            [f(;t=times[k],y[iy,j,k]...,x[ix,j,k]...,params[j]...,log=log)
+            [f(;t=times[k],y[iy,j,k]...,x[ix,j,k]...,params[j]...,give_log=give_log)
              for iy ∈ axes(y,1), ix ∈ axes(x,1), j ∈ eachindex(params), k ∈ eachindex(times)]
         end
     catch e

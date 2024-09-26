@@ -22,9 +22,9 @@ rmeas = function (;x,k,_...)
     (y=rand(d),)
 end
 
-dmeas = function (;x,y,k,log,_...)
+dmeas = function (;x,y,k,give_log,_...)
     d = NegativeBinomial(k,k/(k+x))
-    if log
+    if give_log
         logpdf(d,y)
     else
         pdf(d,y)
