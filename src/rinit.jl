@@ -1,5 +1,25 @@
 export rinit
 
+rinit_internal(
+    f::Nothing;
+    params::AbstractVector{P},
+    nsim::Integer = 1,
+    _...,
+) where {P<:NamedTuple} = begin
+    reshape(fill((),nsim*length(params)),nsim,length(params))
+end
+
+rinit_internal(
+    f::Function;
+    t0::T,
+    params::AbstractVector{P},
+    nsim::Integer = 1,
+) where {T,P<:NamedTuple} = begin
+    [f(;params[j]...,t0=t0)
+     for i ∈ 1:nsim, j ∈ eachindex(params)]
+end
+
+
 """
     rinit(object; t0=timezero(object), params=coef(object), nsim=1)
 
@@ -18,18 +38,12 @@ The user can supply an *rinit* component as a function that takes parameters and
 rinit(
     object::AbstractPompObject{T};
     t0::T = timezero(object),
-    params::Union{P,Vector{P}},
+    params::Union{P,AbstractVector{P}},
     nsim::Integer = 1,
 ) where {T,P<:NamedTuple} = begin
     try
         params = val_array(params)
-        f = pomp(object).rinit
-        if isnothing(f)
-            [() for i ∈ 1:nsim, j ∈ eachindex(params)]
-        else
-            [f(;params[j]...,t0=t0)
-             for i ∈ 1:nsim, j ∈ eachindex(params)]
-        end
+        rinit_internal(pomp(object).rinit,t0=t0,params=params,nsim=nsim)
     catch e
         if isa(e,UndefKeywordError)
             error("in `rinit`: parameter " * string(e.var) * " undefined.")

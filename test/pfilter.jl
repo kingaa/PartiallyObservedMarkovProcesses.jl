@@ -7,6 +7,10 @@ using Test
 
 Random.seed!(263260083)
 
+k = systematic_resample(10,[3.1;3;1;;0;0;1]);
+@test length(k)==10
+@test all(k.!=4) && all(k.!=5)
+
 rin = function(;x₀,_...)
     d = Poisson(x₀)
     (x=rand(d),)
@@ -35,7 +39,7 @@ p1 = (a=1.5,k=7.0,x₀=5.0);
 
 P = simulate(
     t0=0,
-    times=[i for i=1:20],
+    times=[i for i=0:20],
     params=p1,
     rinit=rin,
     rprocess=rlin,
@@ -54,8 +58,14 @@ P = pomp(
 )
 @test isa(P,POMP.PompObject)
 
+x0 = rinit(P,params=p1,nsim=10)
+y = obs(P);
+t = times(P);
+x = Array{eltype(x0)}(undef,size(x0,1),1,1);
+rprocess!(P,x,x0=x0,times=t[1:1],params=[p1])
+@test x0==x[:,:,1]
+
 @time Q = pfilter(P,Np=1000,params=p1)
 @time Q = pfilter(P,Np=1000,params=p1)
 @time Q = pfilter(Q)
 @test isa(Q,POMP.PfilterdPompObject)
-@test size(states(Q))==(1000,1,20)

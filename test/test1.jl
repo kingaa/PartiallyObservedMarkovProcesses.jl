@@ -72,9 +72,9 @@ x = rprocess(P,x0=x0,params=[p1;p2]);
 @test_throws r"parameter .* undefined" rprocess(P,x0=x0[1,:],params=(k=7.0,x₀=5.0))
 
 y = rmeasure(P,x=x,params=[p1;p2]);
-@test isa(y,Array{<:NamedTuple,3})
+@test isa(y,Array{Tuple{},3})
 @test size(y)==(7,2,21)
-@test !isassigned(y,3)
+@test y[3]==()
 
 P = pomp(P,rmeasure=rmeas)
 y = rmeasure(P,x=x,params=[p1;p2]);
@@ -87,7 +87,12 @@ y = rmeasure(P,x=x,params=[p1;p2]);
 ell = dmeasure(P,x=x,y=y,params=[p1;p2]);
 @test isa(ell,Array{Float64,4})
 @test size(ell)==(size(y,1),size(x)...)
-@test all(ell.==0)
+@test all(ell.==1.0)
+
+ell = dmeasure(P,x=x,y=y,params=[p1;p2],give_log=true);
+@test isa(ell,Array{Float64,4})
+@test size(ell)==(size(y,1),size(x)...)
+@test all(ell.==0.0)
 
 pomp!(P,dmeasure=dmeas)
 ell = dmeasure(P,x=x,y=y,params=[p1;p2],give_log=true);
@@ -128,8 +133,9 @@ $d |>
   geom_point(aes(y=y))+
   geom_line(aes(y=y),linetype=2)+
   guides(color="none")+
-  facet_wrap(~a+k,ncol=1,scales="free_y",labeller=label_bquote(list(a==.(a),k==.(k))))+
-  scale_y_log10()+
+  facet_wrap(~a+k,ncol=1,scales="free_y",
+    labeller=label_bquote(list(a==.(a),k==.(k))))+
+  scale_y_continuous(transform="log1p")+
   theme_bw()       
 """
 
@@ -143,10 +149,10 @@ ggsave(filename="test1-01.png",width=7,height=4)
 pomp!(P,rinit=function(;_...) error("yikes!") end)
 @test_throws "in `rinit`: yikes!" rinit(P,params=(x₀=3,))
 pomp!(P,rprocess=function(;_...) error("yikes!") end)
-@test_throws "in `rprocess`: yikes!" rprocess(P,params=(x₀=3,),x0=x0)
+@test_throws "in `rprocess!`: yikes!" rprocess(P,params=(x₀=3,),x0=x0)
 pomp!(P,rmeasure=function(;_...) error("yikes!") end)
 @test_throws "in `rmeasure`: yikes!" rmeasure(P,params=(a=1,),x=x)
 pomp!(P,dmeasure=function(;_...) error("yikes!") end)
-@test_throws "in `dmeasure`: yikes!" dmeasure(P,params=(a=1,),x=x,y=y)
+@test_throws "in `dmeasure!`: yikes!" dmeasure(P,params=(a=1,),x=x,y=y)
 
 @test_throws "must be of the same length" pomp([(a=1,);(a=2,);(c=3,)];times=[1;2],t0=0)
