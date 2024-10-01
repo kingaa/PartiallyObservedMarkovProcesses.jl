@@ -8,6 +8,8 @@ using Test
 R"""
 library(pomp)
 library(tidyverse)
+set.seed(599586410L)
+
 P <- gompertz()
 P |>
   as.data.frame() |>

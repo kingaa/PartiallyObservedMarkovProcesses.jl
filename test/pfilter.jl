@@ -58,7 +58,7 @@ P = pomp(
 )
 @test isa(P,POMP.PompObject)
 
-x0 = rinit(P,params=p1,nsim=10)
+x0 = rinit(P,params=p1,nsim=10);
 y = obs(P);
 t = times(P);
 x = Array{eltype(x0)}(undef,size(x0,1),1,1);
@@ -69,3 +69,5 @@ rprocess!(P,x,x0=x0,times=t[1:1],params=[p1])
 @time Q = pfilter(P,Np=1000,params=p1)
 @time Q = pfilter(Q)
 @test isa(Q,POMP.PfilterdPompObject)
+@time pfilter(Q,params=(a=1.5,k=7.0,x₀=5.0));
+@test_throws "n `pfilter`: in `rinit`" pfilter(Q,params=(a=1.5,k=7.0));

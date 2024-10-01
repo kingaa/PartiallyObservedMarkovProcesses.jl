@@ -1,7 +1,7 @@
 export systematic_resample, systematic_resample!
 
 systematic_resample!(
-    p::Vector{Int64},
+    p::AbstractVector{Int64},
     w::AbstractArray{Float64,N},
 ) where N = begin
     Np = length(p)
