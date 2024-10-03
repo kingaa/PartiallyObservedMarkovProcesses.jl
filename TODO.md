@@ -1,7 +1,10 @@
 ## To-do List
 
+- plug-ins for *rprocess*
 - iterated filtering
 - weighted particle filter
+- multiparameter particle filter? should be trivial from existing
+- panel pfilter? may be trivial from existing (would need independent resampling)
 - `DoubleFloats.Double64` for likelihood computations
 - `logdmeasure` instead of `dmeasure` with `give_log=true`
 - explore autodiff capabilities

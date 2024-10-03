@@ -1,4 +1,4 @@
-mutable struct PfilterdPompObject{T,X} <: AbstractPompObject{T}
+mutable struct PfilterdPompObject{T,X,Y} <: AbstractPompObject{T}
     pompobj::PompObject{T}
     Np::Integer
     params::NamedTuple
@@ -69,7 +69,7 @@ pfilter(
             xf = xp[p,:,1]
             t0 = t[k]
         end
-        PfilterdPompObject{T,X}(
+        PfilterdPompObject{T,X,eltype(y)}(
             object,
             Np,
             params[1],
