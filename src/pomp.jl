@@ -1,7 +1,9 @@
 export pomp, pomp!
 
-## T is the type of time (T <: Real)
-abstract type AbstractPompObject{T} end
+## Time is the type of time
+Time = Real
+
+abstract type AbstractPompObject{T<:Time} end
 
 mutable struct PompObject{T} <: AbstractPompObject{T}
     data::Union{Vector{<:NamedTuple},Nothing}
@@ -26,7 +28,7 @@ pomp(
     rprocess::Union{Function,Nothing} = nothing,
     rmeasure::Union{Function,Nothing} = nothing,
     dmeasure::Union{Function,Nothing} = nothing,
-) where {Y<:NamedTuple,T1<:Real,T<:Real} = begin
+) where {Y<:NamedTuple,T1<:Time,T<:Time} = begin
     if T != T1
         error("`t0` and time-vector must have the same elementary type.")
     end
@@ -59,7 +61,7 @@ pomp(
     t0::T,
     times::Symbol,
     args...,
-) where {T<:Real} = begin
+) where {T<:Time} = begin
     time = getproperty(data,times)
     data = NamedTuple.(eachrow(select(data,Not(times))))
     pomp(data;t0=t0,times=time,args...)
@@ -75,7 +77,11 @@ pomp(object::PompObject) = object
 pomp(
     object::AbstractPompObject;
     args...,
-) = pomp!(deepcopy(pomp(object));args...)
+) = begin
+    obj = deepcopy(object)
+    pomp!(obj;args...)
+    obj                         # COV_EXCL_LINE
+end
 
 """
 `pomp!` modifies a *PompObject* in place.
@@ -102,3 +108,11 @@ pomp!(
     end
     object                      # COV_EXCL_LINE
 end
+
+pomp!(
+    object::AbstractPompObject;
+    args...
+        ) = begin
+            pomp!(pomp(object),args...)
+            object                      # COV_EXCL_LINE
+        end

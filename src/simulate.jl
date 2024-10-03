@@ -1,4 +1,4 @@
-mutable struct SimPompObject{T,X,Y} <: AbstractPompObject{T}
+mutable struct SimPompObject{T,X<:NamedTuple,Y<:NamedTuple} <: AbstractPompObject{T}
     pompobj::PompObject{T}
     x0::Array{X,2}
     states::Array{X,3}
@@ -42,17 +42,18 @@ export simulate, simulate!
 `args...` can be used to modify or unset fields.
 """
 simulate(
-    object::AbstractPompObject{T};
+    object::Union{Nothing,AbstractPompObject} = nothing;
     params::Union{P,Vector{P}},
     nsim::Integer = 1,
     args...,
-) where {T,P<:NamedTuple} = begin
+) where P = begin
     try
         object = pomp(object;args...)
         params = val_array(params)
         x0 = rinit(object,params=params,nsim=nsim)
         x = rprocess(object,x0=x0,params=params)
         y = rmeasure(object,x=x,params=params)
+        T = eltype(timezero(object))
         X = eltype(x)
         Y = eltype(y)
         SimPompObject{T,X,Y}(
@@ -63,39 +64,8 @@ simulate(
             params
         )
     catch e
-        if hasproperty(e,:msg)               # COV_EXCL_LINE
-            error("in `simulate`: " * e.msg) # COV_EXCL_LINE
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
-end
-
-simulate(
-    ;t0::T,
-    times::Union{T,Vector{T}},
-    params::Union{P,Vector{P}},
-    nsim::Integer = 1,
-    args...,
-) where {T,P<:NamedTuple} = begin
-    try
-        object = pomp(;t0=t0,times=times,args...)
-        params = val_array(params)
-        x0 = rinit(object,params=params,nsim=nsim)
-        x = rprocess(object,x0=x0,params=params)
-        y = rmeasure(object,x=x,params=params)
-        X = eltype(x)
-        Y = eltype(y)
-        SimPompObject{T,X,Y}(
-            object,
-            x0,
-            x,
-            y,
-            params
-        )
-    catch e
-        if hasproperty(e,:msg)               # COV_EXCL_LINE
-            error("in `simulate`: " * e.msg) # COV_EXCL_LINE
+        if hasproperty(e,:msg)
+            error("in `simulate`: " * e.msg)
         else
             throw(e)            # COV_EXCL_LINE
         end
@@ -107,8 +77,8 @@ simulate(
     params::Union{P,Vector{P}} = coef(object),
     nsim::Integer = 1,
     args...,
-) where {T,X,Y,P<:NamedTuple} =
-    simulate(pomp(object),params=params,nsim=nsim,args...)
+) where {T,X,Y,P} =
+    simulate(pomp(object;args...),params=params,nsim=nsim)
 
 """
     simulate!(object; args...)
@@ -121,9 +91,9 @@ simulate!(
     params::Union{P,Vector{P}} = coef(object),
     nsim::Integer = 1,
     args...,
-) where {P<:NamedTuple} = begin
+) where P = begin
     try
-        pomp!(pomp(object);args...)
+        pomp!(object;args...)
         params=val_array(params)
         x0 = rinit(object,params=params,nsim=nsim)
         x = rprocess(object,x0=x0,params=params)
@@ -134,8 +104,8 @@ simulate!(
         object.params = params
         object
     catch e
-        if hasproperty(e,:msg)               # COV_EXCL_LINE
-            error("in `simulate`: " * e.msg) # COV_EXCL_LINE
+        if hasproperty(e,:msg)
+            error("in `simulate`: " * e.msg)
         else
             throw(e)            # COV_EXCL_LINE
         end

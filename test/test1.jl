@@ -103,6 +103,7 @@ ell = dmeasure(P,x=x,y=y,params=[p1;p2],give_log=true);
 
 @test POMP.val_array("yes")==["yes"]
 @test_throws "size mismatch" POMP.val_array(y,11,2)
+@test size(POMP.val_array(3,1,1,1))==(1,1,1)
 
 p = [p1;p2];
 Q1 = simulate(P,params=p,nsim=3)

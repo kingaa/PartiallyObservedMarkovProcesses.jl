@@ -46,6 +46,8 @@ P = simulate(
     rmeasure=rmeas,
     dmeasure=dmeas
 )
+@test_throws "in `simulate`" simulate(P,params=(a=1.5,k=7.0))
+@test_throws "in `simulate`" simulate!(P,params=(a=1.5,k=7.0))
 
 P = pomp(
     obs(P)[1,1,:],
@@ -71,6 +73,7 @@ rprocess!(P,x,x0=x0,times=t[1:1],params=[p1])
 @test isa(Q,POMP.PfilterdPompObject)
 @time pfilter(Q,params=(a=1.5,k=7.0,x₀=5.0));
 @test_throws "n `pfilter`: in `rinit`" pfilter(Q,params=(a=1.5,k=7.0));
+@test_throws "n `pfilter!`: in `rinit`" pfilter!(Q,params=(a=1.5,k=7.0));
 
 d = melt(Q);
 @test size(d)==(21,4)

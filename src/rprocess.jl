@@ -6,7 +6,7 @@ rproc_internal(
     x0::AbstractArray{X,2},
     times::AbstractVector{T} = times(object),
     _...,
-) where {T<:Real,X<:NamedTuple} = begin
+) where {T<:Time,X<:NamedTuple} = begin
     for k ∈ eachindex(times)
         x[:,:,k] = x0
     end
@@ -19,7 +19,7 @@ rproc_internal(
     t0::T = timezero(object),
     times::AbstractVector{T} = times(object),
     params::AbstractVector{P},
-) where {T<:Real,X<:NamedTuple,P<:NamedTuple} = begin
+) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
     for i ∈ axes(x0,1), j ∈ eachindex(params)
         t = t0
         x1::X = x0[i,j]
@@ -48,7 +48,7 @@ rprocess!(
     t0::T = timezero(object),
     times::AbstractVector{T} = times(object),
     params::AbstractVector{P},
-) where {T<:Real,X<:NamedTuple,P<:NamedTuple} = begin
+) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
     try
         @assert size(x0,1)==size(x,1)
         @assert length(params)==size(x0,2)
@@ -72,7 +72,7 @@ rprocess(
     t0::T = timezero(object),
     times::Union{T,AbstractVector{T}} = times(object),
     params::Union{P,AbstractVector{P}},
-) where {N,T<:Real,X<:NamedTuple,P<:NamedTuple} = begin
+) where {N,T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
     try
         times = val_array(times)
         params = val_array(params)

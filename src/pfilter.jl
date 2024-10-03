@@ -20,7 +20,7 @@ export coef
 """
 coef(object::PfilterdPompObject) = object.params
 
-export pfilter
+export pfilter, pfilter!
 
 """
     pfilter(object; params, Np = 1, args...)
@@ -33,43 +33,25 @@ pfilter(
     params::P,
     Np::Integer = 1,
     args...,
-) where {T,P<:NamedTuple} = begin
+) where {T,P} = begin
     try
         object = pomp(object;args...)
+        params = val_array(params)
         t0 = timezero(object)
         t = times(object)
         y = reshape(obs(object),1,1,length(t))
-        params = val_array(params)
         xf = rinit(object,t0=t0,params=params,nsim=Np)
-        X = eltype(xf)
-        xp = Array{X}(undef,size(xf)...,1)
         cond_logLik = Array{Float64}(undef,length(t))
         eff_sample_size = Array{Float64}(undef,length(t))
-        p = Array{Int64}(undef,Np)
-        ell = Array{Float64}(undef,1,Np,1,1)
-        for k ∈ eachindex(t)
-            rprocess!(
-                object,
-                xp,
-                x0=xf,
-                t0=t0,
-                times=t[[k]],
-                params=params
-            )
-            dmeasure!(
-                object,
-                ell,
-                times=t[[k]],
-                y=y[:,:,[k]],
-                x=xp,
-                params=params,
-                give_log=false
-            )
-            cond_logLik[k],eff_sample_size[k] = pfilt_internal!(ell,p)
-            xf = xp[p,:,1]
-            t0 = t[k]
-        end
-        PfilterdPompObject{T,X,eltype(y)}(
+        pfilt_internal!(
+            object,
+            xf,
+            t0,t,y,
+            params,
+            eff_sample_size,
+            cond_logLik
+        )
+        PfilterdPompObject{T,eltype(xf),eltype(y)}(
             object,
             Np,
             params[1],
@@ -91,10 +73,80 @@ pfilter(
     params::P = coef(object),
     Np::Integer = object.Np,
     args...,
-) where {P<:NamedTuple} =
+) where P =
     pfilter(pomp(object),Np=Np,params=params,args...)
 
+pfilter!(
+    object::PfilterdPompObject;
+    params::P = coef(object),
+    Np::Integer = object.Np,
+    args...,
+) where P = begin
+    try
+        object.pompobj = pomp(object;args...)
+        params = val_array(params)
+        t0 = timezero(object)
+        t = times(object)
+        y = reshape(obs(object),1,1,length(t))
+        xf = rinit(object,t0=t0,params=params,nsim=Np)
+        pfilt_internal!(
+            object,
+            xf,
+            t0,t,y,
+            params,
+            object.eff_sample_size,
+            object.cond_logLik
+        )
+        object.logLik = sum(object.cond_logLik)
+        object
+    catch e
+        if hasproperty(e,:msg)
+            error("in `pfilter!`: " * e.msg)
+        else
+            throw(e)            # COV_EXCL_LINE
+        end
+    end
+end
+
 pfilt_internal!(
+    object::AbstractPompObject{T},
+    xf::AbstractArray{X,2},
+    t0::T,
+    t::AbstractVector{T},
+    y::AbstractArray{Y,3},
+    params::AbstractArray{P,1},
+    eff_sample_size::AbstractVector{Float64},
+    cond_logLik::AbstractVector{Float64},
+) where {T,X,Y,P} = begin
+    Np = size(xf,1)
+    xp = Array{X}(undef,size(xf)...,1)
+    p = Array{Int64}(undef,Np)
+    ell = Array{Float64}(undef,1,Np,1,1)
+    for k ∈ eachindex(t)
+        rprocess!(
+            object,
+            xp,
+            x0=xf,
+            t0=t0,
+            times=t[[k]],
+            params=params
+        )
+        dmeasure!(
+            object,
+            ell,
+            times=t[[k]],
+            y=y[:,:,[k]],
+            x=xp,
+            params=params,
+            give_log=false
+        )
+        cond_logLik[k],eff_sample_size[k] = pfilt_step_comps!(ell,p)
+        xf = xp[p,:,1]
+        t0 = t[k]
+    end
+end
+
+pfilt_step_comps!(
     w::AbstractArray{<:Real,M},
     p::AbstractVector{Int64},
 ) where M = begin
