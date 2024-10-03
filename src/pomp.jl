@@ -12,7 +12,7 @@ mutable struct PompObject{T} <: AbstractPompObject{T}
     rinit::Union{Function,Nothing}
     rprocess::Union{Function,Nothing}
     rmeasure::Union{Function,Nothing}
-    dmeasure::Union{Function,Nothing}
+    logdmeasure::Union{Function,Nothing}
 end
 
 """
@@ -27,7 +27,7 @@ pomp(
     rinit::Union{Function,Nothing} = nothing,
     rprocess::Union{Function,Nothing} = nothing,
     rmeasure::Union{Function,Nothing} = nothing,
-    dmeasure::Union{Function,Nothing} = nothing,
+    logdmeasure::Union{Function,Nothing} = nothing,
 ) where {Y<:NamedTuple,T1<:Time,T<:Time} = begin
     if T != T1
         error("`t0` and time-vector must have the same elementary type.")
@@ -49,7 +49,7 @@ pomp(
         rinit,
         rprocess,
         rmeasure,
-        dmeasure
+        logdmeasure
     )
 end
 
@@ -92,7 +92,7 @@ pomp!(
     rinit::Union{Function,Nothing,Missing} = missing,
     rprocess::Union{Function,Nothing,Missing} = missing,
     rmeasure::Union{Function,Nothing,Missing} = missing,
-    dmeasure::Union{Function,Nothing,Missing} = missing,
+    logdmeasure::Union{Function,Nothing,Missing} = missing,
 ) = begin
     if !ismissing(rinit)
         object.rinit = rinit
@@ -103,8 +103,8 @@ pomp!(
     if !ismissing(rmeasure)
         object.rmeasure = rmeasure
     end
-    if !ismissing(dmeasure)
-        object.dmeasure = dmeasure
+    if !ismissing(logdmeasure)
+        object.logdmeasure = logdmeasure
     end
     object                      # COV_EXCL_LINE
 end

@@ -29,9 +29,8 @@ gompertz = function()
             d = LogNormal(log(x),σₘ)
             (;pop=rand(d),)
         end,
-        dmeasure = function (;pop,x,σₘ,_...)
-            d = LogNormal(log(x),σₘ)
-            logpdf(d,pop)
+        logdmeasure = function (;pop,x,σₘ,_...)
+            logpdf(LogNormal(log(x),σₘ),pop)
         end
     )
 end

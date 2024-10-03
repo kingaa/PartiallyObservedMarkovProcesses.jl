@@ -1,0 +1,50 @@
+export sir
+
+"""
+    sir()
+
+`sir` is a *SimPompObject* containing simulated SIR data.
+
+## Parameters
+"""
+sir = function()
+    simulate(
+        params=(
+            β=0.5,γ=0.25,N=1000,
+            S₀=0.6,I₀=0.01,R₀=0.4,
+            δt=0.1,ρ=0.3,k=5,
+        ),
+        t0=0,
+        times=[t for t ∈ range(0,90)],
+        rinit = function (;S₀,I₀,R₀,N,_...)
+            m = N/(S₀+I₀+R₀)
+            (
+                S=round(Int64,m*S₀),
+                I=round(Int64,m*I₀),
+                R=round(Int64,m*R₀),
+                C=0,
+            )
+        end,
+        rprocess = function (;t,S,I,R,C,N,β,γ,δt,_...)
+            ifrac = 1-exp(-β*I/N*δt)
+            infection = rand(Binomial(S,ifrac))
+            rfrac = 1-exp(-γ*δt)
+            recovery = rand(Binomial(I,rfrac))
+            (
+                t=t+δt,
+                S=S-infection,
+                I=I+infection-recovery,
+                R=R+infection,
+                C=C+infection,
+            )
+        end,
+        rmeasure = function (;ρ,k,C,_...)
+            (
+                reports=rand(NegativeBinomial(k,k/(k+ρ*C))),
+            )
+        end,
+        logdmeasure = function (;reports,ρ,k,C,_...)
+            logpdf(NegativeBinomial(k,k/(k+ρ*C)),reports)
+        end
+    )
+end

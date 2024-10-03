@@ -131,14 +131,13 @@ pfilt_internal!(
             times=t[[k]],
             params=params
         )
-        dmeasure!(
+        logdmeasure!(
             object,
             ell,
             times=t[[k]],
             y=y[:,:,[k]],
             x=xp,
-            params=params,
-            give_log=false
+            params=params
         )
         cond_logLik[k],eff_sample_size[k] = pfilt_step_comps!(ell,p)
         xf = xp[p,:,1]
@@ -150,27 +149,27 @@ pfilt_step_comps!(
     w::AbstractArray{<:Real,M},
     p::AbstractVector{Int64},
 ) where M = begin
-    n = length(w)
-    wmax = -Inf
+    n::Int64 = length(w)
+    wmax::Float64 = -Inf
     for k ∈ eachindex(w)
-        if w[k] > wmax
+        if (w[k] > wmax)
             wmax = w[k]
         end
     end
-    s = 0
-    ss = 0
+    s::Float64 = 0
+    ss::Float64 = 0
     for k ∈ eachindex(w)
-        w[k] = w[k]/wmax
-        s += w[k]
-        ss += w[k]*w[k]
+        v::Float64 = exp(w[k]-wmax)
+        s += v
+        ss += v*v
         w[k] = s
     end
     @assert s > 0 "sum of weights should be positive!"
-    logLik = log(wmax*s/n)
-    ess = s*s/ss
-    du = s/length(p)
-    u = -du*Random.rand()
-    i = 1
+    logLik::Float64 = wmax+log(s/n)
+    ess::Float64 = s*s/ss
+    du::Float64 = s/length(p)
+    u::Float64 = -du*Random.rand()
+    i::Int64 = 1
     for j ∈ eachindex(p)
         u += du
         while (u > w[i] && i < n)
@@ -178,5 +177,5 @@ pfilt_step_comps!(
         end
         p[j] = i
     end
-    logLik, ess
+    logLik,ess
 end

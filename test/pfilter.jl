@@ -26,13 +26,9 @@ rmeas = function (;x,k,_...)
     (y=rand(d),)
 end
 
-dmeas = function (;x,y,k,give_log,_...)
+logdmeas = function (;x,y,k,_...)
     d = NegativeBinomial(k,k/(k+x))
-    if give_log
-        logpdf(d,y)
-    else
-        pdf(d,y)
-    end
+    logpdf(d,y)
 end
 
 p1 = (a=1.5,k=7.0,x₀=5.0);
@@ -44,7 +40,7 @@ P = simulate(
     rinit=rin,
     rprocess=rlin,
     rmeasure=rmeas,
-    dmeasure=dmeas
+    logdmeasure=logdmeas
 )
 @test_throws "in `simulate`" simulate(P,params=(a=1.5,k=7.0))
 @test_throws "in `simulate`" simulate!(P,params=(a=1.5,k=7.0))
@@ -56,7 +52,7 @@ P = pomp(
     rinit=rin,
     rprocess=rlin,
     rmeasure=rmeas,
-    dmeasure=dmeas
+    logdmeasure=logdmeas
 )
 @test isa(P,POMP.PompObject)
 

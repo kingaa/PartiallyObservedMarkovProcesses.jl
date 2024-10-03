@@ -63,13 +63,9 @@ P = pomp(
         d = LogNormal(log(X),τ)
         (Y=rand(d),)
     end,
-    dmeasure=function(;Y,X,τ,give_log,_...)
+    logdmeasure=function(;Y,X,τ,_...)
         d = LogNormal(log(X),τ)
-        if give_log
-            logpdf(d,Y)
-        else
-            pdf(d,Y)
-        end
+        logpdf(d,Y)
     end
 )
 
