@@ -43,7 +43,7 @@ P = pomp(times=[t for t in 0:20],t0=0)
 @test isnothing(obs(P))
 
 p1 = (a=1.0,k=7.0,x₀=5.0);
-p2 = (a=1.3,k=2.0,x₀=5.0);
+p2 = (a=1.1,k=2.0,x₀=3.0);
 
 x0 = rinit(P,params=p1);
 @test isa(x0,Array{Tuple{},2})
@@ -123,7 +123,13 @@ d3 = leftjoin(
     melt(Q2),
     on=:parset
 );
-d = vcat(d1,d2,d3,source=:sim);
+simulate!(Q2,params=p2);
+d4 = leftjoin(
+    melt(Q2),
+    melt(p2,parset=1),
+    on=:parset
+);
+d = vcat(d1,d2,d3,d4,source=:sim);
 R"""
 library(tidyverse)
 $d |>
@@ -136,7 +142,7 @@ $d |>
   facet_wrap(~a+k,ncol=1,scales="free_y",
     labeller=label_bquote(list(a==.(a),k==.(k))))+
   scale_y_continuous(transform="log1p")+
-  theme_bw()       
+  theme_bw()
 """
 
 R"""

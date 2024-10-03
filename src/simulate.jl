@@ -124,6 +124,7 @@ simulate!(
 ) where {P<:NamedTuple} = begin
     try
         pomp!(pomp(object);args...)
+        params=val_array(params)
         x0 = rinit(object,params=params,nsim=nsim)
         x = rprocess(object,x0=x0,params=params)
         y = rmeasure(object,x=x,params=params)

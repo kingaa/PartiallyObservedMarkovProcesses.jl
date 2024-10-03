@@ -1,5 +1,7 @@
 export melt
 
+melt(x::NamedTuple;margins...) = DataFrame(;(;x...,margins...)...)
+
 melt(x::Array{<:NamedTuple,N};margins...) where N =
     hcat(allcombinations(DataFrame,margins...),DataFrame(x))
 

@@ -7,6 +7,7 @@
 - panel pfilter? may be trivial from existing (would need independent resampling)
 - `DoubleFloats.Double64` for likelihood computations
 - `logdmeasure` instead of `dmeasure` with `give_log=true`
+- documentation
 - explore autodiff capabilities
 - explore parallelization capabilities
 - ~~speed tests for simple cases~~
