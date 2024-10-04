@@ -65,11 +65,13 @@ rprocess!(P,x,x0=x0,times=t[1:1],params=[p1])
 
 @time Q = pfilter(P,Np=1000,params=p1)
 @time Q = pfilter(P,Np=1000,params=p1)
-@time Q = pfilter(Q)
+@time pfilter!(Q)
+@time pfilter!(Q)
+@time pfilter!(Q)
 @test isa(Q,POMP.PfilterdPompObject)
 @time pfilter(Q,params=(a=1.5,k=7.0,x₀=5.0));
-@test_throws "n `pfilter`: in `rinit`" pfilter(Q,params=(a=1.5,k=7.0));
-@test_throws "n `pfilter!`: in `rinit`" pfilter!(Q,params=(a=1.5,k=7.0));
+@test_throws "in `pfilter`: in `rinit`" pfilter(Q,params=(a=1.5,k=7.0));
+@test_throws "in `pfilter!`: in `rinit!`" pfilter!(Q,params=(a=1.5,k=7.0));
 
 d = melt(Q);
 @test size(d)==(21,4)

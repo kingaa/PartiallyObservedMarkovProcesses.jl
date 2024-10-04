@@ -41,9 +41,13 @@ P = pomp(times=[t for t in 0:20],t0=0)
 p1 = (a=1.0,k=7.0,x₀=5.0);
 p2 = (a=1.1,k=2.0,x₀=3.0);
 
-x0 = rinit(P,params=p1);
+x0 = rinit(P,params=p1,nsim=3);
 @test isa(x0,Array{Tuple{},2})
-@test size(x0)==(1,1)
+@test size(x0)==(3,1)
+@test x0[1]==()
+rinit!(P,x0,params=p1);
+@test isa(x0,Array{Tuple{},2})
+@test size(x0)==(3,1)
 @test x0[1]==()
 
 pomp!(P,rinit=rin);
@@ -146,6 +150,7 @@ ggsave(filename="test1-01.png",width=7,height=4)
 
 pomp!(P,rinit=function(;_...) error("yikes!") end)
 @test_throws "in `rinit`: yikes!" rinit(P,params=(x₀=3,))
+@test_throws "in `rinit!`: yikes!" rinit!(P,x0,params=(x₀=3,))
 pomp!(P,rprocess=function(;_...) error("yikes!") end)
 @test_throws "in `rprocess!`: yikes!" rprocess(P,params=(x₀=3,),x0=x0)
 pomp!(P,rmeasure=function(;_...) error("yikes!") end)

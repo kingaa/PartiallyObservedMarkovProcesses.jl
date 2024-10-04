@@ -27,7 +27,7 @@ P |>
 
 cat("pomp pfilter times\n")
 P |>
-  pfilter(Np=10000) |>
+  pfilter(Np=10000,save.states="unweighted") |>
   system.time() |>
   getElement(3) |>
   replicate(n=3) |>
