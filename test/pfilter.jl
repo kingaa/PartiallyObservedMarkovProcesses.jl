@@ -70,6 +70,7 @@ rprocess!(P,x,x0=x0,times=t[1:1],params=[p1])
 @time pfilter!(Q)
 @test isa(Q,POMP.PfilterdPompObject)
 @time pfilter(Q,params=(a=1.5,k=7.0,x₀=5.0));
+@test all(Q.x0.==Q.pred[:,:,1])
 @test_throws "in `pfilter`: in `rinit`" pfilter(Q,params=(a=1.5,k=7.0));
 @test_throws "in `pfilter!`: in `rinit!`" pfilter!(Q,params=(a=1.5,k=7.0));
 
