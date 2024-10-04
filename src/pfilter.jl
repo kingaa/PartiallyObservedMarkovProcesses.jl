@@ -5,6 +5,7 @@ mutable struct PfilterdPompObject{T,X,Y} <: AbstractPompObject{T}
     x0::Array{X,2}
     filt::Array{X,3}
     pred::Array{X,3}
+    weights::Array{Float64,3}
     eff_sample_size::Array{Float64,1}
     cond_logLik::Array{Float64,1}
     logLik::Float64
@@ -49,9 +50,10 @@ pfilter(
         xp = Array{X}(undef,Np,1,length(t))
         cond_logLik = Array{Float64}(undef,length(t))
         eff_sample_size = Array{Float64}(undef,length(t))
-        pfilt_internal!(
+        w = Array{Float64}(undef,Np,1,length(t))
+        pfilter_internal!(
             object,
-            x0,xf,xp,
+            x0,xf,xp,w,
             t0,t,y,
             params,
             eff_sample_size,
@@ -61,7 +63,7 @@ pfilter(
             object,
             Np,
             params[1],
-            x0,xf,xp,
+            x0,xf,xp,w,
             eff_sample_size,
             cond_logLik,
             sum(cond_logLik)
@@ -94,9 +96,12 @@ pfilter!(
         t = times(object)
         y = reshape(obs(object),1,1,length(t))
         rinit!(object,object.x0,t0=t0,params=params)
-        pfilt_internal!(
+        pfilter_internal!(
             object,
-            object.x0,object.filt,object.pred,
+            object.x0,
+            object.filt,
+            object.pred,
+            object.weights,
             t0,t,y,
             params,
             object.eff_sample_size,
@@ -113,11 +118,12 @@ pfilter!(
     end
 end
 
-pfilt_internal!(
+pfilter_internal!(
     object::AbstractPompObject{T},
     x0::AbstractArray{X,2},
     xf::AbstractArray{X,3},
     xp::AbstractArray{X,3},
+    w::AbstractArray{Float64,3},
     t0::T,
     t::AbstractVector{T},
     y::AbstractArray{Y,3},
@@ -145,6 +151,7 @@ pfilt_internal!(
             x=@view(xp[:,:,[k]]),
             params=params
         )
+        w[:,:,k] = ell[1,:,:,:]
         cond_logLik[k],eff_sample_size[k] = pfilt_step_comps!(ell,p)
         xf[:,:,k] = xp[p,:,k]
         t0 = t[k]
