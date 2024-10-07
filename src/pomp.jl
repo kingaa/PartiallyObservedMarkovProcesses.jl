@@ -18,7 +18,19 @@ end
 """
 `pomp` is the constructor for the *PompObject* class.
 
-The default constructor takes a vector of NamedTuples as data.
+    pomp(data; t0, times, rinit, rprocess, rmeasure, logdmeasure)
+
+## Arguments
+
+- `data`: observations.
+  The default constructor takes a vector of NamedTuples as data.
+  One can also supply a DataFrame.
+- `t0`: zero time, t₀.
+- `times`: observation times. If `data` is supplied as a DataFrame, `times` should be a Symbol which is the time variable in the DataFrame.
+- `rinit`: simulator of the latent-state distribution at t₀.
+- `rprocess`: simulator of the latent-state process.
+- `rmeasure`: simulator of the measurement process.
+- `logdmeasure`: log pdf of the measurement process.
 """
 pomp(
     data::Union{Vector{Y},Nothing} = nothing;
@@ -55,6 +67,7 @@ end
 
 """
 Alternatively, one can construct a *PompObject* from a DataFrame.
+In this case, `times` should be the Symbol of the time-variable.
 """
 pomp(
     data::DataFrame;
@@ -68,9 +81,10 @@ pomp(
 end
 
 """
-`pomp` returns a the *PompObject* underlying an *AbstractPompObject*,
-potentially with modifications to the basic model components.
-If modifications are made, the original is not changed.
+Given an *AbstractPompObject*, `object`,
+`pomp(object)` returns the underlying concrete *PompObject*.
+Calling `pomp(object, args...)` returns a copy of `object`, modified
+according to `args...`.
 """
 pomp(object::PompObject) = object
 
@@ -84,8 +98,8 @@ pomp(
 end
 
 """
-`pomp!` modifies a *PompObject* in place.
-One can replace or unset individual fields.
+`pomp!(object, args...)` modifies the *PompObject* `object` in place.
+Individual basic components can be modified, set, or unset.
 """
 pomp!(
     object::PompObject;
