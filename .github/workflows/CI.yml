@@ -4,7 +4,7 @@ on:
     branches:
       - '*'
     tags: ['*']
-    path:
+    paths:
       - Project.yml
       - src/**
       - test/**

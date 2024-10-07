@@ -12,6 +12,7 @@ clean:
 
 build:
 	julia --project=@. -e 'import Pkg; Pkg.build()'
+	julia --project=@. docs/make.jl
 
 session: build
 	julia --project=@.
