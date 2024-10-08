@@ -1,10 +1,10 @@
 export rprocess, rprocess!
 
 rproc_internal(
+    x::AbstractArray{X,3},
     f::Nothing,
-    x::AbstractArray{X,3};
     x0::AbstractArray{X,2},
-    times::AbstractVector{T} = times(object),
+    times::AbstractVector{T},
     _...,
 ) where {T<:Time,X<:NamedTuple} = begin
     for k ∈ eachindex(times)
@@ -13,11 +13,30 @@ rproc_internal(
 end
 
 rproc_internal(
+    x::AbstractArray{X,3},
     f::Function,
-    x::AbstractArray{X,3};
     x0::AbstractArray{X,2},
-    t0::T = timezero(object),
-    times::AbstractVector{T} = times(object),
+    times::AbstractVector{T},
+    t0::T,
+    params::AbstractVector{P},
+    accumvars::Nothing,
+) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
+    for i ∈ axes(x0,1), j ∈ eachindex(params)
+        t::T = t0
+        x1::X = x0[i,j]
+        for k ∈ eachindex(times)
+            t,x1 = advance_rproc(x1,f,t,times[k],params[j])
+            x[i,j,k] = x1
+        end
+    end
+end
+
+rproc_internal(
+    x::AbstractArray{X,3},
+    f::Function,
+    x0::AbstractArray{X,2},
+    times::AbstractVector{T},
+    t0::T,
     params::AbstractVector{P},
     accumvars::NamedTuple{N},
 ) where {N,T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
@@ -33,14 +52,27 @@ rproc_internal(
 end
 
 advance_rproc(
-    x::NamedTuple{M},
+    x::X,
+    f::Function,
+    t::T,
+    tf::T,
+    p::P,
+) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
+    while t < tf
+        (t,x...) = f(;t=t,x...,p...)
+    end
+    t,x
+end
+
+advance_rproc(
+    x::X,
     f::Function,
     t::T,
     tf::T,
     p::P,
     ::Val{Z},
     ::Val{Q},
-) where {T<:Time,P<:NamedTuple,M,Z,Q} = begin
+) where {T<:Time,P<:NamedTuple,X<:NamedTuple,Z,Q} = begin
     x1 = (;x[Q]...,Z...)
     while t < tf
         (t,x1...) = f(;t=t,x1...,p...)
@@ -71,10 +103,11 @@ rprocess!(
         @assert length(params)==size(x,2)
         @assert length(times)==size(x,3)
         rproc_internal(
-            pomp(object).rprocess,x;
-            x0=x0,t0=t0,times=times,
-            params=params,
-            accumvars=pomp(object).accumvars
+            x,
+            pomp(object).rprocess,
+            x0,times,t0,
+            params,
+            pomp(object).accumvars
         )
     catch e
         if isa(e,UndefKeywordError)

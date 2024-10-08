@@ -9,7 +9,7 @@ mutable struct PompObject{T} <: AbstractPompObject{T}
     data::Union{Vector{<:NamedTuple},Nothing}
     t0::T
     times::Vector{T}
-    accumvars::NamedTuple
+    accumvars::Union{NamedTuple,Nothing}
     rinit::Union{Function,Nothing}
     rprocess::Union{Function,Nothing}
     rmeasure::Union{Function,Nothing}
@@ -44,7 +44,7 @@ pomp(
     data::Union{Vector{Y},Nothing} = nothing;
     t0::T1,
     times::Union{T,Vector{T}},
-    accumvars::NamedTuple = NamedTuple(),
+    accumvars::Union{NamedTuple,Nothing} = nothing,
     rinit::Union{Function,Nothing} = nothing,
     rprocess::Union{Function,Nothing} = nothing,
     rmeasure::Union{Function,Nothing} = nothing,
@@ -120,11 +120,7 @@ pomp!(
     logdmeasure::Union{Function,Nothing,Missing} = missing,
 ) = begin
     if !ismissing(accumvars)
-        if isnothing(accumvars)
-            object.accumvars = NamedTuple()
-        else
-            object.accumvars = accumvars
-        end
+        object.accumvars = accumvars
     end
     if !ismissing(rinit)
         object.rinit = rinit
