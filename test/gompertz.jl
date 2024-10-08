@@ -3,44 +3,46 @@ using Random
 using RCall
 using Test
 
-Random.seed!(1558102772)
+@testset "Gompertz model" begin
 
-P = gompertz()
-@test isa(P,POMP.PompObject)
-print(P)
+    Random.seed!(1558102772)
 
-p1 = (r=4.5,K=210.0,σₚ=0.7,σₘ=0.1,x₀=150.0);
+    P = gompertz()
+    @test isa(P,POMP.PompObject)
+    print(P)
 
-x0 = rinit(P,nsim=5,params=p1);
-@test size(x0)==(5,1)
-@test keys(x0[1])==(:x,)
+    p1 = (r=4.5,K=210.0,σₚ=0.7,σₘ=0.1,x₀=150.0);
 
-x = rprocess(P,x0=x0,params=p1);
-@test size(x)==(5,1,27)
-@test keys(x[33])==(:x,)
+    x0 = rinit(P,nsim=5,params=p1);
+    @test size(x0)==(5,1)
+    @test keys(x0[1])==(:x,)
 
-y = rmeasure(P,x=x,params=p1);
-@test size(y)==(5,1,27)
-@test keys(y[2])==(:pop,)
+    x = rprocess(P,x0=x0,params=p1);
+    @test size(x)==(5,1,27)
+    @test keys(x[33])==(:x,)
 
-y1 = rmeasure(P,x=x[:,:,3],times=1970,params=p1);
-@test size(y1)==(5,1,1)
+    y = rmeasure(P,x=x,params=p1);
+    @test size(y)==(5,1,27)
+    @test keys(y[2])==(:pop,)
 
-p = [p1; p1];
-x0 = rinit(P,params=p,nsim=3);
-x = rprocess(P,x0=x0,params=p);
-y = rmeasure(P,x=x[:,:,3:4],params=p,times=times(P)[3:4]);
-@test size(x0)==(3,2)
-@test size(x)==(3,2,27)
-@test size(y)==(3,2,2)
+    y1 = rmeasure(P,x=x[:,:,3],times=1970,params=p1);
+    @test size(y1)==(5,1,1)
 
-Q = simulate(P,params=p1,nsim=3)
+    p = [p1; p1];
+    x0 = rinit(P,params=p,nsim=3);
+    x = rprocess(P,x0=x0,params=p);
+    y = rmeasure(P,x=x[:,:,3:4],params=p,times=times(P)[3:4]);
+    @test size(x0)==(3,2)
+    @test size(x)==(3,2,27)
+    @test size(y)==(3,2,2)
 
-s = melt(Q);
-d = melt(pomp(Q));
-d.rep .= 0
+    Q = simulate(P,params=p1,nsim=3)
 
-R"""
+    s = melt(Q);
+    d = melt(pomp(Q));
+    d.rep .= 0
+
+    R"""
 library(tidyverse)
 bind_rows($s,$d) |>
   mutate(data=rep==0) |>
@@ -52,3 +54,5 @@ bind_rows($s,$d) |>
   theme_bw()
 ggsave(filename="gompertz-01.png",width=7,height=4)
 """
+
+end
