@@ -9,6 +9,7 @@ mutable struct PompObject{T} <: AbstractPompObject{T}
     data::Union{Vector{<:NamedTuple},Nothing}
     t0::T
     times::Vector{T}
+    accumvars::NamedTuple
     rinit::Union{Function,Nothing}
     rprocess::Union{Function,Nothing}
     rmeasure::Union{Function,Nothing}
@@ -18,7 +19,13 @@ end
 """
 `pomp` is the constructor for the *PompObject* class.
 
-    pomp(data; t0, times, rinit, rprocess, rmeasure, logdmeasure)
+    pomp(
+        data;
+        t0, times,
+        accumvars,
+        rinit, rprocess,
+        rmeasure, logdmeasure
+        )
 
 ## Arguments
 
@@ -27,6 +34,7 @@ end
   One can also supply a DataFrame.
 - `t0`: zero time, t₀.
 - `times`: observation times. If `data` is supplied as a DataFrame, `times` should be a Symbol which is the time variable in the DataFrame.
+- `accumvars`: a NamedTuple of state variables to be reset (usually to zero) immediately following each observation.
 - `rinit`: simulator of the latent-state distribution at t₀.
 - `rprocess`: simulator of the latent-state process.
 - `rmeasure`: simulator of the measurement process.
@@ -36,6 +44,7 @@ pomp(
     data::Union{Vector{Y},Nothing} = nothing;
     t0::T1,
     times::Union{T,Vector{T}},
+    accumvars::NamedTuple = NamedTuple(),
     rinit::Union{Function,Nothing} = nothing,
     rprocess::Union{Function,Nothing} = nothing,
     rmeasure::Union{Function,Nothing} = nothing,
@@ -58,6 +67,7 @@ pomp(
         data,
         t0,
         times,
+        accumvars,
         rinit,
         rprocess,
         rmeasure,
@@ -103,11 +113,19 @@ Individual basic components can be modified, set, or unset.
 """
 pomp!(
     object::PompObject;
+    accumvars::Union{NamedTuple,Nothing,Missing} = missing,
     rinit::Union{Function,Nothing,Missing} = missing,
     rprocess::Union{Function,Nothing,Missing} = missing,
     rmeasure::Union{Function,Nothing,Missing} = missing,
     logdmeasure::Union{Function,Nothing,Missing} = missing,
 ) = begin
+    if !ismissing(accumvars)
+        if isnothing(accumvars)
+            object.accumvars = NamedTuple()
+        else
+            object.accumvars = accumvars
+        end
+    end
     if !ismissing(rinit)
         object.rinit = rinit
     end
@@ -125,8 +143,8 @@ end
 
 pomp!(
     object::AbstractPompObject;
-    args...
-        ) = begin
-            pomp!(pomp(object),args...)
-            object                      # COV_EXCL_LINE
-        end
+    args...,
+) = begin
+    pomp!(pomp(object);args...)
+    object                      # COV_EXCL_LINE
+end

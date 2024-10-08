@@ -89,7 +89,7 @@ simulate(
 simulate!(
     object::SimPompObject;
     params::Union{P,Vector{P}} = coef(object),
-    nsim::Integer = 1,
+    nsim::Integer = size(obs(object),1),
     args...,
 ) where P = begin
     try

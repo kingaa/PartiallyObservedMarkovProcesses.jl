@@ -12,9 +12,11 @@ clean:
 
 build:
 	julia --project=@. -e 'import Pkg; Pkg.build()'
+
+docs:
 	julia --project=@. docs/make.jl
 
 session: build
 	julia --project=@.
 
-.PHONY: test coverage clean build session
+.PHONY: test coverage clean build session docs
