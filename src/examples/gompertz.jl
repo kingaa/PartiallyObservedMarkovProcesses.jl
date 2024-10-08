@@ -1,14 +1,25 @@
 export gompertz
 
-"""
+@doc raw"""
     gompertz()
 
 `gompertz` is a *PompObject* containing *Parus major* data and a simple Gompertz population model.
+The population model has a single scalar state variable, ``X_t``, which obeys
+```math
+X_t = X_{t-1}^S\,K^{1-S}\,\varepsilon_t,
+```
+where ``S = e^{-r\delta{t}}`` and ``\varepsilon_t \sim \mathrm{LogNormal}(0,\sigma_p)``.
+The time-step is one unit: ``\delta{t}=1``.
+The data are assumed to be drawn from a log-normal distribution.
+In particular,
+```math
+Y_t \sim \mathrm{LogNormal}(\log{X_t},\sigma_m).
+```
 
 ## Parameters
 - r: the growth rate
 - K: the equilibrium population density
-- x₀: the initial population density
+- X₀: the initial population density
 - σₚ: process noise s.d.
 - σₘ: measurement noise s.d.
 """
@@ -17,20 +28,20 @@ gompertz = function()
         parus_data,
         t0=1960,
         times=:year,
-        rinit = function (;x₀,_...)
-            (;x=x₀,)
+        rinit = function (;X₀,_...)
+            (;X=X₀,)
         end,
-        rprocess = function (;t,x,σₚ,r,K,_...)
+        rprocess = function (;t,X,σₚ,r,K,_...)
             s = exp(-r)
-            d = LogNormal(s*log(x)+(1-s)*log(K),σₚ)
-            (;t=t+1,x=rand(d),)
+            d = LogNormal(s*log(X)+(1-s)*log(K),σₚ)
+            (;t=t+1,X=rand(d),)
         end,
-        rmeasure = function (;x,σₘ,_...)
-            d = LogNormal(log(x),σₘ)
+        rmeasure = function (;X,σₘ,_...)
+            d = LogNormal(log(X),σₘ)
             (;pop=rand(d),)
         end,
-        logdmeasure = function (;pop,x,σₘ,_...)
-            logpdf(LogNormal(log(x),σₘ),pop)
+        logdmeasure = function (;pop,X,σₘ,_...)
+            logpdf(LogNormal(log(X),σₘ),pop)
         end
     )
 end

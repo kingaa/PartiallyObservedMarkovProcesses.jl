@@ -11,15 +11,15 @@ using Test
     @test isa(P,POMP.PompObject)
     print(P)
 
-    p1 = (r=4.5,K=210.0,σₚ=0.7,σₘ=0.1,x₀=150.0);
+    p1 = (r=4.5,K=210.0,σₚ=0.7,σₘ=0.1,X₀=150.0);
 
     x0 = rinit(P,nsim=5,params=p1);
     @test size(x0)==(5,1)
-    @test keys(x0[1])==(:x,)
+    @test keys(x0[1])==(:X,)
 
     x = rprocess(P,x0=x0,params=p1);
     @test size(x)==(5,1,27)
-    @test keys(x[33])==(:x,)
+    @test keys(x[33])==(:X,)
 
     y = rmeasure(P,x=x,params=p1);
     @test size(y)==(5,1,27)
@@ -48,7 +48,7 @@ bind_rows($s,$d) |>
   mutate(data=rep==0) |>
   ggplot(aes(x=time,group=rep,color=factor(rep)))+
   geom_point(aes(y=pop,shape=data))+
-  geom_line(aes(y=x))+
+  geom_line(aes(y=X))+
   guides(color="none",size="none")+
   scale_y_sqrt()+
   theme_bw()
