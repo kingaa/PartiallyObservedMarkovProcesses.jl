@@ -1,24 +1,5 @@
 export rmeasure
 
-rmeas_internal(
-    f::Nothing,
-    x::AbstractArray{X,3};
-    _...,
-) where {X<:NamedTuple} = begin
-    reshape(fill((),length(x)),size(x)...)
-end
-
-rmeas_internal(
-    f::Function,
-    x::AbstractArray{X,3};
-    times::AbstractVector{T},
-    params::AbstractVector{P},
-) where {T,X<:NamedTuple,P<:NamedTuple} = begin
-    [f(;t=times[k],x[i,j,k]...,params[j]...)
-     for i ∈ axes(x,1), j ∈ eachindex(params), k ∈ eachindex(times)]
-end
-
-
 """
     rmeasure(object; x, times=times(object), params=coef(object))
 
@@ -46,4 +27,22 @@ rmeasure(
             throw(e)            # COV_EXCL_LINE
         end
     end
+end
+
+rmeas_internal(
+    f::Nothing,
+    x::AbstractArray{X,3};
+    _...,
+) where {X<:NamedTuple} = begin
+    reshape(fill((),length(x)),size(x)...)
+end
+
+rmeas_internal(
+    f::Function,
+    x::AbstractArray{X,3};
+    times::AbstractVector{T},
+    params::AbstractVector{P},
+) where {T,X<:NamedTuple,P<:NamedTuple} = begin
+    [f(;t=times[k],x[i,j,k]...,params[j]...)
+     for i ∈ axes(x,1), j ∈ eachindex(params), k ∈ eachindex(times)]
 end
