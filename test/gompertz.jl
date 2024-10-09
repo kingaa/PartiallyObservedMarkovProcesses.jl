@@ -3,7 +3,7 @@ using Random
 using RCall
 using Test
 
-@testset "Gompertz model" begin
+@testset verbose=true "Gompertz model" begin
 
     Random.seed!(1558102772)
 
