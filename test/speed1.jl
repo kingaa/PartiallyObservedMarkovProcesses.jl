@@ -19,7 +19,7 @@ P |>
 
 print(coef(P))
 
-cat("pomp simulation times\n")
+cat("pomp simulation times (Gompertz)\n")
 P |>
   simulate(nsim=10000) |>
   system.time() |>
@@ -27,7 +27,7 @@ P |>
   replicate(n=3) |>
   print()
 
-cat("pomp pfilter times\n")
+cat("pomp pfilter times (Gompertz)\n")
 P |>
   pfilter(Np=10000,save.states="unweighted") |>
   system.time() |>
@@ -35,7 +35,7 @@ P |>
   replicate(n=3) |>
   print()
 
-cat("pomp likelihood estimate\n")
+cat("pomp likelihood estimate (Gompertz)\n")
 P |>
   pfilter(Np=10000) |>
   logLik() |>
@@ -71,7 +71,7 @@ P |>
         end
     )
 
-    println("POMP.jl simulation times")
+    println("POMP.jl simulation times (Gompertz)")
     @time simulate(P,params=theta,nsim=10000)
     @time simulate(P,params=theta,nsim=10000)
     @time Q = simulate(P,params=theta,nsim=10000)
@@ -79,7 +79,7 @@ P |>
     @time simulate!(Q)
     @time simulate!(Q)
 
-    println("POMP.jl pfilter times")
+    println("POMP.jl pfilter times (Gompertz)")
     @time Pf = pfilter(P,params=theta,Np=10000)
     @time Pf = pfilter(P,params=theta,Np=10000)
     @time Pf = pfilter(P,params=theta,Np=10000)
@@ -87,7 +87,7 @@ P |>
     @time pfilter!(Pf)
     @time pfilter!(Pf)
 
-    println("POMP.jl likelihood estimate")
+    println("POMP.jl likelihood estimate (Gompertz)")
     println(round(Pf.logLik,digits=2))
 
 end
