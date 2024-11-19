@@ -24,7 +24,7 @@ export sir
 - times: vector of observation times
 """
 sir = function(
-    β = 0.5, γ = 0.25, N = 10000,
+    ;β = 0.5, γ = 0.25, N = 10000,
     ρ = 0.3, k = 10,
     S₀ = 0.9, I₀ = 0.01, R₀ = 0.1,
     δt = 0.1, t₀ = 0.0,
@@ -41,11 +41,11 @@ sir = function(
         times=times,
         accumvars=(C=0,),
         rinit = function (;S₀,I₀,R₀,N,_...)
-            m = N/(S₀+I₀+R₀)
+            m = Float64(N)/(Float64(S₀)+Float64(I₀)+Float64(R₀))
             (
-                S=round(Int64,m*S₀),
-                I=round(Int64,m*I₀),
-                R=round(Int64,m*R₀),
+                S=round(Int64,m*Float64(S₀)),
+                I=round(Int64,m*Float64(I₀)),
+                R=round(Int64,m*Float64(R₀)),
                 C=0,
             )
         end,
