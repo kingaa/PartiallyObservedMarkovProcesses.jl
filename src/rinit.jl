@@ -78,13 +78,13 @@ rinit_internal!(
     f::Nothing,
     x0::AbstractArray{X,2};
     params::AbstractVector{P},
-    _...
-        ) where {X,P<:NamedTuple} = begin
-            x = Array{X}(undef)
-            for k ∈ eachindex(x0)
-                x0[k] = x[1]
-            end
-        end
+    _...,
+) where {X,P<:NamedTuple} = begin
+    x = Array{X}(undef)
+    for k ∈ eachindex(x0)
+        x0[k] = x[1]
+    end
+end
 
 rinit_internal!(
     f::Function,
