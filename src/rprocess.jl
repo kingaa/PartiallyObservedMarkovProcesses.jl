@@ -22,7 +22,7 @@ rprocess!(
         @assert length(params)==size(x0,2)
         @assert length(params)==size(x,2)
         @assert length(times)==size(x,3)
-        rproc_internal(
+        rproc_internal!(
             x,
             pomp(object).rprocess,
             x0,times,t0,
@@ -63,7 +63,7 @@ rprocess(
     end
 end
 
-rproc_internal(
+rproc_internal!(
     x::AbstractArray{X,3},
     f::Nothing,
     x0::AbstractArray{X,2},
@@ -75,7 +75,7 @@ rproc_internal(
     end
 end
 
-rproc_internal(
+rproc_internal!(
     x::AbstractArray{X,3},
     f::Function,
     x0::AbstractArray{X,2},
@@ -94,26 +94,6 @@ rproc_internal(
     end
 end
 
-rproc_internal(
-    x::AbstractArray{X,3},
-    f::Function,
-    x0::AbstractArray{X,2},
-    times::AbstractVector{T},
-    t0::T,
-    params::AbstractVector{P},
-    accumvars::NamedTuple{N},
-) where {N,T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
-    regvar = Tuple(setdiff(keys(x0[begin]),N))
-    for i ∈ axes(x0,1), j ∈ eachindex(params)
-        t::T = t0
-        x1::X = x0[i,j]
-        for k ∈ eachindex(times)
-            t,x1 = advance_rproc(x1,f,t,times[k],params[j],Val(accumvars),Val(regvar))
-            x[i,j,k] = x1
-        end
-    end
-end
-
 advance_rproc(
     x::X,
     f::Function,
@@ -127,18 +107,36 @@ advance_rproc(
     t,x
 end
 
-advance_rproc(
-    x::X,
+rproc_internal!(
+    x::AbstractArray{X,3},
     f::Function,
-    t::T,
-    tf::T,
-    p::P,
+    x0::AbstractArray{X,2},
+    times::AbstractVector{T},
+    t0::T,
+    params::AbstractVector{P},
+    accumvars::NamedTuple{N},
+) where {M,N,T<:Time,X<:NamedTuple{M},P<:NamedTuple} = begin
+    regvar = Tuple(setdiff(M,N))
+    advance_rproc!(x,f,x0,times,t0,params,Val(accumvars),Val(regvar))
+end
+
+advance_rproc!(
+    x::AbstractArray{X,3},
+    f::Function,
+    x0::AbstractArray{X,2},
+    times::AbstractVector{T},
+    t0::T,
+    params::AbstractVector{P},
     ::Val{Z},
     ::Val{Q},
 ) where {T<:Time,P<:NamedTuple,X<:NamedTuple,Z,Q} = begin
-    x1 = (;x[Q]...,Z...)
-    while t < tf
-        (t,x1...) = f(;t=t,x1...,p...)
+    for i ∈ axes(x0,1), j ∈ eachindex(params)
+        t::T = t0
+        x1::X = x0[i,j]
+        for k ∈ eachindex(times)
+            x1 = (;x1[Q]...,Z...)
+            t,x1 = advance_rproc(x1,f,t,times[k],params[j])
+            x[i,j,k] = x1
+        end
     end
-    t,x1
 end
