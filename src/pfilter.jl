@@ -37,7 +37,7 @@ pfilter(
     params::P,
     Np::Integer = 1,
     args...,
-) where {T,P} = begin
+) where {T,P} = let
     try
         object = pomp(object;args...)
         params = val_array(params)
@@ -48,9 +48,9 @@ pfilter(
         X = eltype(x0)
         xf = Array{X}(undef,Np,1,length(t))
         xp = Array{X}(undef,Np,1,length(t))
+        w = Array{Float64}(undef,Np,1,length(t))
         cond_logLik = Array{Float64}(undef,length(t))
         eff_sample_size = Array{Float64}(undef,length(t))
-        w = Array{Float64}(undef,Np,1,length(t))
         pfilter_internal!(
             object,
             x0,xf,xp,w,
@@ -130,10 +130,9 @@ pfilter_internal!(
     params::AbstractArray{P,1},
     eff_sample_size::AbstractVector{Float64},
     cond_logLik::AbstractVector{Float64},
-) where {T,X,Y,P} = begin
+) where {T,X,Y,P} = let
     Np = size(x0,1)
-    p = Array{Int64}(undef,Np)
-    ell = Array{Float64}(undef,1,Np,1,1)
+    w = reshape(w,1,Np,1,length(t))
     for k ∈ eachindex(t)
         rprocess!(
             object,
@@ -145,56 +144,67 @@ pfilter_internal!(
         )
         logdmeasure!(
             object,
-            ell,
+            @view(w[:,:,:,[k]]),
             times=@view(t[[k]]),
             y=@view(y[:,:,[k]]),
             x=@view(xp[:,:,[k]]),
             params=params
         )
-        w[:,:,k] = ell[1,:,:,:]
-        cond_logLik[k],eff_sample_size[k] = pfilt_step_comps!(ell,p)
-        xf[:,:,k] = xp[p,:,k]
+        pfilt_step_comps!(
+            @view(cond_logLik[k]),
+            @view(eff_sample_size[k]),
+            @view(w[1,:,1,k]),
+            @view(xp[:,:,k]),
+            @view(xf[:,:,k]),
+        )
         t0 = t[k]
         x0 = view(xf,:,:,k)
     end
 end
 
 pfilt_step_comps!(
-    w::AbstractArray{<:Real,M},
-    p::AbstractVector{Int64},
-) where M = begin
+    logLik::AbstractArray{W,0},
+    ess::AbstractArray{W,0},
+    w::AbstractArray{W,1},
+    xp::AbstractArray{X,2},
+    xf::AbstractArray{X,2},
+) where {W<:Real,X<:NamedTuple} = let
     n::Int64 = length(w)
-    wmax::Float64 = -Inf
+    p = Array{Int64}(undef,n)
+    wmax::W = -Inf
     for k ∈ eachindex(w)
         if (w[k] > wmax)
             wmax = w[k]
         end
     end
-    s::Float64 = 0
-    ss::Float64 = 0
+    s::W = 0
+    ss::W = 0
     if isfinite(wmax)
         for k ∈ eachindex(w)
-            v::Float64 = exp(w[k]-wmax)
+            v::W = exp(w[k]-wmax)
             s += v
             ss += v*v
             w[k] = s
         end
+        ess[] = s*s/ss
+        logLik[] = wmax+log(s/n)
+        du::W = s/n
+        u::W = -du*Random.rand()
+        i::Int64 = 1
+        for j ∈ axes(xf,1)
+            u += du
+            while (u > w[i] && i < n)
+                i += 1
+            end
+            p[j] = i
+        end
+        copyto!(xf,xp[p,:])
     else
         s = 0
         ss = 0
         wmax = 0
+        ess[] = 0
+        logLik[] = -Inf
+        copyto!(xf,xp)
     end
-    logLik::Float64 = wmax+log(s/n)
-    ess::Float64 = s*s/ss
-    du::Float64 = s/length(p)
-    u::Float64 = -du*Random.rand()
-    i::Int64 = 1
-    for j ∈ eachindex(p)
-        u += du
-        while (u > w[i] && i < n)
-            i += 1
-        end
-        p[j] = i
-    end
-    logLik,ess
 end
