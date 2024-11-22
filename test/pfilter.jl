@@ -80,4 +80,12 @@ using Test
     @test size(d)==(21,4)
     @test propertynames(d)==[:time; :y; :ess; :cond_logLik]
 
+    P = pomp(P;logdmeasure=function (;_...) -Inf end)
+    Q = pfilter(P,Np=100,params=p1)
+    @test isinf(Q.logLik)
+    @test all(Q.eff_sample_size.==0)
+    @test all(Q.eff_sample_size.==0)
+    @test all(isinf.(Q.cond_logLik))
+    @test Q.filt==Q.pred
+
 end

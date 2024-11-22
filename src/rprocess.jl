@@ -87,8 +87,6 @@ rproc_internal!(
     params::AbstractVector{P},
     accumvars::Nothing,
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = let
-    local t::T
-    local x1::X
     for i ∈ axes(x0,1), j ∈ eachindex(params)
         t = t0
         x1 = x0[i,j]
@@ -113,8 +111,6 @@ rproc_internal!(
     accumvars::NamedTuple{N},
 ) where {M,N,T<:Time,X<:NamedTuple{M},P<:NamedTuple} = let
     local Q = Tuple(setdiff(M,N)) # non-accumulator variables
-    local t::T
-    local x1::X
     for i ∈ axes(x0,1), j ∈ eachindex(params)
         t = t0
         x1 = x0[i,j]
