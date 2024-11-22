@@ -46,7 +46,7 @@ rprocess(
     t0::T = timezero(object),
     times::Union{T,AbstractVector{T}} = times(object),
     params::Union{P,AbstractVector{P}},
-) where {N,T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
+) where {N,T<:Time,X<:NamedTuple,P<:NamedTuple} = let
     try
         times = val_array(times)
         params = val_array(params)
@@ -63,6 +63,7 @@ rprocess(
     end
 end
 
+## the default (persistence) rprocess
 rproc_internal!(
     x::AbstractArray{X,3},
     f::Nothing,
@@ -75,6 +76,8 @@ rproc_internal!(
     end
 end
 
+## advance the state for each IC and parameter
+## this the case with no accumulator variables
 rproc_internal!(
     x::AbstractArray{X,3},
     f::Function,
@@ -83,30 +86,23 @@ rproc_internal!(
     t0::T,
     params::AbstractVector{P},
     accumvars::Nothing,
-) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
+) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = let
+    local t::T
+    local x1::X
     for i ∈ axes(x0,1), j ∈ eachindex(params)
-        t::T = t0
-        x1::X = x0[i,j]
+        t = t0
+        x1 = x0[i,j]
         for k ∈ eachindex(times)
-            t,x1 = advance_rproc(x1,f,t,times[k],params[j])
+            while t < times[k]
+                t,x1... = f(;t=t,x1...,params[j]...)
+            end
             x[i,j,k] = x1
         end
     end
 end
 
-advance_rproc(
-    x::X,
-    f::Function,
-    t::T,
-    tf::T,
-    p::P,
-) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
-    while t < tf
-        (t,x...) = f(;t=t,x...,p...)
-    end
-    t,x
-end
-
+## advance the state for each IC and parameter
+## this the case with accumulator variables
 rproc_internal!(
     x::AbstractArray{X,3},
     f::Function,
@@ -115,27 +111,18 @@ rproc_internal!(
     t0::T,
     params::AbstractVector{P},
     accumvars::NamedTuple{N},
-) where {M,N,T<:Time,X<:NamedTuple{M},P<:NamedTuple} = begin
-    regvar = Tuple(setdiff(M,N))
-    advance_rproc!(x,f,x0,times,t0,params,Val(accumvars),Val(regvar))
-end
-
-advance_rproc!(
-    x::AbstractArray{X,3},
-    f::Function,
-    x0::AbstractArray{X,2},
-    times::AbstractVector{T},
-    t0::T,
-    params::AbstractVector{P},
-    ::Val{Z},
-    ::Val{Q},
-) where {T<:Time,P<:NamedTuple,X<:NamedTuple,Z,Q} = begin
+) where {M,N,T<:Time,X<:NamedTuple{M},P<:NamedTuple} = let
+    local Q = Tuple(setdiff(M,N)) # non-accumulator variables
+    local t::T
+    local x1::X
     for i ∈ axes(x0,1), j ∈ eachindex(params)
-        t::T = t0
-        x1::X = x0[i,j]
+        t = t0
+        x1 = x0[i,j]
         for k ∈ eachindex(times)
-            x1 = (;x1[Q]...,Z...)
-            t,x1 = advance_rproc(x1,f,t,times[k],params[j])
+            x1 = merge(x1,accumvars)
+            while t < times[k]
+                t,x1... = f(;t=t,x1...,params[j]...)
+            end
             x[i,j,k] = x1
         end
     end
