@@ -34,7 +34,7 @@ rmeas_internal(
     x::AbstractArray{X,3};
     _...,
 ) where {X<:NamedTuple} = begin
-    reshape(fill((),length(x)),size(x)...)
+    fill((;),size(x)...)
 end
 
 rmeas_internal(

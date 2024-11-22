@@ -172,13 +172,18 @@ pfilt_step_comps!(
     end
     s::Float64 = 0
     ss::Float64 = 0
-    for k ∈ eachindex(w)
-        v::Float64 = exp(w[k]-wmax)
-        s += v
-        ss += v*v
-        w[k] = s
+    if isfinite(wmax)
+        for k ∈ eachindex(w)
+            v::Float64 = exp(w[k]-wmax)
+            s += v
+            ss += v*v
+            w[k] = s
+        end
+    else
+        s = 0
+        ss = 0
+        wmax = 0
     end
-    @assert s > 0 "sum of weights should be positive!"
     logLik::Float64 = wmax+log(s/n)
     ess::Float64 = s*s/ss
     du::Float64 = s/length(p)

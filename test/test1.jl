@@ -44,13 +44,13 @@ using Test
     p2 = (a=1.1,k=2.0,x₀=3.0);
 
     x0 = rinit(P,params=p1,nsim=3);
-    @test isa(x0,Array{Tuple{},2})
+    @test isa(x0,Array{@NamedTuple{},2})
     @test size(x0)==(3,1)
-    @test x0[1]==()
+    @test x0[1]==(;)
     rinit!(P,x0,params=p1);
-    @test isa(x0,Array{Tuple{},2})
+    @test isa(x0,Array{@NamedTuple{},2})
     @test size(x0)==(3,1)
-    @test x0[1]==()
+    @test x0[1]==(;)
 
     pomp!(P,rinit=rin);
     x0 = rinit(P,params=[p1;p2],nsim=7);
@@ -74,9 +74,9 @@ using Test
     @test_throws r"parameter .* undefined" rprocess(P,x0=x0[1,:],params=(k=7.0,x₀=5.0))
 
     y = rmeasure(P,x=x,params=[p1;p2]);
-    @test isa(y,Array{Tuple{},3})
+    @test isa(y,Array{@NamedTuple{},3})
     @test size(y)==(7,2,21)
-    @test y[3]==()
+    @test y[3]==(;)
 
     P = pomp(P,rmeasure=rmeas)
     y = rmeasure(P,x=x,params=[p1;p2]);

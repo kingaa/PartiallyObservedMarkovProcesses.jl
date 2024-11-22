@@ -56,7 +56,7 @@ sir = function(
                 t=t+δt,
                 S=S-infection,
                 I=I+infection-recovery,
-                R=R+infection,
+                R=R+recovery,
                 C=C+recovery,
             )
         end,

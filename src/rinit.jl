@@ -61,7 +61,7 @@ rinit_internal(
     nsim::Integer = 1,
     _...,
 ) where {P<:NamedTuple} = begin
-    reshape(fill((),nsim*length(params)),nsim,length(params))
+    fill((;),nsim,length(params))
 end
 
 rinit_internal(
@@ -76,14 +76,11 @@ end
 
 rinit_internal!(
     f::Nothing,
-    x0::AbstractArray{X,2};
+    x0::AbstractArray{X};
     params::AbstractVector{P},
     _...,
 ) where {X,P<:NamedTuple} = begin
-    x = Array{X}(undef)
-    for k ∈ eachindex(x0)
-        x0[k] = x[1]
-    end
+    fill!(x0,(;))
 end
 
 rinit_internal!(

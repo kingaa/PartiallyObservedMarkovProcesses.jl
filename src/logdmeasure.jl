@@ -20,7 +20,10 @@ logdmeasure!(
         @assert length(params)==size(y,2)
         @assert length(times)==size(x,3)
         @assert length(times)==size(y,3)
-        logdmeasure_internal(pomp(object).logdmeasure,ell;times=times,y=y,x=x,params=params)
+        logdmeasure_internal!(
+            pomp(object).logdmeasure,ell;
+            times=times,y=y,x=x,params=params
+        )
     catch e
         if isa(e,UndefKeywordError)
             error("in `logdmeasure!`: parameter " * string(e.var) * " undefined.")
@@ -56,7 +59,7 @@ logdmeasure(
     end
 end
 
-logdmeasure_internal(
+logdmeasure_internal!(
     f::Nothing,
     ell::AbstractArray{Float64,4};
     _...,
@@ -66,7 +69,7 @@ logdmeasure_internal(
     end
 end
 
-logdmeasure_internal(
+logdmeasure_internal!(
     f::Function,
     ell::AbstractArray{Float64,4};
     times::AbstractVector{T},
