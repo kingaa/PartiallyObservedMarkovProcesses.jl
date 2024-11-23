@@ -77,6 +77,12 @@ pfilter(
     end
 end
 
+"""
+    pfilter(object; params = coef(object), Np = object.Np, args...)
+
+Running `pfilter` on a `PfilterdPompObject` re-runs the particle filter.
+One can adjust the parameters, number of particles (`Np`), or pomp model components.
+"""
 pfilter(
     object::PfilterdPompObject;
     params::P = coef(object),
@@ -85,6 +91,11 @@ pfilter(
 ) where P =
     pfilter(pomp(object),Np=Np,params=params,args...)
 
+"""
+    pfilter!(object; params)
+
+`pfilter!` is the in-place version of `pfilter`.
+"""
 pfilter!(
     object::PfilterdPompObject{T,X,Y};
     params::P = coef(object),

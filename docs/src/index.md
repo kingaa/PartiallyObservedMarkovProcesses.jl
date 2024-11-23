@@ -28,12 +28,14 @@ simulate!
 
 ```@docs
 pfilter
+pfilter!
 ```
 
 ### Workhorses
 
 ```@docs
 rinit
+rinit!
 ```
 
 ```@docs
@@ -41,10 +43,12 @@ rmeasure
 ```
 
 ```@docs
+rprocess
 rprocess!
 ```
 
 ```@docs
+logdmeasure
 logdmeasure!
 ```
 

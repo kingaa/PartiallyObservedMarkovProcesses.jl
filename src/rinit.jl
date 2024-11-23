@@ -1,11 +1,9 @@
 export rinit, rinit!
 
 """
-    rinit(object; t0=timezero(object), params=coef(object), nsim=1)
+    rinit(object; t0=timezero(object), params, nsim=1)
 
 `rinit` is the workhorse for the simulator of the initial-state distribution.
-
-The user can supply an *rinit* component as a function that takes parameters and, optionally, `t0`, the initial time.
 
 ## Arguments
 
@@ -35,6 +33,11 @@ rinit(
     end
 end
 
+"""
+    rinit!(object, x0; t0=timezero(object), params)
+
+`rinit!` is the in-place version of the `rinit` workhorse.
+"""
 rinit!(
     object::AbstractPompObject{T},
     x0::AbstractArray{X,2};

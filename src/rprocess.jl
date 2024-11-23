@@ -1,13 +1,39 @@
 export rprocess, rprocess!
 
 """
-    rprocess(object; x0, t0 = timezero(object), times=times(object), params=coef(object))
+    rprocess(object; x0, t0 = timezero(object), times=times(object), params)
 
 `rprocess` is the workhorse for the simulator of the process
 
-The user can supply an *rprocess* component as a function that takes states, parameters, and current time (`t`) and returns the updated time and state.
-
 If there is no user-supplied *rprocess* component, the dynamics are trivial.
+"""
+rprocess(
+    object::AbstractPompObject{T};
+    x0::Union{X,AbstractArray{X,N}},
+    t0::T = timezero(object),
+    times::Union{T,AbstractVector{T}} = times(object),
+    params::Union{P,AbstractVector{P}},
+) where {N,T<:Time,X<:NamedTuple,P<:NamedTuple} = let
+    try
+        times = val_array(times)
+        params = val_array(params)
+        x0 = val_array(x0,length(params))
+        x = Array{X}(undef,size(x0)...,length(times))
+        rprocess!(object,x,x0=x0,t0=t0,times=times,params=params)
+        x
+    catch e
+        if hasproperty(e,:msg)
+            error("in `rprocess`: " * e.msg)
+        else
+            throw(e)            # COV_EXCL_LINE
+        end
+    end
+end
+
+"""
+    rprocess!(object, x; x0, t0 = timezero(object), times=times(object), params)
+
+`rprocess!` is the in-place version of the `rprocess` workhorse.
 """
 rprocess!(
     object::AbstractPompObject{T},
@@ -34,29 +60,6 @@ rprocess!(
             error("in `rprocess!`: parameter " * string(e.var) * " undefined.")
         elseif hasproperty(e,:msg)
             error("in `rprocess!`: " * e.msg)
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
-end
-
-rprocess(
-    object::AbstractPompObject{T};
-    x0::Union{X,AbstractArray{X,N}},
-    t0::T = timezero(object),
-    times::Union{T,AbstractVector{T}} = times(object),
-    params::Union{P,AbstractVector{P}},
-) where {N,T<:Time,X<:NamedTuple,P<:NamedTuple} = let
-    try
-        times = val_array(times)
-        params = val_array(params)
-        x0 = val_array(x0,length(params))
-        x = Array{X}(undef,size(x0)...,length(times))
-        rprocess!(object,x,x0=x0,t0=t0,times=times,params=params)
-        x
-    catch e
-        if hasproperty(e,:msg)
-            error("in `rprocess`: " * e.msg)
         else
             throw(e)            # COV_EXCL_LINE
         end

@@ -1,11 +1,38 @@
 export logdmeasure, logdmeasure!
 
 """
-    logdmeasure(object; times=times(object), y = obs(object), x = states(object), params)
+    logdmeasure(object; times=times(object), y = obs(object), x, params)
 
 `logdmeasure` is the workhorse for the evaluator of the log measurement density.
+"""
+logdmeasure(
+    object::AbstractPompObject{T};
+    times::Union{T,AbstractVector{T}} = times(object),
+    y::Union{Y,AbstractArray{Y,M}} = obs(object),
+    x::Union{X,AbstractArray{X,N}},
+    params::Union{P,AbstractVector{P}},
+) where {M,N,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
+    try
+        times = val_array(times)
+        params = val_array(params)
+        x = val_array(x,length(params),length(times))
+        y = val_array(y,length(params),length(times))
+        ell = Array{Float64}(undef,size(y,1),size(x)...)
+        logdmeasure!(object,ell;times=times,y=y,x=x,params=params)
+        ell
+    catch e
+        if hasproperty(e,:msg)
+            error("in `logdmeasure`: " * e.msg)
+        else
+            throw(e)            # COV_EXCL_LINE
+        end
+    end
+end
 
-The user can supply a *logdmeasure* component as a function that takes data, states, parameters, and, optionally, `t`, the current time.
+"""
+    logdmeasure!(object, ell; times=times(object), y = obs(object), x, params)
+
+`logdmeasure!` is the in-place version of the `logdmeasure` workhorse.
 """
 logdmeasure!(
     object::AbstractPompObject{T},
@@ -29,30 +56,6 @@ logdmeasure!(
             error("in `logdmeasure!`: parameter " * string(e.var) * " undefined.")
         elseif hasproperty(e,:msg)
             error("in `logdmeasure!`: " * e.msg)
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
-end
-
-logdmeasure(
-    object::AbstractPompObject{T};
-    times::Union{T,AbstractVector{T}} = times(object),
-    y::Union{Y,AbstractArray{Y,M}} = obs(object),
-    x::Union{X,AbstractArray{X,N}},
-    params::Union{P,AbstractVector{P}},
-) where {M,N,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
-    try
-        times = val_array(times)
-        params = val_array(params)
-        x = val_array(x,length(params),length(times))
-        y = val_array(y,length(params),length(times))
-        ell = Array{Float64}(undef,size(y,1),size(x)...)
-        logdmeasure!(object,ell;times=times,y=y,x=x,params=params)
-        ell
-    catch e
-        if hasproperty(e,:msg)
-            error("in `logdmeasure`: " * e.msg)
         else
             throw(e)            # COV_EXCL_LINE
         end

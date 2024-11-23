@@ -34,11 +34,15 @@ end
   One can also supply a DataFrame.
 - `t0`: zero time, t₀.
 - `times`: observation times. If `data` is supplied as a DataFrame, `times` should be a Symbol which is the time variable in the DataFrame.
-- `accumvars`: a NamedTuple of state variables to be reset (usually to zero) immediately following each observation.
+- `accumvars`: a NamedTuple of state variables to be reset (usually to zero) immediately before each simulation stage.
 - `rinit`: simulator of the latent-state distribution at t₀.
+  This component should be a function that takes parameters and, optionally, `t0`, the initial time.
 - `rprocess`: simulator of the latent-state process.
+  This component should be a function that takes states, parameters, and current time (`t`) and returns the updated time and state.
 - `rmeasure`: simulator of the measurement process.
+  This component should be a function that takes states, parameters, and, optionally, `t`, the current time.
 - `logdmeasure`: log pdf of the measurement process.
+  This component should be a function that takes data, states, parameters, and, optionally, `t`, the current time.
 """
 pomp(
     data::Union{Vector{Y},Nothing} = nothing;
