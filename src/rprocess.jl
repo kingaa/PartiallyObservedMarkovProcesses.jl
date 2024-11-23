@@ -72,7 +72,7 @@ rproc_internal!(
     _...,
 ) where {T<:Time,X<:NamedTuple} = begin
     for k ∈ eachindex(times)
-        x[:,:,k] = x0
+        @views x[:,:,k] = x0
     end
 end
 

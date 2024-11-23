@@ -198,13 +198,13 @@ pfilt_step_comps!(
             end
             p[j] = i
         end
-        copyto!(xf,xp[p,:])
+        @views xf[:,:] = xp[p,:]
     else
         s = 0
         ss = 0
         wmax = 0
         ess[] = 0
         logLik[] = -Inf
-        copyto!(xf,xp)
+        @views xf[:,:] = xp[:,:]
     end
 end
