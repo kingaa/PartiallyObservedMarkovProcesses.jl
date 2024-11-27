@@ -144,7 +144,7 @@ pfilter_internal!(
 ) where {T,X,Y,P} = let
     Np = size(x0,1)
     w = reshape(w,1,Np,1,length(t))
-    for k ∈ eachindex(t)
+    @inbounds for k ∈ eachindex(t)
         rprocess!(
             object,
             @view(xp[:,:,[k]]),
@@ -183,7 +183,7 @@ pfilt_step_comps!(
     n::Int64 = length(w)
     p = Array{Int64}(undef,n)
     wmax::W = -Inf
-    for k ∈ eachindex(w)
+    @inbounds for k ∈ eachindex(w)
         if (w[k] > wmax)
             wmax = w[k]
         end
@@ -191,7 +191,7 @@ pfilt_step_comps!(
     s::W = 0
     ss::W = 0
     if isfinite(wmax)
-        for k ∈ eachindex(w)
+        @inbounds for k ∈ eachindex(w)
             v::W = exp(w[k]-wmax)
             s += v
             ss += v*v
@@ -202,20 +202,20 @@ pfilt_step_comps!(
         du::W = s/n
         u::W = -du*Random.rand()
         i::Int64 = 1
-        for j ∈ axes(xf,1)
+        @inbounds for j ∈ axes(xf,1)
             u += du
             while (u > w[i] && i < n)
                 i += 1
             end
             p[j] = i
         end
-        @views xf[:,:] = xp[p,:]
+        @inbounds @views xf[:,:] = xp[p,:]
     else
         s = 0
         ss = 0
         wmax = 0
         ess[] = 0
         logLik[] = -Inf
-        @views xf[:,:] = xp[:,:]
+        @inbounds @views xf[:,:] = xp[:,:]
     end
 end

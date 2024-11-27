@@ -68,7 +68,7 @@ logdmeasure_internal!(
     _...,
 ) = begin
     for i ∈ eachindex(ell)
-        ell[i] = 0.0
+        @inbounds ell[i] = 0.0
     end
 end
 
@@ -80,8 +80,7 @@ logdmeasure_internal!(
     x::AbstractArray{X,3},
     params::AbstractVector{P},
 ) where {T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
-    for iy ∈ axes(y,1), ix ∈ axes(x,1),
-        j ∈ eachindex(params), k ∈ eachindex(times)
-        ell[iy,ix,j,k] = f(;t=times[k],y[iy,j,k]...,x[ix,j,k]...,params[j]...)::Float64
+    for iy ∈ axes(y,1), ix ∈ axes(x,1), j ∈ eachindex(params), k ∈ eachindex(times)
+        @inbounds ell[iy,ix,j,k] = f(;t=times[k],y[iy,j,k]...,x[ix,j,k]...,params[j]...)::Float64
     end
 end

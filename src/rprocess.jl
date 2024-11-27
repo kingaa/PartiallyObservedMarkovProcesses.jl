@@ -75,7 +75,7 @@ rproc_internal!(
     _...,
 ) where {T<:Time,X<:NamedTuple} = begin
     for k ∈ eachindex(times)
-        @views x[:,:,k] = x0
+        @inbounds @views x[:,:,k] = x0
     end
 end
 
@@ -92,12 +92,12 @@ rproc_internal!(
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = let
     for i ∈ axes(x0,1), j ∈ eachindex(params)
         t = t0
-        x1 = x0[i,j]
+        @inbounds x1 = x0[i,j]
         for k ∈ eachindex(times)
-            while t < times[k]
-                t,x1... = f(;t=t,x1...,params[j]...)
+            @inbounds while t < times[k]
+                @inbounds t,x1... = f(;t=t,x1...,params[j]...)
             end
-            x[i,j,k] = x1
+            @inbounds @views x[i,j,k] = x1
         end
     end
 end

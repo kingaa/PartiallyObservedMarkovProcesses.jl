@@ -84,6 +84,7 @@ rinit_internal!(
     _...,
 ) where {X,P<:NamedTuple} = begin
     fill!(x0,(;))
+    nothing
 end
 
 rinit_internal!(
@@ -93,6 +94,7 @@ rinit_internal!(
     params::AbstractVector{P},
 ) where {T,X,P<:NamedTuple} = begin
     for i ∈ axes(x0,1), j ∈ eachindex(params)
-        x0[i,j] = f(;params[j]...,t0=t0)::X
-    end
+        @inbounds x0[i,j] = f(;params[j]...,t0=t0)::X
+    end                         # COV_EXCL_LINE
+    nothing                     # COV_EXCL_LINE
 end
