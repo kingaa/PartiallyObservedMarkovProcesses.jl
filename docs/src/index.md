@@ -14,21 +14,18 @@ Summary.
 
 ```@docs
 pomp
-pomp!
 ```
 
 ### Simulation
 
 ```@docs
 simulate
-simulate!
 ```
 
 ### Particle filter
 
 ```@docs
 pfilter
-pfilter!
 ```
 
 ### Workhorses
@@ -39,12 +36,12 @@ rinit!
 ```
 
 ```@docs
-rmeasure
+rprocess
+rprocess!
 ```
 
 ```@docs
-rprocess
-rprocess!
+rmeasure
 ```
 
 ```@docs
@@ -56,8 +53,8 @@ logdmeasure!
 
 ```@docs
 coef
-states
 obs
+states
 times
 timezero
 ```
@@ -65,6 +62,6 @@ timezero
 ### Examples
 
 ```@docs
-sir
 gompertz
+sir
 ```

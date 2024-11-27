@@ -43,19 +43,19 @@ using Test
         rprocess=rlin,
         rmeasure=rmeas,
         logdmeasure=logdmeas
-    )
+    );
+    P = P[1];
     @test_throws "in `simulate`" simulate(P,params=(a=1.5,k=7.0))
-    @test_throws "in `simulate`" simulate!(P,params=(a=1.5,k=7.0))
 
     P = pomp(
-        obs(P)[1,1,:],
+        obs(P),
         times=times(P),
         t0=0,
         rinit=rin,
         rprocess=rlin,
         rmeasure=rmeas,
         logdmeasure=logdmeas
-    )
+    );
     @test isa(P,POMP.PompObject)
 
     x0 = rinit(P,params=p1,nsim=10);
@@ -67,14 +67,12 @@ using Test
 
     @time Q = pfilter(P,Np=1000,params=p1)
     @time Q = pfilter(P,Np=1000,params=p1)
-    @time pfilter!(Q)
-    @time pfilter!(Q)
-    @time pfilter!(Q)
+    @time Q = pfilter(P,Np=1000,params=p1)
     @test isa(Q,POMP.PfilterdPompObject)
     @time pfilter(Q,params=(a=1.5,k=7.0,x₀=5.0));
-    @test all(Q.x0.==Q.pred[:,:,1])
+    @time pfilter(Q,params=(a=1.5,k=7.0,x₀=5.0));
+    @test all(Q.x0.==Q.pred[:,1])
     @test_throws "in `pfilter`: in `rinit`" pfilter(Q,params=(a=1.5,k=7.0));
-    @test_throws "in `pfilter!`: in `rinit!`" pfilter!(Q,params=(a=1.5,k=7.0));
 
     d = melt(Q);
     @test size(d)==(21,4)

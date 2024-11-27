@@ -1,16 +1,16 @@
 export logdmeasure, logdmeasure!
 
 """
-    logdmeasure(object; times=times(object), y = obs(object), x, params)
+    logdmeasure(object; times=times(object), y=obs(object), x=states(object), params=coef(object))
 
 `logdmeasure` is the workhorse for the evaluator of the log measurement density.
 """
 logdmeasure(
-    object::AbstractPompObject{T};
+    object::AbstractPompObject;
     times::Union{T,AbstractVector{T}} = times(object),
     y::Union{Y,AbstractArray{Y,M}} = obs(object),
-    x::Union{X,AbstractArray{X,N}},
-    params::Union{P,AbstractVector{P}},
+    x::Union{X,AbstractArray{X,N}} = states(object),
+    params::Union{P,AbstractVector{P}} = coef(object),
 ) where {M,N,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
     try
         times = val_array(times)
@@ -30,27 +30,25 @@ logdmeasure(
 end
 
 """
-    logdmeasure!(object, ell; times=times(object), y = obs(object), x, params)
+    logdmeasure!(object; times=times(object), y=obs(object), x=states(object), params=coef(object))
 
 `logdmeasure!` is the in-place version of the `logdmeasure` workhorse.
 """
 logdmeasure!(
-    object::AbstractPompObject{T},
+    object::AbstractPompObject,
     ell::AbstractArray{Float64,4};
     times::AbstractVector{T} = times(object),
     y::AbstractArray{Y,M} = obs(object),
-    x::AbstractArray{X,N},
-    params::AbstractVector{P},
+    x::AbstractArray{X,N} = states(object),
+    params::Union{P,AbstractVector{P}} = coef(object),
 ) where {M,N,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
     try
+        params = val_array(params)
         @assert length(params)==size(x,2)
         @assert length(params)==size(y,2)
         @assert length(times)==size(x,3)
         @assert length(times)==size(y,3)
-        logdmeasure_internal!(
-            pomp(object).logdmeasure,ell;
-            times=times,y=y,x=x,params=params
-        )
+        logdmeasure_internal!(pomp(object).logdmeasure,ell,times,y,x,params)
     catch e
         if isa(e,UndefKeywordError)
             error("in `logdmeasure!`: parameter " * string(e.var) * " undefined.")
@@ -64,7 +62,7 @@ end
 
 logdmeasure_internal!(
     f::Nothing,
-    ell::AbstractArray{Float64,4};
+    ell::AbstractArray{Float64,4},
     _...,
 ) = begin
     for i ∈ eachindex(ell)
@@ -74,7 +72,7 @@ end
 
 logdmeasure_internal!(
     f::Function,
-    ell::AbstractArray{Float64,4};
+    ell::AbstractArray{Float64,4},
     times::AbstractVector{T},
     y::AbstractArray{Y,3},
     x::AbstractArray{X,3},

@@ -89,29 +89,22 @@ ll |>
   print()
     """;
 
-    P = sir()
-    @test isa(P,POMP.SimPompObject)
-    print(P)
-    P = pomp(P);
+    P = sir();
+    @test isa(P,POMP.PompObject)
     print(P)
 
     println("POMP.jl SIR parameters")
-    theta = (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S₀=0.9,I₀=0.01,R₀=0.1,δt=0.1)
+    theta = (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S₀=0.9,I₀=0.01,R₀=0.1,δt=0.1);
     println(theta)
 
     println("POMP.jl simulation times (SIR)")
-    @time Q = simulate(P,nsim=1000,params=theta)
-    @time Q = simulate(Q,nsim=1000)
-    simulate!(Q,accumvars=nothing)
-    simulate!(Q)
-    simulate!(Q)
-    @time simulate!(Q,accumvars=(C=0,))
-    @time simulate!(Q)
-    @time simulate!(Q)
-    @time simulate!(Q)
-    @time simulate!(Q,nsim=5)
+    @time Q = simulate(P,nsim=1000,params=theta);
+    @time Q = simulate(Q[1],nsim=1000);
+    @time Q = simulate(Q[1],nsim=1000);
+    @time Q = simulate(Q[1],nsim=1000);
+    @time Q = simulate(P,nsim=5);
 
-    d1 = melt(Q);
+    d1 = melt(Q,:rep,:parset);
 
     R"""
 library(tidyverse)
@@ -127,15 +120,15 @@ ggsave(filename="sir-01.png",width=7,height=4)
 """
 
     @rget dat
-    P.data = NamedTuple.(eachrow(select(dat,:reports)));
-
+    P = pomp(dat,times=:time,t0=0.0,rinit=P.rinit,rprocess=P.rprocess,logdmeasure=P.logdmeasure,accumvars=P.accumvars,params=coef(P))
+    
     println("POMP.jl pfilter times (SIR)")
-    @time Pf = pfilter(P,Np=1000,params=theta)
-    @time pfilter!(Pf)
-    @time pfilter!(Pf)
-    @time pfilter!(Pf)
+    @time Pf = pfilter(P,Np=1000,params=theta);
+    @time Pf = pfilter(P,Np=1000,params=theta);
+    @time Pf = pfilter(P,Np=1000,params=theta);
+    @time Pf = pfilter(P,Np=1000,params=theta);
 
-    Pf = pfilter(Pf,Np=1000)
+    Pf = pfilter(Pf,Np=1000);
     println("POMP.jl likelihood estimate (SIR)")
     println(round(Pf.logLik,digits=2))
 

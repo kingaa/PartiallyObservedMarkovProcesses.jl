@@ -1,15 +1,25 @@
-export pomp, pomp!
+export pomp
 
 ## Time is the type of time
 Time = Real
 
-abstract type AbstractPompObject{T<:Time} end
+abstract type AbstractPompObject{T,P,A,X0,X,Y} end
 
-mutable struct PompObject{T} <: AbstractPompObject{T}
-    data::Union{Vector{<:NamedTuple},Nothing}
+struct PompObject{
+    T <: Time,
+    P <: Union{<:NamedTuple,Nothing},
+    A <: Union{<:NamedTuple,Nothing},
+    X0 <: Union{<:NamedTuple,Nothing},
+    X <: Union{Vector{<:NamedTuple},Nothing},
+    Y <: Union{Vector{<:NamedTuple},Nothing}
+    } <: AbstractPompObject{T,P,A,X0,X,Y}
     t0::T
     times::Vector{T}
-    accumvars::Union{NamedTuple,Nothing}
+    accumvars::A
+    params::P
+    init_states::X0
+    states::X
+    obs::Y
     rinit::Union{Function,Nothing}
     rprocess::Union{Function,Nothing}
     rmeasure::Union{Function,Nothing}
@@ -22,6 +32,7 @@ end
     pomp(
         data;
         t0, times,
+        params,
         accumvars,
         rinit, rprocess,
         rmeasure, logdmeasure
@@ -34,6 +45,7 @@ end
   One can also supply a DataFrame.
 - `t0`: zero time, t₀.
 - `times`: observation times. If `data` is supplied as a DataFrame, `times` should be a Symbol which is the time variable in the DataFrame.
+- `params`: parameters. A NamedTuple or vector of NaedTuples.
 - `accumvars`: a NamedTuple of state variables to be reset (usually to zero) immediately before each simulation stage.
 - `rinit`: simulator of the latent-state distribution at t₀.
   This component should be a function that takes parameters and, optionally, `t0`, the initial time.
@@ -48,30 +60,34 @@ pomp(
     data::Union{Vector{Y},Nothing} = nothing;
     t0::T1,
     times::Union{T,Vector{T}},
-    accumvars::Union{NamedTuple,Nothing} = nothing,
+    params::Union{P,Nothing} = nothing,
+    accumvars::Union{<:NamedTuple,Nothing} = nothing,
     rinit::Union{Function,Nothing} = nothing,
     rprocess::Union{Function,Nothing} = nothing,
     rmeasure::Union{Function,Nothing} = nothing,
     logdmeasure::Union{Function,Nothing} = nothing,
-) where {Y<:NamedTuple,T1<:Time,T<:Time} = begin
+) where {Y<:NamedTuple,T1<:Time,T<:Time,P<:NamedTuple} = begin
     if T != T1
         error("`t0` and time-vector must have the same elementary type.")
     end
     times = val_array(times)
-    if !isnothing(data) && length(data) != length(times)
-        error("data and times must be of the same length.")
-    end
     if t0 > times[1]
         error("`t0` must be no later than first observation time.")
     end
     if any(diff(times).<0)
         error("observation times must be nondecreasing.")
     end
-    PompObject{T}(
-        data,
+    if !isnothing(data) && length(data) != length(times)
+        error("data and times must be of the same length.")
+    end
+    PompObject(
         t0,
         times,
         accumvars,
+        params,
+        nothing,
+        nothing,
+        data,
         rinit,
         rprocess,
         rmeasure,
@@ -102,49 +118,51 @@ according to `args...`.
 """
 pomp(object::PompObject) = object
 
+"""
+    pomp(object::AbstractPompObject; params=missing, accumvars=missing, rinit=missing, rprocess=missing, rmeasure=missing, logdmeasure=missing)
+
+This form returns a modified version of `object`.
+Individual basic components can be modified or removed.
+The default is to leave them unchanged.
+"""
 pomp(
     object::AbstractPompObject;
-    args...,
-) = begin
-    obj = deepcopy(object)
-    pomp!(obj;args...)
-    obj                         # COV_EXCL_LINE
-end
-
-"""
-`pomp!(object, args...)` modifies the *PompObject* `object` in place.
-Individual basic components can be modified, set, or unset.
-"""
-pomp!(
-    object::PompObject;
+    params::Union{NamedTuple,Nothing,Missing} = missing,
     accumvars::Union{NamedTuple,Nothing,Missing} = missing,
     rinit::Union{Function,Nothing,Missing} = missing,
     rprocess::Union{Function,Nothing,Missing} = missing,
     rmeasure::Union{Function,Nothing,Missing} = missing,
     logdmeasure::Union{Function,Nothing,Missing} = missing,
 ) = begin
-    if !ismissing(accumvars)
-        object.accumvars = accumvars
+    if ismissing(params)
+        params = pomp(object).params
     end
-    if !ismissing(rinit)
-        object.rinit = rinit
+    if ismissing(accumvars)
+        accumvars = pomp(object).accumvars
     end
-    if !ismissing(rprocess)
-        object.rprocess = rprocess
+    if ismissing(rinit)
+        rinit = pomp(object).rinit
     end
-    if !ismissing(rmeasure)
-        object.rmeasure = rmeasure
+    if ismissing(rprocess)
+        rprocess = pomp(object).rprocess
     end
-    if !ismissing(logdmeasure)
-        object.logdmeasure = logdmeasure
+    if ismissing(rmeasure)
+        rmeasure = pomp(object).rmeasure
     end
-    object                      # COV_EXCL_LINE
-end
-
-pomp!(
-    object::AbstractPompObject;
-    args...,
-) = begin
-    pomp!(pomp(object);args...)
-    object                      # COV_EXCL_LINE
+    if ismissing(logdmeasure)
+        logdmeasure = pomp(object).logdmeasure
+    end
+    PompObject(
+        pomp(object).t0,
+        pomp(object).times,
+        accumvars,
+        params,
+        nothing,
+        nothing,
+        pomp(object).obs,
+        rinit,
+        rprocess,
+        rmeasure,
+        logdmeasure
+    )
 end

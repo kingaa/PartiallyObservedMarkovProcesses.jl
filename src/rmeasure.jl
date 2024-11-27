@@ -8,16 +8,16 @@ export rmeasure
 The user can supply an *rmeasure* component as a function that takes states, parameters, and, optionally, `t`, the current time.
 """
 rmeasure(
-    object::AbstractPompObject{T};
+    object::AbstractPompObject;
     x::Union{X,AbstractArray{X,N}},
     times::Union{T,AbstractVector{T}} = times(object),
-    params::Union{P,AbstractVector{P}},
+    params::Union{P,AbstractVector{P}} = coef(object),
 ) where {N,T,X<:NamedTuple,P<:NamedTuple} = begin
     try
         times = val_array(times)
         params = val_array(params)
         x = val_array(x,length(params),length(times))
-        rmeas_internal(pomp(object).rmeasure,x,times=times,params=params)
+        rmeas_internal(pomp(object).rmeasure,x,times,params)
     catch e
         if isa(e,UndefKeywordError)
             error("in `rmeasure`: parameter " * string(e.var) * " undefined.")
@@ -31,7 +31,7 @@ end
 
 rmeas_internal(
     f::Nothing,
-    x::AbstractArray{X,3};
+    x::AbstractArray{X,3},
     _...,
 ) where {X<:NamedTuple} = begin
     fill((;),size(x)...)
@@ -39,7 +39,7 @@ end
 
 rmeas_internal(
     f::Function,
-    x::AbstractArray{X,3};
+    x::AbstractArray{X,3},
     times::AbstractVector{T},
     params::AbstractVector{P},
 ) where {T,X<:NamedTuple,P<:NamedTuple} = begin

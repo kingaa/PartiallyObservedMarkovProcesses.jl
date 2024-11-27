@@ -1,4 +1,4 @@
-export times, timezero, obs
+export times, timezero, obs, states, coef
 
 """
     times(object)
@@ -19,7 +19,21 @@ timezero(object::AbstractPompObject) = pomp(object).t0
 
 `obs` extracts the time vector of a *PompObject*.
 """
-obs(object::AbstractPompObject) = pomp(object).data
+obs(object::AbstractPompObject) = pomp(object).obs
 
-Base.show(io::IO,object::AbstractPompObject) =
-    println(io,"object of type <" * string(typeof(object)) * ">.")
+"""
+    states(object)
+
+`states` extracts the latent state trajectory of a *PompObject*.
+"""
+states(object::AbstractPompObject) = pomp(object).states
+
+"""
+    coef(object)
+
+`coef` extracts the parameter vector of a *PompObject*.
+"""
+coef(object::AbstractPompObject) = pomp(object).params
+
+Base.show(io::IO, object::AbstractPompObject) =
+    println(io,"<" * string(typeof(object)) * ">.")

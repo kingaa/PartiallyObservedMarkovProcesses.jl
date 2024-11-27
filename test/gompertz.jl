@@ -7,7 +7,7 @@ using Test
 
     Random.seed!(1558102772)
 
-    P = gompertz()
+    P = gompertz();
     @test isa(P,POMP.PompObject)
     print(P)
 
@@ -36,20 +36,20 @@ using Test
     @test size(x)==(3,2,27)
     @test size(y)==(3,2,2)
 
-    Q = simulate(P,params=p1,nsim=3)
+    Q = simulate(P,params=p1,nsim=3);
 
-    s = melt(Q);
-    d = melt(pomp(Q));
-    d.rep .= 0
+    s = melt(Q,:rep,:parset);
+    d = melt(P,rep=0);
 
     R"""
 library(tidyverse)
 bind_rows($s,$d) |>
-  mutate(data=rep==0) |>
+  mutate(data=if_else(rep==0,"data","simulation")) |>
   ggplot(aes(x=time,group=rep,color=factor(rep)))+
   geom_point(aes(y=pop,shape=data))+
   geom_line(aes(y=X))+
   guides(color="none",size="none")+
+  labs(shape="")+
   scale_y_sqrt()+
   theme_bw()
 ggsave(filename="gompertz-01.png",width=7,height=4)

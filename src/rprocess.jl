@@ -1,18 +1,18 @@
 export rprocess, rprocess!
 
 """
-    rprocess(object; x0, t0 = timezero(object), times=times(object), params)
+    rprocess(object; x0, t0 = timezero(object), times=times(object), params = coef(object))
 
 `rprocess` is the workhorse for the simulator of the process
 
 If there is no user-supplied *rprocess* component, the dynamics are trivial.
 """
 rprocess(
-    object::AbstractPompObject{T};
-    x0::Union{X,AbstractArray{X,N}},
+    object::AbstractPompObject;
+    x0::Union{X,AbstractArray{X,N}} = object.init_state,
     t0::T = timezero(object),
     times::Union{T,AbstractVector{T}} = times(object),
-    params::Union{P,AbstractVector{P}},
+    params::Union{P,AbstractVector{P}} = coef(object),
 ) where {N,T<:Time,X<:NamedTuple,P<:NamedTuple} = let
     try
         times = val_array(times)
@@ -36,14 +36,15 @@ end
 `rprocess!` is the in-place version of the `rprocess` workhorse.
 """
 rprocess!(
-    object::AbstractPompObject{T},
+    object::AbstractPompObject,
     x::AbstractArray{X,3};
-    x0::AbstractArray{X,2},
+    x0::AbstractArray{X,2} = object.init_state,
     t0::T = timezero(object),
     times::AbstractVector{T} = times(object),
-    params::AbstractVector{P},
+    params::Union{P,AbstractVector{P}} = coef(object),
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
     try
+        params = val_array(params)
         @assert size(x0,1)==size(x,1)
         @assert length(params)==size(x0,2)
         @assert length(params)==size(x,2)

@@ -33,12 +33,13 @@ using Test
     @test_throws "times must be nondecreasing" pomp(t0=0,times=[-t for t in 0:7])
     @test_throws "same elementary type" pomp(times=[t for t in 0:20],t0=0.0)
 
-    P = pomp(times=[t for t in 0:20],t0=0)
+    P = pomp(times=[t for t in 0:20],t0=0);
     @test isa(P,POMP.PompObject)
     @test timezero(P)==0
     @test isa(times(P),Vector{<:Real})
     @test length(times(P))==21
     @test isnothing(obs(P))
+    @test isnothing(states(P))
 
     p1 = (a=1.0,k=7.0,x₀=5.0);
     p2 = (a=1.1,k=2.0,x₀=3.0);
@@ -52,19 +53,20 @@ using Test
     @test size(x0)==(3,1)
     @test x0[1]==(;)
 
-    pomp!(P,rinit=rin);
+    P = pomp(P,rinit=rin);
     x0 = rinit(P,params=[p1;p2],nsim=7);
     @test isa(x0,Array{<:NamedTuple,2})
     @test size(x0)==(7,2)
     @test keys(x0[8])==(:x,)
     @test_throws r"parameter .* undefined" rinit(P,params=(a=1.0,k=7.0))
+    @test_throws r"parameter .* undefined" rinit!(P,x0,params=(a=1.0,k=7.0))
 
     x = rprocess(P,x0=x0,params=[p1;p2]);
     @test isa(x,Array{<:NamedTuple,3})
     @test size(x)==(7,2,21)
     @test x[:,:,21]==x0
 
-    pomp!(P,rprocess=rlin)
+    P = pomp(P,rprocess=rlin);
     x = rprocess(P,x0=x0,params=[p1;p2]);
     @test isa(x,Array{<:NamedTuple,3})
     @test size(x)==(7,2,21)
@@ -78,7 +80,7 @@ using Test
     @test size(y)==(7,2,21)
     @test y[3]==(;)
 
-    P = pomp(P,rmeasure=rmeas)
+    P = pomp(P,rmeasure=rmeas);
     y = rmeasure(P,x=x,params=[p1;p2]);
     @test isa(y,Array{<:NamedTuple,3})
     @test size(y)==(7,2,21)
@@ -91,7 +93,7 @@ using Test
     @test size(ell)==(size(y,1),size(x)...)
     @test all(ell.==0.0)
 
-    pomp!(P,logdmeasure=logdmeas)
+    P = pomp(P,logdmeasure=logdmeas);
     ell = logdmeasure(P,x=x,y=y,params=[p1;p2]);
     @test isa(ell,Array{Float64,4})
     @test size(ell)==(size(y,1),size(x)...)
@@ -102,41 +104,38 @@ using Test
         @test POMP.val_array("yes")==["yes"]
         @test_throws "size mismatch" POMP.val_array(y,11,2)
         @test size(POMP.val_array(3,1,1,1))==(1,1,1)
+        @test size(POMP.val_array(rand(3,2,2)))==(12,)
+    end
+
+    @testset "melt" begin
+        d = melt((x=3,y=99));
+        @test isa(d,DataFrame)
+        @test size(d)==(1,2)
+        @test names(d)==["x","y"]
+        d = melt(fill((a=10,b=0,c=33),5,2));
+        @test isa(d,DataFrame)
+        @test size(d)==(10,3)
+        @test names(d)==["a","b","c"]
+        d = melt(fill((a=10,b=0,c=33),5,2),i=1:5,j=1:2);
+        @test isa(d,DataFrame)
+        @test size(d)==(10,5)
+        @test names(d)==["i","j","a","b","c"]
     end
 
     @testset "simulate" begin
 
         p = [p1;p2];
-        Q1 = simulate(P,params=p,nsim=3)
-        d1 = leftjoin(
+        Q1 = simulate(P,params=p,nsim=3);
+        d = leftjoin(
             melt(Q1),
-            melt(p,parset=1:2),
-            on=:parset
+            melt(p,id2=1:2),
+            on=:id2
         );
-        Q2 = simulate(Q1);
-        d2 = leftjoin(
-            melt(Q2),
-            melt(p,parset=1:2),
-            on=:parset
-        );
-        simulate!(Q2,nsim=4);
-        d3 = leftjoin(
-            melt(p,parset=1:2),
-            melt(Q2),
-            on=:parset
-        );
-        simulate!(Q2,params=p2);
-        d4 = leftjoin(
-            melt(Q2),
-            melt(p2,parset=1),
-            on=:parset
-        );
-        d = vcat(d1,d2,d3,d4,source=:sim);
         R"""
 library(tidyverse)
 $d |>
-  ggplot(aes(x=time,group=interaction(rep,sim),
-    color=interaction(rep,sim)))+
+  ggplot(aes(x=time,group=interaction(id1,id2),
+    color=interaction(id1,id2)))+
   geom_line(aes(y=x))+
   geom_point(aes(y=y))+
   geom_line(aes(y=y),linetype=2)+
@@ -158,14 +157,14 @@ ggsave(filename="test1-01.png",width=7,height=4)
         @test_throws "must be no later than" pomp(parus_data,times=:year,t0=1999)
         @test_throws "times must be nondecreasing" pomp(sort(parus_data,:pop),times=:year,t0=1940)
 
-        pomp!(P,rinit=function(;_...) error("yikes!") end)
+        P = pomp(P,rinit=function(;_...) error("yikes!") end);
         @test_throws "in `rinit`: yikes!" rinit(P,params=(x₀=3,))
         @test_throws "in `rinit!`: yikes!" rinit!(P,x0,params=(x₀=3,))
-        pomp!(P,rprocess=function(;_...) error("yikes!") end)
+        P = pomp(P,rprocess=function(;_...) error("yikes!") end);
         @test_throws "in `rprocess!`: yikes!" rprocess(P,params=(x₀=3,),x0=x0)
-        pomp!(P,rmeasure=function(;_...) error("yikes!") end)
+        P = pomp(P,rmeasure=function(;_...) error("yikes!") end);
         @test_throws "in `rmeasure`: yikes!" rmeasure(P,params=(a=1,),x=x)
-        pomp!(P,logdmeasure=function(;_...) error("yikes!") end)
+        P = pomp(P,logdmeasure=function(;_...) error("yikes!") end);
         @test_throws "in `logdmeasure!`: yikes!" logdmeasure(P,params=(a=1,),x=x,y=y)
 
         @test_throws "must be of the same length" pomp([(a=1,);(a=2,);(c=3,)];times=[1;2],t0=0)

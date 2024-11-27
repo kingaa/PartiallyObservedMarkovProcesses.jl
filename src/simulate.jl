@@ -1,39 +1,4 @@
-mutable struct SimPompObject{T,X<:NamedTuple,Y<:NamedTuple} <: AbstractPompObject{T}
-    pompobj::PompObject{T}
-    x0::Array{X,2}
-    states::Array{X,3}
-    obsns::Array{Y,3}
-    params::Vector{<:NamedTuple}
-end
-
-export pomp
-
-pomp(object::SimPompObject) = object.pompobj
-
-export coef, states, obs
-
-"""
-    coef(object::SimPompObject)
-
-`coef` extracts the parameters stored in a *SimPompObject*.
-"""
-coef(object::SimPompObject) = object.params
-
-"""
-    states(object::AbstractSimPompObject)
-
-`states` extracts the state trajectory of a *SimPompObject*.
-"""
-states(object::SimPompObject) = object.states
-
-"""
-    obs(object::AbstractSimPompObject)
-
-`obs` extracts the observations of a *SimPompObject*.
-"""
-obs(object::SimPompObject) = object.obsns
-
-export simulate, simulate!
+export simulate
 
 """
     simulate(object; params, nsim = 1, args...)
@@ -42,27 +7,16 @@ export simulate, simulate!
 `args...` can be used to modify or unset fields.
 """
 simulate(
-    object::Union{Nothing,AbstractPompObject} = nothing;
-    params::Union{P,Vector{P}},
+    object::AbstractPompObject;
+    params::Union{P,AbstractVector{P}} = coef(object),
     nsim::Integer = 1,
     args...,
-) where P = begin
+) where {P<:NamedTuple} = let
     try
-        object = pomp(object;args...)
         params = val_array(params)
-        x0 = rinit(object,params=params,nsim=nsim)
-        x = rprocess(object,x0=x0,params=params)
-        y = rmeasure(object,x=x,params=params)
-        T = eltype(timezero(object))
-        X = eltype(x)
-        Y = eltype(y)
-        SimPompObject{T,X,Y}(
-            object,
-            x0,
-            x,
-            y,
-            params
-        )
+        object = pomp(object;args...)
+        [simulate1(object,params[j])
+         for i ∈ 1:nsim, j ∈ eachindex(params)]
     catch e
         if hasproperty(e,:msg)
             error("in `simulate`: " * e.msg)
@@ -72,42 +26,33 @@ simulate(
     end
 end
 
+"""
+    simulate(; params, nsim = 1, args...)
+
+`args...` can be used to specify the PompObject.
+"""
 simulate(
-    object::SimPompObject{T,X,Y};
-    params::Union{P,Vector{P}} = coef(object),
+    ;params::Union{P,AbstractVector{P}},
     nsim::Integer = 1,
     args...,
-) where {T,X,Y,P} =
-    simulate(pomp(object;args...),params=params,nsim=nsim)
+) where {P<:NamedTuple} =
+    simulate(pomp(;args...),params=params,nsim=nsim)
 
-"""
-    simulate!(object; args...)
-
-`simulate!` simulates in place.
-`args...` can be used to modify or unset fields.
-"""
-simulate!(
-    object::SimPompObject;
-    params::Union{P,Vector{P}} = coef(object),
-    nsim::Integer = size(obs(object),1),
-    args...,
-) where P = begin
-    try
-        pomp!(object;args...)
-        params=val_array(params)
-        x0 = rinit(object,params=params,nsim=nsim)
-        x = rprocess(object,x0=x0,params=params)
-        y = rmeasure(object,x=x,params=params)
-        object.x0 = x0
-        object.states = x
-        object.obsns = y
-        object.params = params
-        object
-    catch e
-        if hasproperty(e,:msg)
-            error("in `simulate`: " * e.msg)
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
+simulate1(
+    object::AbstractPompObject,
+    params::P = coef(object),
+) where {P<:NamedTuple} = let
+    params = val_array(params)
+    x0 = rinit(object,params=params,nsim=1)
+    x = rprocess(object,x0=x0,params=params)
+    y = rmeasure(object,x=x,params=params)
+    PompObject(
+        object.t0,object.times,
+        object.accumvars,
+        params[1],x0[1],vec(x),vec(y),
+        object.rinit,
+        object.rprocess,
+        object.rmeasure,
+        object.logdmeasure
+    )
 end

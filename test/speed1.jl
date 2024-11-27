@@ -75,17 +75,12 @@ P |>
     @time simulate(P,params=theta,nsim=10000)
     @time simulate(P,params=theta,nsim=10000)
     @time Q = simulate(P,params=theta,nsim=10000)
-    @time simulate!(Q)
-    @time simulate!(Q)
-    @time simulate!(Q)
+
 
     println("POMP.jl pfilter times (Gompertz)")
+    @time pfilter(P,params=theta,Np=10000)
+    @time pfilter(P,params=theta,Np=10000)
     @time Pf = pfilter(P,params=theta,Np=10000)
-    @time Pf = pfilter(P,params=theta,Np=10000)
-    @time Pf = pfilter(P,params=theta,Np=10000)
-    @time pfilter!(Pf)
-    @time pfilter!(Pf)
-    @time pfilter!(Pf)
 
     println("POMP.jl likelihood estimate (Gompertz)")
     println(round(Pf.logLik,digits=2))

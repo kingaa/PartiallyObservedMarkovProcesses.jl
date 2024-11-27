@@ -1,11 +1,17 @@
-mutable struct PfilterdPompObject{T,X,Y} <: AbstractPompObject{T}
-    pompobj::PompObject{T}
+struct PfilterdPompObject{
+    T <: Time,
+    P <: NamedTuple,
+    A <: Union{<:NamedTuple,Nothing},
+    X0 <: Union{<:NamedTuple,Nothing},
+    X <: Union{Vector{<:NamedTuple},Nothing},
+    Y <: Vector{<:NamedTuple},
+    } <: AbstractPompObject{T,P,A,X0,X,Y}
+    pompobj::PompObject{T,P,A,X0,X,Y}
     Np::Integer
-    params::NamedTuple
-    x0::Array{X,2}
-    filt::Array{X,3}
-    pred::Array{X,3}
-    weights::Array{Float64,3}
+    x0::Array{<:NamedTuple,1}
+    filt::Array{<:NamedTuple,2}
+    pred::Array{<:NamedTuple,2}
+    weights::Array{Float64,2}
     eff_sample_size::Array{Float64,1}
     cond_logLik::Array{Float64,1}
     logLik::Float64
@@ -15,16 +21,7 @@ export pomp
 
 pomp(object::PfilterdPompObject) = object.pompobj
 
-export coef
-
-"""
-    coef(object::PfilterdPompObject)
-
-`coef` extracts the parameters stored in a *PfilterdPompObject*.
-"""
-coef(object::PfilterdPompObject) = object.params
-
-export pfilter, pfilter!
+export pfilter
 
 """
     pfilter(object; params, Np = 1, args...)
@@ -33,37 +30,38 @@ export pfilter, pfilter!
 `args...` can be used to modify or unset fields.
 """
 pfilter(
-    object::AbstractPompObject{T};
-    params::P,
+    object::AbstractPompObject;
+    params::P = coef(object),
     Np::Integer = 1,
     args...,
-) where {T,P} = let
+) where {P<:NamedTuple} = let
     try
-        object = pomp(object;args...)
-        params = val_array(params)
+        object = pomp(object;params=params,args...)
         t0 = timezero(object)
         t = times(object)
-        y = reshape(obs(object),1,1,length(t))
-        x0 = rinit(object,t0=t0,params=params,nsim=Np)
+        y = obs(object)
+        x0 = rinit(object,t0=t0,nsim=Np)
         X = eltype(x0)
-        xf = Array{X}(undef,Np,1,length(t))
-        xp = Array{X}(undef,Np,1,length(t))
-        w = Array{Float64}(undef,Np,1,length(t))
+        xf = Array{X}(undef,Np,length(t))
+        xp = Array{X}(undef,Np,length(t))
+        w = Array{Float64}(undef,Np,length(t))
         cond_logLik = Array{Float64}(undef,length(t))
         eff_sample_size = Array{Float64}(undef,length(t))
         pfilter_internal!(
             object,
-            x0,xf,xp,w,
-            t0,t,y,
-            params,
+            x0,
+            reshape(xf,Np,1,length(t)),
+            reshape(xp,Np,1,length(t)),
+            reshape(w,1,Np,1,length(t)),
+            t0,t,
+            reshape(y,1,1,length(t)),
             eff_sample_size,
             cond_logLik
         )
-        PfilterdPompObject{T,X,eltype(y)}(
+        PfilterdPompObject(
             object,
             Np,
-            params[1],
-            x0,xf,xp,w,
+            vec(x0),xf,xp,w,
             eff_sample_size,
             cond_logLik,
             sum(cond_logLik)
@@ -78,98 +76,54 @@ pfilter(
 end
 
 """
-    pfilter(object; params = coef(object), Np = object.Np, args...)
+    pfilter(object; args...)
 
 Running `pfilter` on a `PfilterdPompObject` re-runs the particle filter.
 One can adjust the parameters, number of particles (`Np`), or pomp model components.
 """
 pfilter(
     object::PfilterdPompObject;
-    params::P = coef(object),
     Np::Integer = object.Np,
     args...,
-) where P =
-    pfilter(pomp(object),Np=Np,params=params,args...)
-
-"""
-    pfilter!(object; params)
-
-`pfilter!` is the in-place version of `pfilter`.
-"""
-pfilter!(
-    object::PfilterdPompObject{T,X,Y};
-    params::P = coef(object),
-    _...,
-) where {P,T,X,Y} = begin
-    try
-        params = val_array(params)
-        t0 = timezero(object)
-        t = times(object)
-        y = reshape(obs(object),1,1,length(t))
-        rinit!(object,object.x0,t0=t0,params=params)
-        pfilter_internal!(
-            object,
-            object.x0,
-            object.filt,
-            object.pred,
-            object.weights,
-            t0,t,y,
-            params,
-            object.eff_sample_size,
-            object.cond_logLik
-        )
-        object.logLik = sum(object.cond_logLik)
-        object
-    catch e
-        if hasproperty(e,:msg)
-            error("in `pfilter!`: " * e.msg)
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
-end
+) =
+    pfilter(pomp(object;args...);Np=Np)
 
 pfilter_internal!(
-    object::AbstractPompObject{T},
+    object::AbstractPompObject,
     x0::AbstractArray{X,2},
     xf::AbstractArray{X,3},
     xp::AbstractArray{X,3},
-    w::AbstractArray{Float64,3},
+    w::AbstractArray{Float64,4},
     t0::T,
     t::AbstractVector{T},
     y::AbstractArray{Y,3},
-    params::AbstractArray{P,1},
     eff_sample_size::AbstractVector{Float64},
     cond_logLik::AbstractVector{Float64},
-) where {T,X,Y,P} = let
-    Np = size(x0,1)
-    w = reshape(w,1,Np,1,length(t))
-    @inbounds for k ∈ eachindex(t)
-        rprocess!(
+) where {T,X,Y} = let
+    for k ∈ eachindex(t)
+        @inbounds rprocess!(
             object,
-            @view(xp[:,:,[k]]),
+            @view(xp[:,:,[k]]);
             x0=x0,
             t0=t0,
-            times=@view(t[[k]]),
-            params=params
+            times=@view(t[[k]])
         )
-        logdmeasure!(
+        @inbounds logdmeasure!(
             object,
-            @view(w[:,:,:,[k]]),
+            @view(w[:,:,:,[k]]);
             times=@view(t[[k]]),
             y=@view(y[:,:,[k]]),
-            x=@view(xp[:,:,[k]]),
-            params=params
+            x=@view(xp[:,:,[k]])
         )
-        pfilt_step_comps!(
+        @inbounds pfilt_step_comps!(
             @view(cond_logLik[k]),
             @view(eff_sample_size[k]),
             @view(w[1,:,1,k]),
             @view(xp[:,:,k]),
             @view(xf[:,:,k]),
         )
-        t0 = t[k]
-        x0 = view(xf,:,:,k)
+        @inbounds t0 = t[k]
+        @inbounds x0 = view(xf,:,:,k)
     end
 end
 
@@ -179,35 +133,33 @@ pfilt_step_comps!(
     w::AbstractArray{W,1},
     xp::AbstractArray{X,2},
     xf::AbstractArray{X,2},
+    n::Int64 = length(w),
 ) where {W<:Real,X<:NamedTuple} = let
-    n::Int64 = length(w)
     p = Array{Int64}(undef,n)
     wmax::W = -Inf
-    @inbounds for k ∈ eachindex(w)
-        if (w[k] > wmax)
-            wmax = w[k]
-        end
-    end
     s::W = 0
     ss::W = 0
+    for k ∈ eachindex(w)
+        @inbounds wmax = (w[k] > wmax) ? w[k] : wmax
+    end
     if isfinite(wmax)
-        @inbounds for k ∈ eachindex(w)
-            v::W = exp(w[k]-wmax)
+        for k ∈ eachindex(w)
+            @inbounds v::W = exp(w[k]-wmax)
             s += v
             ss += v*v
-            w[k] = s
+            @inbounds w[k] = s
         end
         ess[] = s*s/ss
         logLik[] = wmax+log(s/n)
         du::W = s/n
         u::W = -du*Random.rand()
         i::Int64 = 1
-        @inbounds for j ∈ axes(xf,1)
+        for j ∈ axes(xf,1)
             u += du
-            while (u > w[i] && i < n)
+            @inbounds while (u > w[i] && i < n)
                 i += 1
             end
-            p[j] = i
+            @inbounds p[j] = i
         end
         @inbounds @views xf[:,:] = xp[p,:]
     else

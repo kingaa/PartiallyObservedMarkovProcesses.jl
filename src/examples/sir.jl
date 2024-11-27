@@ -68,5 +68,5 @@ sir = function(
         logdmeasure = function (;reports,ρ,k,C,_...)
             logpdf(NegativeBinomial(k,k/(k+ρ*C)),reports)
         end
-    )
+    )[1]
 end
