@@ -64,4 +64,5 @@ timezero
 ```@docs
 gompertz
 sir
+rmca
 ```

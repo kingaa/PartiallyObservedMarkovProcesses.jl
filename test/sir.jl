@@ -115,12 +115,13 @@ $d1 |>
   guides(color="none")+
   facet_wrap(~name,scales="free_y")+
   theme_bw()
-ggsave(filename="sir-01.png",width=7,height=4)
 """
+
+    R"""ggsave(filename="sir-01.png",width=7,height=4)"""
 
     @rget dat
     P = pomp(dat,times=:time,t0=0.0,rinit=P.rinit,rprocess=P.rprocess,logdmeasure=P.logdmeasure,accumvars=P.accumvars,params=coef(P))
-    
+
     println("POMP.jl pfilter times (SIR)")
     @time Pf = pfilter(P,Np=1000,params=theta);
     @time Pf = pfilter(P,Np=1000,params=theta);
@@ -142,7 +143,8 @@ $d2 |>
   guides(color="none")+
   facet_wrap(~name,scales="free_y",ncol=1)+
   theme_bw()
-ggsave(filename="sir-02.png",width=7,height=4)
 """
+
+    R"""ggsave(filename="sir-02.png",width=7,height=4)"""
 
 end

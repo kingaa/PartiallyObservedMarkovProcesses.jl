@@ -8,7 +8,7 @@ import Distributions: Binomial, NegativeBinomial, logpdf
         ρ = 0.3, k = 10,
         S₀ = 0.9, I₀ = 0.01, R₀ = 0.1,
         δt = 0.1, t₀ = 0.0,
-        times = [t for t ∈ range(start=1.0,stop=90,step=1.0)]
+        times = range(start=1.0,stop=90,step=1.0)
        )
 
 `sir` returns a *PompObject* containing simulated SIR data.
@@ -30,7 +30,7 @@ sir = function(
     ρ = 0.3, k = 10,
     S₀ = 0.9, I₀ = 0.01, R₀ = 0.1,
     δt = 0.1, t₀ = 0.0,
-    times = [t for t ∈ range(start=1.0,stop=90,step=1.0)],
+    times = range(start=1.0,stop=90,step=1.0)
     )
     simulate(
         params=(

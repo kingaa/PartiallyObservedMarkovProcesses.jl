@@ -59,7 +59,7 @@ end
 pomp(
     data::Union{Vector{Y},Nothing} = nothing;
     t0::T1,
-    times::Union{T,Vector{T}},
+    times::Union{T,AbstractVector{T}},
     params::Union{P,Nothing} = nothing,
     accumvars::Union{<:NamedTuple,Nothing} = nothing,
     rinit::Union{Function,Nothing} = nothing,
@@ -70,7 +70,7 @@ pomp(
     if T != T1
         error("`t0` and time-vector must have the same elementary type.")
     end
-    times = val_array(times)
+    times = val_array(Vector{T}(times))
     if t0 > times[1]
         error("`t0` must be no later than first observation time.")
     end
