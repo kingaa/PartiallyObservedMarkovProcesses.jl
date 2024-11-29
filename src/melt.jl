@@ -1,5 +1,7 @@
 export melt
 
+import DataFrames: DataFrame, allcombinations
+
 melt(x::Nothing) = DataFrame()
 
 melt(x::NamedTuple; margins...) = DataFrame(;merge(x,margins)...)

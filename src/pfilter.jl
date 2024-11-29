@@ -152,7 +152,7 @@ pfilt_step_comps!(
         ess[] = s*s/ss
         logLik[] = wmax+log(s/n)
         du::W = s/n
-        u::W = -du*Random.rand()
+        u::W = -du*rand(Float64)
         i::Int64 = 1
         for j ∈ axes(xf,1)
             u += du

@@ -1,15 +1,13 @@
 using POMP
-using DataFrames
 using Distributions
 using Random
-using RCall
 using Test
 
 @testset "pfilter" begin
 
     Random.seed!(263260083)
 
-    k = systematic_resample(10,[3.1;3;1;;0;0;1]);
+    k = systematic_resample(10,[3.1,3,1,0,0,1]);
     @test length(k)==10
     @test all(k.!=4) && all(k.!=5)
 

@@ -1,30 +1,31 @@
 export systematic_resample, systematic_resample!
 
 systematic_resample!(
-    p::AbstractVector{Int64},
-    w::AbstractArray{Float64},
-) = let
+    p::AbstractVector{I},
+    w::AbstractVector{F},
+) where {I<:Integer,F<:Real} = let
     Np = length(p)
-    w = cumsum(vec(w))
+    w = cumsum(w)
     n = length(w)
     @assert w[n] >= 0 "in `systematic_resample`: sum of weights should be positive!"
-    du = w[n]/Float64(Np);
-    u = -du*Random.rand()
+    du = w[n]/F(Np);
+    u = -du*rand(F)
     i = 1
     for j ∈ eachindex(p)
         u += du
-        while (u > w[i] && i < n)
+        @inbounds while (u > w[i] && i < n)
             i += 1
         end
-        p[j] = i
+        @inbounds p[j] = i
     end
 end
 
 systematic_resample(
-    Np::Int64,
-    w::AbstractArray{Float64},
+    Np::Integer,
+    w::AbstractVector{<:Real},
+    I::Type = Int64,
 ) = let
-    p = Array{Int64}(undef,Np)
+    p = Vector{I}(undef,Np)
     systematic_resample!(p,w)
-    p                           # COV_EXCL_LINE
+    p
 end

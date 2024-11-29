@@ -95,10 +95,9 @@ pomp(
     )
 end
 
-"""
-Alternatively, one can construct a *PompObject* from a DataFrame.
-In this case, `times` should be the Symbol of the time-variable.
-"""
+import DataFrames: DataFrame, select, eachrow
+import InvertedIndices: Not
+
 pomp(
     data::DataFrame;
     t0::T,

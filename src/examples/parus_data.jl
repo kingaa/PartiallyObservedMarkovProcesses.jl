@@ -1,5 +1,5 @@
-using DataFrames: DataFrame
-using CSV: File
+import DataFrames: DataFrame
+import CSV: File
 
 export parus_data
 
