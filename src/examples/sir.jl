@@ -11,7 +11,7 @@ import Distributions: Binomial, NegativeBinomial, logpdf
         times = [t for t ∈ range(start=1.0,stop=90,step=1.0)]
        )
 
-`sir` returns a *SimPompObject* containing simulated SIR data.
+`sir` returns a *PompObject* containing simulated SIR data.
 
 ## Parameters
 
