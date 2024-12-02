@@ -1,5 +1,6 @@
 ## To-do List
 
+- speed trials for `rmca`
 - plug-ins for *rprocess*
 - It&ocirc;-diffusion example
 - iterated filtering

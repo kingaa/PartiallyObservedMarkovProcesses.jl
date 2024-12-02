@@ -1,7 +1,7 @@
 module POMP
 
 include("reshape.jl")
-include("pomp.jl")
+include("constructor.jl")
 include("helpers.jl")
 include("rinit.jl")
 include("rprocess.jl")
