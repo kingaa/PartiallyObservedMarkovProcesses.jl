@@ -82,7 +82,9 @@ P |>
     @time pfilter(P,params=theta,Np=10000)
     @time Pf = pfilter(P,params=theta,Np=10000)
 
-    println("POMP.jl likelihood estimate (Gompertz)")
-    println(round(Pf.logLik,digits=2))
+    println(
+        "POMP.jl likelihood estimate (Gompertz): ",
+        round(Pf.logLik,digits=2)
+    )
 
 end

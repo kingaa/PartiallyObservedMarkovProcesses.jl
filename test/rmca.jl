@@ -1,23 +1,32 @@
 using POMP
 using RCall
+using Test
+using Random: seed!
 
-P = rmca()
+seed!(875002133)
 
-R"""
+@testset "Rosenzweig-MacArthur model" begin
+
+    println("POMP.jl simulations (Rosenzweig-MacArthur)")
+    @time P = rmca()
+    @time P = rmca()
+    @test isa(P,POMP.PompObject)
+
+    R"""
 library(tidyverse)
 $(melt(P)) |>
-   ggplot(aes(x=N,y=P))+
+   ggplot(aes(x=n,y=p))+
    geom_path()+
    scale_x_log10()+
    scale_y_log10()+
    theme_bw()
 """
 
-R"""ggsave(filename="rmca-01.png",width=7,height=7)"""
+    R"""ggsave(filename="rmca-01.png",width=7,height=7)"""
 
-R"""
+    R"""
 $(melt(P)) |>
-   select(time,N,P) |>
+   select(time,n,p) |>
    pivot_longer(-time) |>
    ggplot(aes(x=time,y=value))+
    geom_line()+
@@ -25,6 +34,16 @@ $(melt(P)) |>
    theme_bw()
 """
 
-R"""ggsave(filename="rmca-02.png",width=7,height=4)"""
+    R"""ggsave(filename="rmca-02.png",width=7,height=4)"""
 
-pfilter(P,Np=1000).logLik
+    println("POMP.jl pfilter (Rosenzweig-MacArthur)")
+    P = rmca(δt=0.1,σ=0.1,times=range(1.0,20.0,step=1.0))
+    @time Pf = pfilter(P,Np=1000)
+    @time Pf = pfilter(P,Np=1000)
+    @test isa(Pf,POMP.PfilterdPompObject)
+    println(
+        "POMP.jl likelihood estimate (Rosenzweig-MacArthur): ",
+        round(Pf.logLik,digits=2)
+    )
+
+end

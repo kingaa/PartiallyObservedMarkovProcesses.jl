@@ -45,7 +45,7 @@ end
   One can also supply a DataFrame.
 - `t0`: zero time, t₀.
 - `times`: observation times. If `data` is supplied as a DataFrame, `times` should be a Symbol which is the time variable in the DataFrame.
-- `params`: parameters. A NamedTuple or vector of NaedTuples.
+- `params`: parameters. A NamedTuple or vector of NamedTuples.
 - `accumvars`: a NamedTuple of state variables to be reset (usually to zero) immediately before each simulation stage.
 - `rinit`: simulator of the latent-state distribution at t₀.
   This component should be a function that takes parameters and, optionally, `t0`, the initial time.

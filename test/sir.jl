@@ -129,8 +129,10 @@ $d1 |>
     @time Pf = pfilter(P,Np=1000,params=theta);
 
     Pf = pfilter(Pf,Np=1000);
-    println("POMP.jl likelihood estimate (SIR)")
-    println(round(Pf.logLik,digits=2))
+    println(
+        "POMP.jl likelihood estimate (SIR): ",
+        round(Pf.logLik,digits=2)
+    )
 
     d2 = melt(Pf)
 

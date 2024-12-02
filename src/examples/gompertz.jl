@@ -15,7 +15,7 @@ The time-step is one unit: ``\delta{t}=1``.
 The data are assumed to be drawn from a log-normal distribution.
 In particular,
 ```math
-Y_t \sim \mathrm{LogNormal}(\log{X_t},\sigma_m).
+\mathrm{pop}_t \sim \mathrm{LogNormal}(\log{X_t},\sigma_m).
 ```
 
 ## Parameters
