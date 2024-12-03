@@ -68,13 +68,12 @@ timezero
 
 ## Examples
 
-```@example
-using POMP, RCall               #hide
-R"""                            #hide
-options(tidyverse.quiet=TRUE)   #hide
-library(tidyverse)              #hide
-"""                             #hide
-nothing                         #hide
+```@setup
+using POMP, RCall
+R"""
+options(tidyverse.quiet=TRUE)
+library(tidyverse)
+"""
 ```
 
 ### The Gompertz model
