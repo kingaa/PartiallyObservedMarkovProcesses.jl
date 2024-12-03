@@ -62,6 +62,7 @@ logdmeasure!
 coef
 obs
 states
+init_state
 times
 timezero
 ```

@@ -4,8 +4,6 @@ export rmeasure
     rmeasure(object; x, times=times(object), params=coef(object))
 
 `rmeasure` is the workhorse for the simulator of the measurement distribution.
-
-The user can supply an *rmeasure* component as a function that takes states, parameters, and, optionally, `t`, the current time.
 """
 rmeasure(
     object::AbstractPompObject;

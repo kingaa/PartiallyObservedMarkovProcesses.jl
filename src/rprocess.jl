@@ -31,14 +31,14 @@ rprocess(
 end
 
 """
-    rprocess!(object, x; x0, t0 = timezero(object), times=times(object), params)
+    rprocess!(object, x; x0 = init_state(object), t0 = timezero(object), times=times(object), params = coef(object))
 
 `rprocess!` is the in-place version of the `rprocess` workhorse.
 """
 rprocess!(
     object::AbstractPompObject,
     x::AbstractArray{X,3};
-    x0::AbstractArray{X,2} = object.init_state,
+    x0::AbstractArray{X,2} = init_state(object),
     t0::T = timezero(object),
     times::AbstractVector{T} = times(object),
     params::Union{P,AbstractVector{P}} = coef(object),
