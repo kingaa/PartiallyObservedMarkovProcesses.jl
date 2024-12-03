@@ -1,20 +1,28 @@
 export simulate
 
 """
-    simulate(object; params, nsim = 1, args...)
+    simulate(object; nsim = 1, params, rinit, rprocess, rmeasure, args...)
 
-`simulate` simulates the POMP.
-`args...` can be used to modify or unset fields.
+`simulate` simulates the POMP.  At least the `rinit`, `rprocess`, and `rmeasure` basic components, are needed.
 """
 simulate(
-    object::AbstractPompObject;
-    params::Union{P,AbstractVector{P}} = coef(object),
+    object::ValidPompData = nothing;
     nsim::Integer = 1,
+    params::Union{P,AbstractVector{P}} = coef(object),
+    rinit::Union{Function,Missing} = missing,
+    rprocess::Union{Function,Missing} = missing,
+    rmeasure::Union{Function,Missing} = missing,
     args...,
 ) where {P<:NamedTuple} = let
     try
         params = val_array(params)
-        object = pomp(object;args...)
+        object = pomp(
+            object;
+            rinit=rinit,
+            rprocess=rprocess,
+            rmeasure=rmeasure,
+            args...,
+        )
         [simulate1(object,params[j])
          for i ∈ 1:nsim, j ∈ eachindex(params)]
     catch e
@@ -26,21 +34,9 @@ simulate(
     end
 end
 
-"""
-    simulate(; params, nsim = 1, args...)
-
-`args...` can be used to specify the PompObject.
-"""
-simulate(
-    ;params::Union{P,AbstractVector{P}},
-    nsim::Integer = 1,
-    args...,
-) where {P<:NamedTuple} =
-    simulate(pomp(;args...),params=params,nsim=nsim)
-
 simulate1(
     object::AbstractPompObject,
-    params::P = coef(object),
+    params::P,
 ) where {P<:NamedTuple} = let
     params = val_array(params)
     x0 = rinit(object,params=params,nsim=1)

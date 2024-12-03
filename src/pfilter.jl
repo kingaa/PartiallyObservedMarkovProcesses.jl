@@ -24,23 +24,34 @@ pomp(object::PfilterdPompObject) = object.pompobj
 export pfilter
 
 """
-    pfilter(object; params, Np = 1, args...)
+    pfilter(object; Np = 1, params, rinit, rprocess, logmeasure, args...)
 
 `pfilter` runs a basic particle filter.
-`args...` can be used to modify or unset fields.
+At least the `rinit`, `rprocess`, and `logdmeasure` basic components are needed.
+`args...` can be used to modify or unset additional fields.
 """
 pfilter(
-    object::AbstractPompObject;
-    params::P = coef(object),
+    object::ValidPompData;
     Np::Integer = 1,
+    params::P = coef(object),
+    rinit::Union{Function,Missing} = missing,
+    rprocess::Union{Function,Missing} = missing,
+    logdmeasure::Union{Function,Missing} = missing,
     args...,
 ) where {P<:NamedTuple} = let
     try
-        object = pomp(object;params=params,args...)
+        object = pomp(
+            object;
+            params=params,
+            rinit=rinit,
+            rprocess=rprocess,
+            logdmeasure=logdmeasure,
+            args...,
+        )
         t0 = timezero(object)
         t = times(object)
         y = obs(object)
-        x0 = rinit(object,t0=t0,nsim=Np)
+        x0 = POMP.rinit(object;t0=t0,nsim=Np)
         X = eltype(x0)
         xf = Array{X}(undef,Np,length(t))
         xp = Array{X}(undef,Np,length(t))

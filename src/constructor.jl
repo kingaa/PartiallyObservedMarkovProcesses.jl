@@ -1,5 +1,7 @@
 export pomp
 
+import DataFrames: DataFrame
+
 abstract type AbstractPompObject{T,P,A,X0,X,Y} end
 
 struct PompObject{
@@ -14,7 +16,7 @@ struct PompObject{
     times::Vector{T}
     accumvars::A
     params::P
-    init_states::X0
+    init_state::X0
     states::X
     obs::Y
     rinit::Union{Function,Nothing}
@@ -22,6 +24,14 @@ struct PompObject{
     rmeasure::Union{Function,Nothing}
     logdmeasure::Union{Function,Nothing}
 end
+
+## The following type is valid for the `object` in a call to a POMP function.
+ValidPompData = Union{
+    Nothing,
+    Vector{<:NamedTuple},
+    DataFrame,
+    AbstractPompObject
+}
 
 """
 `pomp` is the constructor for the *PompObject* class.
@@ -101,7 +111,7 @@ pomp(
     times::Symbol,
     args...,
 ) where {T<:Time} = begin
-    time = getproperty(data,times)
+    time = getproperty(data,times)::Vector{T}
     data = NamedTuple.(eachrow(select(data,Not(times))))
     pomp(data;t0=t0,times=time,args...)
 end
