@@ -17,7 +17,7 @@ logdmeasure(
         params = val_array(params)
         x = val_array(x,length(params),length(times))
         y = val_array(y,length(params),length(times))
-        ell = Array{Float64}(undef,size(y,1),size(x)...)
+        ell = Array{LogLik}(undef,size(y,1),size(x)...)
         logdmeasure!(object,ell;times=times,y=y,x=x,params=params)
         ell
     catch e
@@ -36,12 +36,12 @@ end
 """
 logdmeasure!(
     object::AbstractPompObject,
-    ell::AbstractArray{Float64,4};
+    ell::AbstractArray{W,4};
     times::AbstractVector{T} = times(object),
     y::AbstractArray{Y,M} = obs(object),
     x::AbstractArray{X,N} = states(object),
     params::Union{P,AbstractVector{P}} = coef(object),
-) where {M,N,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
+) where {M,N,W<:Real,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
     try
         params = val_array(params)
         @assert length(params)==size(x,2)
@@ -62,23 +62,23 @@ end
 
 logdmeasure_internal!(
     f::Nothing,
-    ell::AbstractArray{Float64,4},
+    ell::AbstractArray{W,4},
     _...,
-) = begin
+) where {W<:Real} = begin
     for i ∈ eachindex(ell)
-        @inbounds ell[i] = 0.0
+        @inbounds ell[i] = W(0.0)
     end
 end
 
 logdmeasure_internal!(
     f::Function,
-    ell::AbstractArray{Float64,4},
+    ell::AbstractArray{W,4},
     times::AbstractVector{T},
     y::AbstractArray{Y,3},
     x::AbstractArray{X,3},
     params::AbstractVector{P},
-) where {T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
+) where {W<:Real,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
     for iy ∈ axes(y,1), ix ∈ axes(x,1), j ∈ eachindex(params), k ∈ eachindex(times)
-        @inbounds ell[iy,ix,j,k] = f(;t=times[k],y[iy,j,k]...,x[ix,j,k]...,params[j]...)::Float64
+        @inbounds ell[iy,ix,j,k] = f(;t=times[k],y[iy,j,k]...,x[ix,j,k]...,params[j]...)::W
     end
 end

@@ -89,13 +89,13 @@ using Test
     @test_throws r"parameter .* undefined" rmeasure(P,x=x[1,:,:],params=(a=1.0,))
 
     ell = logdmeasure(P,x=x,y=y,params=[p1;p2]);
-    @test isa(ell,Array{Float64,4})
+    @test isa(ell,Array{POMP.LogLik,4})
     @test size(ell)==(size(y,1),size(x)...)
     @test all(ell.==0.0)
 
     P = pomp(P,logdmeasure=logdmeas);
     ell = logdmeasure(P,x=x,y=y,params=[p1;p2]);
-    @test isa(ell,Array{Float64,4})
+    @test isa(ell,Array{POMP.LogLik,4})
     @test size(ell)==(size(y,1),size(x)...)
     @test all(ell.<=0)
     @test_throws r"parameter .* undefined" logdmeasure(P,y=y,x=x,params=(a=1.0,))

@@ -11,10 +11,10 @@ struct PfilterdPompObject{
     x0::Array{<:NamedTuple,1}
     filt::Array{<:NamedTuple,2}
     pred::Array{<:NamedTuple,2}
-    weights::Array{Float64,2}
-    eff_sample_size::Array{Float64,1}
-    cond_logLik::Array{Float64,1}
-    logLik::Float64
+    weights::Array{LogLik,2}
+    eff_sample_size::Array{LogLik,1}
+    cond_logLik::Array{LogLik,1}
+    logLik::LogLik
 end
 
 export pomp
@@ -44,9 +44,9 @@ pfilter(
         X = eltype(x0)
         xf = Array{X}(undef,Np,length(t))
         xp = Array{X}(undef,Np,length(t))
-        w = Array{Float64}(undef,Np,length(t))
-        cond_logLik = Array{Float64}(undef,length(t))
-        eff_sample_size = Array{Float64}(undef,length(t))
+        w = Array{LogLik}(undef,Np,length(t))
+        cond_logLik = Array{LogLik}(undef,length(t))
+        eff_sample_size = Array{LogLik}(undef,length(t))
         pfilter_internal!(
             object,
             x0,
@@ -93,12 +93,12 @@ pfilter_internal!(
     x0::AbstractArray{X,2},
     xf::AbstractArray{X,3},
     xp::AbstractArray{X,3},
-    w::AbstractArray{Float64,4},
+    w::AbstractArray{LogLik,4},
     t0::T,
     t::AbstractVector{T},
     y::AbstractArray{Y,3},
-    eff_sample_size::AbstractVector{Float64},
-    cond_logLik::AbstractVector{Float64},
+    eff_sample_size::AbstractVector{LogLik},
+    cond_logLik::AbstractVector{LogLik},
 ) where {T,X,Y} = let
     for k ∈ eachindex(t)
         @inbounds rprocess!(
@@ -152,7 +152,7 @@ pfilt_step_comps!(
         ess[] = s*s/ss
         logLik[] = wmax+log(s/n)
         du::W = s/n
-        u::W = -du*rand(Float64)
+        u::W = -du*rand(LogLik)
         i::Int64 = 1
         for j ∈ axes(xf,1)
             u += du

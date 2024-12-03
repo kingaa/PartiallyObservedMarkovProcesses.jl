@@ -1,8 +1,5 @@
 export pomp
 
-## Time is the type of time
-Time = Real
-
 abstract type AbstractPompObject{T,P,A,X0,X,Y} end
 
 struct PompObject{
