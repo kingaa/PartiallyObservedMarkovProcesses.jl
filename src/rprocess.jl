@@ -76,7 +76,7 @@ rproc_internal!(
     _...,
 ) where {T<:Time,X<:NamedTuple} = begin
     for k ∈ eachindex(times)
-        @inbounds @views x[:,:,k] = x0
+        @inbounds x[:,:,k] = x0
     end
 end
 
@@ -98,7 +98,7 @@ rproc_internal!(
             @inbounds while t < times[k]
                 @inbounds t,x1... = f(;t=t,x1...,params[j]...)
             end
-            @inbounds @views x[i,j,k] = x1
+            @inbounds x[i,j,k] = x1
         end
     end
 end
@@ -114,7 +114,6 @@ rproc_internal!(
     params::AbstractVector{P},
     accumvars::NamedTuple{N},
 ) where {M,N,T<:Time,X<:NamedTuple{M},P<:NamedTuple} = let
-    local Q = Tuple(setdiff(M,N)) # non-accumulator variables
     for i ∈ axes(x0,1), j ∈ eachindex(params)
         t = t0
         x1 = x0[i,j]

@@ -46,7 +46,7 @@ rinit!(
 ) where {T,X,P<:NamedTuple} = let
     try
         params = val_array(params)
-        rinit_internal!(pomp(object).rinit,x0,t0,params)
+        rinit_internal!(x0,pomp(object).rinit,t0,params)
     catch e
         if isa(e,UndefKeywordError)
             error("in `rinit!`: parameter " * string(e.var) * " undefined.")
@@ -75,8 +75,8 @@ rinit_internal(
     [f(;params[j]...,t0=t0) for i ∈ 1:nsim, j ∈ eachindex(params)]
 
 rinit_internal!(
-    f::Nothing,
     x0::AbstractArray{X},
+    f::Nothing,
     t0::Any,
     params::AbstractVector{P},
 ) where {X,P<:NamedTuple} = begin
@@ -85,8 +85,8 @@ rinit_internal!(
 end
 
 rinit_internal!(
-    f::Function,
     x0::AbstractArray{X,2},
+    f::Function,
     t0::T,
     params::AbstractVector{P},
 ) where {T<:Time,X,P<:NamedTuple} = begin

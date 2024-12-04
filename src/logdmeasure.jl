@@ -48,7 +48,7 @@ logdmeasure!(
         @assert length(params)==size(y,2)
         @assert length(times)==size(x,3)
         @assert length(times)==size(y,3)
-        logdmeasure_internal!(pomp(object).logdmeasure,ell,times,y,x,params)
+        logdmeasure_internal!(ell,pomp(object).logdmeasure,times,y,x,params)
     catch e
         if isa(e,UndefKeywordError)
             error("in `logdmeasure!`: parameter " * string(e.var) * " undefined.")
@@ -61,8 +61,8 @@ logdmeasure!(
 end
 
 logdmeasure_internal!(
-    f::Nothing,
     ell::AbstractArray{W,4},
+    f::Nothing,
     _...,
 ) where {W<:Real} = begin
     for i ∈ eachindex(ell)
@@ -71,8 +71,8 @@ logdmeasure_internal!(
 end
 
 logdmeasure_internal!(
-    f::Function,
     ell::AbstractArray{W,4},
+    f::Function,
     times::AbstractVector{T},
     y::AbstractArray{Y,3},
     x::AbstractArray{X,3},

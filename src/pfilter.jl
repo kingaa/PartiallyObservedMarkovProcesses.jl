@@ -172,13 +172,13 @@ pfilt_step_comps!(
             end
             @inbounds p[j] = i
         end
-        @inbounds @views xf[:,:] = xp[p,:]
+        @inbounds xf[:,:] = xp[p,:]
     else
         s = 0
         ss = 0
         wmax = 0
         ess[] = 0
         logLik[] = -Inf
-        @inbounds @views xf[:,:] = xp[:,:]
+        @inbounds xf[:,:] = xp[:,:]
     end
 end

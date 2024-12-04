@@ -12,12 +12,12 @@ melt(x::AbstractPompObject; id...) = let
     n = length(t)
     s = isnothing(states(x)) ? fill((;),n) : states(x)
     d = isnothing(obs(x)) ? fill((;),n) : obs(x)
-    if length(id) > 0
-        ids = fill(NamedTuple(id),n)
-        DataFrame(map(merge,ids,t,d,s))
-    else
-        DataFrame(map(merge,t,d,s))
-    end
+    DataFrame(
+        map(
+            (t,d,s) -> merge((;id...),t,d,s),
+            t,d,s
+        )
+    )
 end
 
 melt(x::PfilterdPompObject; id...) =
