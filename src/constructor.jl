@@ -77,7 +77,7 @@ pomp(
     if T != T1
         error("`t0` and time-vector must have the same elementary type.")
     end
-    times = val_array(Vector{T}(times))
+    times = val_array(collect(times))
     if t0 > times[1]
         error("`t0` must be no later than first observation time.")
     end
