@@ -1,8 +1,7 @@
 ## To-do List
 
-- speed trials for `rmca`
 - plug-ins for *rprocess*
-- It&ocirc;-diffusion example
+- speed trials for `rmca`
 - iterated filtering
 - weighted particle filter
 - multiparameter particle filter? should be trivial from existing
