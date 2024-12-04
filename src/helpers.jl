@@ -47,4 +47,4 @@ coef(object::AbstractPompObject) = pomp(object).params
 coef(object::AbstractArray{<:AbstractPompObject}) = coef.(object)
 
 Base.show(io::IO, object::AbstractPompObject) =
-    println(io,"<" * string(typeof(object).name.name) * ">.")
+    println(io,"<" * string(typeof(object).name.name) * ">")

@@ -92,8 +92,8 @@ d = melt(P)
 R"""
 svg("assets/figures/gompertz1.svg",width=7,height=4) #hide
 $d |>
-  pivot_longer(-time) |>
-  ggplot(aes(x=time,y=value))+
+  pivot_longer(-year) |>
+  ggplot(aes(x=year,y=value))+
   geom_line()+
   facet_wrap(~name,scales="free_y",ncol=1)+
   labs(y="")+
@@ -116,8 +116,8 @@ d = melt(Q,:rep,:parset)
 R"""
 svg("assets/figures/gompertz2.svg",width=7,height=5) #hide
 $d |>
-  pivot_longer(-c(time,rep,parset)) |>
-  ggplot(aes(x=time,y=value,group=rep,color=factor(rep)))+
+  pivot_longer(-c(year,rep,parset)) |>
+  ggplot(aes(x=year,y=value,group=rep,color=factor(rep)))+
   geom_line()+
   geom_point()+
   facet_wrap(~name,scales="free_y",ncol=1)+

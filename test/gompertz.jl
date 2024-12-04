@@ -45,14 +45,15 @@ using Test
 library(tidyverse)
 bind_rows($s,$d) |>
   mutate(data=if_else(rep==0,"data","simulation")) |>
-  ggplot(aes(x=time,group=rep,color=factor(rep)))+
+  ggplot(aes(x=year,group=rep,color=factor(rep)))+
   geom_point(aes(y=pop,shape=data))+
   geom_line(aes(y=X))+
   guides(color="none",size="none")+
   labs(shape="")+
   scale_y_sqrt()+
   theme_bw()
-ggsave(filename="gompertz-01.png",width=7,height=4)
-"""
+  """
+
+    R"""ggsave(filename="gompertz-01.png",width=7,height=4)"""
 
 end

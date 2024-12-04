@@ -35,7 +35,7 @@ simulate(
 end
 
 simulate1(
-    object::AbstractPompObject,
+    object::PompObject,
     params::P,
 ) where {P<:NamedTuple} = let
     params = val_array(params)
@@ -43,7 +43,9 @@ simulate1(
     x = rprocess(object,x0=x0,params=params)
     y = rmeasure(object,x=x,params=params)
     PompObject(
-        object.t0,object.times,
+        object.t0,
+        object.times,
+        object.timevar,
         object.accumvars,
         params[1],x0[1],vec(x),vec(y),
         object.rinit,

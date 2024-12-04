@@ -14,6 +14,7 @@ struct PompObject{
     } <: AbstractPompObject{T,P,A,X0,X,Y}
     t0::T
     times::Vector{T}
+    timevar::Symbol
     accumvars::A
     params::P
     init_state::X0
@@ -38,7 +39,7 @@ ValidPompData = Union{
 
     pomp(
         data;
-        t0, times,
+        t0, times, timevar,
         params,
         accumvars,
         rinit, rprocess,
@@ -52,6 +53,7 @@ ValidPompData = Union{
   One can also supply a DataFrame.
 - `t0`: zero time, t₀.
 - `times`: observation times. If `data` is supplied as a DataFrame, `times` should be a Symbol which is the time variable in the DataFrame.
+- `timevar`: optional symbol.  Name of the time variable.
 - `params`: parameters. A NamedTuple or vector of NamedTuples.
 - `accumvars`: a NamedTuple of state variables to be reset (usually to zero) immediately before each simulation stage.
 - `rinit`: simulator of the latent-state distribution at t₀.
@@ -67,6 +69,7 @@ pomp(
     data::Union{Vector{Y},Nothing} = nothing;
     t0::T1,
     times::Union{T,AbstractVector{T}},
+    timevar::Symbol = :time,
     params::Union{P,Nothing} = nothing,
     accumvars::Union{<:NamedTuple,Nothing} = nothing,
     rinit::Union{Function,Nothing} = nothing,
@@ -90,6 +93,7 @@ pomp(
     PompObject(
         t0,
         times,
+        timevar,
         accumvars,
         params,
         nothing,
@@ -113,7 +117,7 @@ pomp(
 ) where {T<:Time} = begin
     time = getproperty(data,times)::Vector{T}
     data = NamedTuple.(eachrow(select(data,Not(times))))
-    pomp(data;t0=t0,times=time,args...)
+    pomp(data;t0=t0,times=time,timevar=times,args...)
 end
 
 """
@@ -134,6 +138,7 @@ The default is to leave them unchanged.
 pomp(
     object::AbstractPompObject;
     params::Union{NamedTuple,Nothing,Missing} = missing,
+    timevar::Union{Symbol,Missing} = missing,
     accumvars::Union{NamedTuple,Nothing,Missing} = missing,
     rinit::Union{Function,Nothing,Missing} = missing,
     rprocess::Union{Function,Nothing,Missing} = missing,
@@ -142,6 +147,9 @@ pomp(
 ) = begin
     if ismissing(params)
         params = pomp(object).params
+    end
+    if ismissing(timevar)
+        timevar = pomp(object).timevar
     end
     if ismissing(accumvars)
         accumvars = pomp(object).accumvars
@@ -161,6 +169,7 @@ pomp(
     PompObject(
         pomp(object).t0,
         pomp(object).times,
+        timevar,
         accumvars,
         params,
         nothing,
