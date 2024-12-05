@@ -98,10 +98,13 @@ ll |>
 
     println("POMP.jl simulation times (SIR)")
     @time Q = simulate(P,nsim=1000,params=theta);
+    @test typeof(Q[1])!=typeof(P)
     @time Q = simulate(Q[1],nsim=1000);
     @time Q = simulate(Q[1],nsim=1000);
     @time Q = simulate(Q[1],nsim=1000);
     @time Q = simulate(P,nsim=5);
+    @time Q = simulate(P,nsim=5);
+    @test typeof(Q[1])==typeof(P)
 
     d1 = melt(Q,:rep,:parset);
 
