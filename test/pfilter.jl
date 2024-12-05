@@ -18,7 +18,7 @@ using Test
 
     rlin = function (;t,a,x,_...)
         d = Poisson(a*x)
-        (t=t+1,x=rand(d))
+        (x=rand(d),)
     end
 
     rmeas = function (;x,k,_...)
@@ -38,7 +38,7 @@ using Test
         times=[i for i=0:20],
         params=p1,
         rinit=rin,
-        rprocess=rlin,
+        rprocess=euler(rlin,dt=1),
         rmeasure=rmeas,
         logdmeasure=logdmeas
     );
@@ -50,7 +50,7 @@ using Test
         times=times(P),
         t0=0,
         rinit=rin,
-        rprocess=rlin,
+        rprocess=euler(rlin,dt=1),
         rmeasure=rmeas,
         logdmeasure=logdmeas
     );

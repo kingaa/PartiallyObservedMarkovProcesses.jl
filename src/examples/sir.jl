@@ -37,7 +37,6 @@ sir = function(
             β=β,γ=γ,N=N,
             ρ=ρ,k=k,
             S₀=S₀,I₀=I₀,R₀=R₀,
-            δt=δt,
         ),
         t0=t₀,
         times=times,
@@ -51,17 +50,19 @@ sir = function(
                 C=0,
             )
         end,
-        rprocess = function (;t,S,I,R,C,N,β,γ,δt,_...)
-            infection = rand(Binomial(S,1-exp(-β*I/N*δt)))
-            recovery = rand(Binomial(I,1-exp(-γ*δt)))
-            (
-                t=t+δt,
-                S=S-infection,
-                I=I+infection-recovery,
-                R=R+recovery,
-                C=C+recovery,
-            )
-        end,
+        rprocess = euler(
+            function (;t,S,I,R,C,N,β,γ,dt,_...)
+                infection = rand(Binomial(S,1-exp(-β*I/N*dt)))
+                recovery = rand(Binomial(I,1-exp(-γ*dt)))
+                (
+                    S=S-infection,
+                    I=I+infection-recovery,
+                    R=R+recovery,
+                    C=C+recovery,
+                )
+            end,
+            dt=δt
+        ),
         rmeasure = function (;ρ,k,C,_...)
             (
                 reports=rand(NegativeBinomial(k,k/(k+ρ*C))),

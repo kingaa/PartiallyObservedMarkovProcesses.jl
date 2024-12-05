@@ -1,4 +1,4 @@
-export rprocess, rprocess!
+export rprocess, rprocess!, euler
 
 """
     rprocess(object; x0, t0 = timezero(object), times=times(object), params = coef(object))
@@ -84,7 +84,7 @@ end
 ## this the case with no accumulator variables
 rproc_internal!(
     x::AbstractArray{X,3},
-    f::Function,
+    plugin::Function,
     x0::AbstractArray{X,2},
     times::AbstractVector{T},
     t0::T,
@@ -95,9 +95,7 @@ rproc_internal!(
         t = t0
         @inbounds x1 = x0[i,j]
         for k ∈ eachindex(times)
-            @inbounds while t < times[k]
-                @inbounds t,x1... = f(;t=t,x1...,params[j]...)
-            end
+            @inbounds t,x1 = plugin(t,times[k],x1,params[j])
             @inbounds x[i,j,k] = x1
         end
     end
@@ -107,22 +105,33 @@ end
 ## this the case with accumulator variables
 rproc_internal!(
     x::AbstractArray{X,3},
-    f::Function,
+    plugin::Function,
     x0::AbstractArray{X,2},
     times::AbstractVector{T},
     t0::T,
     params::AbstractVector{P},
-    accumvars::NamedTuple{N},
-) where {M,N,T<:Time,X<:NamedTuple{M},P<:NamedTuple} = let
+    accumvars::NamedTuple,
+) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = let
     for i ∈ axes(x0,1), j ∈ eachindex(params)
         t = t0
-        x1 = x0[i,j]
+        @inbounds x1 = x0[i,j]
         for k ∈ eachindex(times)
             x1 = merge(x1,accumvars)
-            while t < times[k]
-                t,x1... = f(;t=t,x1...,params[j]...)
-            end
-            x[i,j,k] = x1
+            @inbounds t,x1 = plugin(t,times[k],x1,params[j])
+            @inbounds x[i,j,k] = x1
         end
+    end
+end
+
+euler(
+    stepfun::F;
+    dt::T,
+) where {F<:Function,T<:Time} = let
+    function(t,tf,x,params)
+        while t < tf
+            x = stepfun(;t=t,dt=dt,x...,params...)
+            t = t+dt
+        end
+        t, x
     end
 end

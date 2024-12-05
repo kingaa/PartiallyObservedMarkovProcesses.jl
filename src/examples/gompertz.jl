@@ -33,11 +33,14 @@ gompertz = function()
         rinit = function (;X₀,_...)
             (;X=X₀,)
         end,
-        rprocess = function (;t,X,σₚ,r,K,_...)
-            s = exp(-r)
-            d = LogNormal(s*log(X)+(1-s)*log(K),σₚ)
-            (;t=t+1,X=rand(d),)
-        end,
+        rprocess = euler(
+            function (;t,X,σₚ,r,K,_...)
+                s = exp(-r)
+                d = LogNormal(s*log(X)+(1-s)*log(K),σₚ)
+                (;X=rand(d),)
+            end,
+            dt=1
+        ),
         rmeasure = function (;X,σₘ,_...)
             d = LogNormal(log(X),σₘ)
             (;pop=rand(d),)

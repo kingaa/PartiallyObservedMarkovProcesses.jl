@@ -56,11 +56,14 @@ P |>
         rinit=function(;X₀,_...)
             (X=X₀,)
         end,
-        rprocess=function(;t,X,K,r,σ,_...)
-            S = exp(-r)
-            eps = if (σ > 0) exp(σ*randn()) else 1 end
-            (t=t+1,X=K^(1-S)*X^S*eps,)
-        end,
+        rprocess=euler(
+            function(;t,X,K,r,σ,_...)
+                S = exp(-r)
+                eps = if (σ > 0) exp(σ*randn()) else 1 end
+                (X=K^(1-S)*X^S*eps,)
+            end,
+            dt=1
+        ),
         rmeasure=function(;X,τ,_...)
             d = LogNormal(log(X),τ)
             (Y=rand(d),)

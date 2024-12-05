@@ -101,24 +101,26 @@ rmca = function(
                 Y=log(P₀),
             )
         end,
-        rprocess = function (;t,X,Y,b,c,r,K,A,m,V,δt,_...)
-            N = exp(X)
-            P = exp(Y)
-            mu = [r*N; r*N*N/K; c*P*N/(1+N/A); m*P]
-            dW = randn(4)*sqrt(δt/V)
-            dG = mu*δt+sqrt.(mu).*dW
-            dN = dG[1]-dG[2]-dG[3]
-            dP = b*dG[3]-dG[4]
-            dN2 = (mu[1]+mu[2]+mu[3])*δt/V
-            dP2 = (b*b*mu[3]+mu[4])*δt/V
-            dX = (N*V < 1) ? -Inf : (dN-dN2/N/2)/N
-            dY = (P*V < 1) ? -Inf : (dP-dP2/P/2)/P
-            (
-                t=t+δt,
-                X=X+dX,
-                Y=Y+dY
-            )
-        end,
+        rprocess = euler(
+            function (;t,dt,X,Y,b,c,r,K,A,m,V,_...)
+                N = exp(X)
+                P = exp(Y)
+                mu = [r*N; r*N*N/K; c*P*N/(1+N/A); m*P]
+                dW = randn(4)*sqrt(dt/V)
+                dG = mu*dt+sqrt.(mu).*dW
+                dN = dG[1]-dG[2]-dG[3]
+                dP = b*dG[3]-dG[4]
+                dN2 = (mu[1]+mu[2]+mu[3])*dt/V
+                dP2 = (b*b*mu[3]+mu[4])*dt/V
+                dX = (N*V < 1) ? -Inf : (dN-dN2/N/2)/N
+                dY = (P*V < 1) ? -Inf : (dP-dP2/P/2)/P
+                (
+                    X=X+dX,
+                    Y=Y+dY
+                )
+            end,
+            dt=δt
+        ),
         rmeasure = function (;X,Y,σ,_...)
             (
                 n=rand(LogNormal(X,σ)),

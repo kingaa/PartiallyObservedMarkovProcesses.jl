@@ -16,7 +16,7 @@ using Test
 
     rlin = function (;t,a,x,_...)
         d = Poisson(a*x)
-        (t=t+1,x=rand(d))
+        (x=rand(d),)
     end
 
     rmeas = function (;x,k,_...)
@@ -66,7 +66,7 @@ using Test
     @test size(x)==(7,2,21)
     @test x[:,:,21]==x0
 
-    P = pomp(P,rprocess=rlin);
+    P = pomp(P,rprocess=euler(rlin,dt=1));
     x = rprocess(P,x0=x0,params=[p1;p2]);
     @test isa(x,Array{<:NamedTuple,3})
     @test size(x)==(7,2,21)
@@ -185,7 +185,7 @@ $d |>
         P = pomp(P,rinit=function(;_...) error("yikes!") end);
         @test_throws "in `rinit`: yikes!" rinit(P,params=(x₀=3,))
         @test_throws "in `rinit!`: yikes!" rinit!(P,x0,params=(x₀=3,))
-        P = pomp(P,rprocess=function(;_...) error("yikes!") end);
+        P = pomp(P,rprocess=euler(function(;_...) error("yikes!") end,dt=1));
         @test_throws "in `rprocess!`: yikes!" rprocess(P,params=(x₀=3,),x0=x0)
         P = pomp(P,rmeasure=function(;_...) error("yikes!") end);
         @test_throws "in `rmeasure`: yikes!" rmeasure(P,params=(a=1,),x=x)
