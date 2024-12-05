@@ -2,7 +2,11 @@ using POMP
 using Test
 
 @testset verbose=true "POMP.jl" begin
-    include("test1.jl")
+    include("basic.jl")
+    include("errors.jl")
+    include("val_array.jl")
+    include("helpers.jl")
+    include("melt.jl")
     include("gompertz.jl")
     include("sir.jl")
     include("rmca.jl")

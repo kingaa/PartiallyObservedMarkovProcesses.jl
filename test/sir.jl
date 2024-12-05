@@ -123,7 +123,16 @@ $d1 |>
     R"""ggsave(filename="sir-01.png",width=7,height=4)"""
 
     @rget dat
-    P = pomp(dat,times=:time,t0=0.0,rinit=P.rinit,rprocess=P.rprocess,logdmeasure=P.logdmeasure,accumvars=P.accumvars,params=coef(P))
+    P = pomp(
+        dat,
+        times=:time,
+        t0=0.0,
+        accumvars=(C=0,),
+        rinit=P.rinit,
+        rprocess=P.rprocess,
+        logdmeasure=P.logdmeasure,
+        params=coef(P)
+    )
 
     println("POMP.jl pfilter times (SIR)")
     @time Pf = pfilter(P,Np=1000,params=theta);
