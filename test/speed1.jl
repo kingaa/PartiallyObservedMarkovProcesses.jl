@@ -74,12 +74,15 @@ P |>
     println("POMP.jl simulation times (Gompertz)")
     @time simulate(P,params=theta,nsim=10000)
     @time simulate(P,params=theta,nsim=10000)
+    @time Q = simulate(P,params=theta,nsim=100)
+    @time Q = simulate(P,params=theta,nsim=1000)
     @time Q = simulate(P,params=theta,nsim=10000)
-
 
     println("POMP.jl pfilter times (Gompertz)")
     @time pfilter(P,params=theta,Np=10000)
     @time pfilter(P,params=theta,Np=10000)
+    @time Pf = pfilter(P,params=theta,Np=100)
+    @time Pf = pfilter(P,params=theta,Np=1000)
     @time Pf = pfilter(P,params=theta,Np=10000)
 
     println(
