@@ -32,7 +32,7 @@ rprocess(
         times = val_array(times)
         params = val_array(params)
         x0 = val_array(x0,length(params))
-        x = Array{X}(undef,size(x0)...,length(times))
+        x = similar(x0,length(times),size(x0)...)
         rprocess!(object,x,x0=x0,t0=t0,times=times,params=params)
         x
     catch e
@@ -59,10 +59,10 @@ rprocess!(
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
     try
         params = val_array(params)
-        @assert size(x0,1)==size(x,1)
-        @assert length(params)==size(x0,2)
+        @assert length(times)==size(x,1)
         @assert length(params)==size(x,2)
-        @assert length(times)==size(x,3)
+        @assert length(params)==size(x0,1)
+        @assert size(x0,2)==size(x,3)
         rproc_internal!(
             x,
             pomp(object).rprocess,
@@ -90,7 +90,7 @@ rproc_internal!(
     _...,
 ) where {T<:Time,X<:NamedTuple} = begin
     for k ∈ eachindex(times)
-        @inbounds x[:,:,k] = x0
+        @inbounds x[k,:,:] = x0
     end
 end
 
@@ -105,11 +105,11 @@ rproc_internal!(
     params::AbstractVector{P},
     accumvars::Nothing,
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = let
-    for i ∈ axes(x0,1), j ∈ eachindex(params)
+    for j ∈ eachindex(params), k ∈ axes(x0,2)
         t = t0
-        @inbounds x1 = x0[i,j]
-        for k ∈ eachindex(times)
-            @inbounds t,x1 = rprocess_step(plugin,t,times[k],x1,params[j])
+        @inbounds x1 = x0[j,k]
+        for i ∈ eachindex(times)
+            @inbounds t,x1 = rprocess_step(plugin,t,times[i],x1,params[j])
             @inbounds x[i,j,k] = x1
         end
     end
@@ -126,12 +126,12 @@ rproc_internal!(
     params::AbstractVector{P},
     accumvars::A
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple,A<:NamedTuple} = let
-    for i ∈ axes(x0,1), j ∈ eachindex(params)
+    for j ∈ eachindex(params), k ∈ axes(x0,2)
         t = t0
-        @inbounds x1 = x0[i,j]
-        for k ∈ eachindex(times)
+        @inbounds x1 = x0[j,k]
+        for i ∈ eachindex(times)
             x1 = merge(x1,accumvars)::X
-            @inbounds t,x1 = rprocess_step(plugin,t,times[k],x1,params[j])
+            @inbounds t,x1 = rprocess_step(plugin,t,times[i],x1,params[j])
             @inbounds x[i,j,k] = x1
         end
     end

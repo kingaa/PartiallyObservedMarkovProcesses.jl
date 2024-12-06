@@ -23,8 +23,8 @@ simulate(
             rmeasure=rmeasure,
             args...,
         )
-        [simulate1(object,params[j])
-         for i ∈ 1:nsim, j ∈ eachindex(params)]
+        [simulate1(object,params[i])
+         for i ∈ eachindex(params), j ∈ 1:nsim]
     catch e
         if hasproperty(e,:msg)
             error("in `simulate`: " * e.msg)

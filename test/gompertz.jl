@@ -14,31 +14,35 @@ using Test
     p1 = (r=4.5,K=210.0,σₚ=0.7,σₘ=0.1,X₀=150.0);
 
     x0 = rinit(P,nsim=5,params=p1);
-    @test size(x0)==(5,1)
+    @test size(x0)==(1,5)
     @test keys(x0[1])==(:X,)
 
     x = rprocess(P,x0=x0,params=p1);
-    @test size(x)==(5,1,27)
+    @test size(x)==(27,1,5)
     @test keys(x[33])==(:X,)
 
     y = rmeasure(P,x=x,params=p1);
-    @test size(y)==(5,1,27)
+    @test size(y)==(27,1,5)
     @test keys(y[2])==(:pop,)
 
-    y1 = rmeasure(P,x=x[:,:,3],times=1970,params=p1);
-    @test size(y1)==(5,1,1)
+    y1 = rmeasure(P,x=x[3,:,:],times=1970,params=p1);
+    @test size(y1)==(1,1,5)
+
+    ell = logdmeasure(P,x=x,y=y,params=p1);
+    @test size(ell)==(27,1,5,5)
 
     p = [p1; p1];
     x0 = rinit(P,params=p,nsim=3);
     x = rprocess(P,x0=x0,params=p);
-    y = rmeasure(P,x=x[:,:,3:4],params=p,times=times(P)[3:4]);
-    @test size(x0)==(3,2)
-    @test size(x)==(3,2,27)
-    @test size(y)==(3,2,2)
+    y = rmeasure(P,x=x[3:4,:,:],params=p,times=times(P)[3:4]);
+    @test size(x0)==(2,3)
+    @test size(x)==(27,2,3)
+    @test size(y)==(2,2,3)
 
     Q = simulate(P,params=p1,nsim=3);
+    Pf = pfilter(Q[1],Np=100);
 
-    s = melt(Q,:rep,:parset);
+    s = melt(Q,:parset,:rep);
     d = melt(P,rep=0);
 
     R"""

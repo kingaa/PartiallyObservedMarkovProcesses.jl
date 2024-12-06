@@ -64,7 +64,7 @@ rinit_internal(
     params::AbstractVector{P},
     nsim::Integer = 1
 ) where {P<:NamedTuple} =
-    fill((;),nsim,length(params))
+    fill((;),length(params),nsim)
 
 rinit_internal(
     f::Function,
@@ -72,14 +72,13 @@ rinit_internal(
     params::AbstractVector{P},
     nsim::Integer = 1,
 ) where {T<:Time,P<:NamedTuple} =
-    [f(;params[j]...,t0=t0) for i ∈ 1:nsim, j ∈ eachindex(params)]
+    [f(;params[i]...,t0=t0) for i ∈ eachindex(params), _ ∈ 1:nsim]
 
 rinit_internal!(
     x0::AbstractArray{X},
     f::Nothing,
-    t0::Any,
-    params::AbstractVector{P},
-) where {X,P<:NamedTuple} = begin
+    _...,
+) where {X} = begin
     fill!(x0,(;))
     nothing
 end
@@ -90,7 +89,7 @@ rinit_internal!(
     t0::T,
     params::AbstractVector{P},
 ) where {T<:Time,X,P<:NamedTuple} = begin
-    for i ∈ axes(x0,1), j ∈ eachindex(params)
-        x0[i,j] = f(;params[j]...,t0=t0)::X
+    for i ∈ eachindex(params), j ∈ axes(x0,2)
+        x0[i,j] = f(;params[i]...,t0=t0)::X
     end                         # COV_EXCL_LINE
 end

@@ -3,7 +3,7 @@ using Distributions
 using Random
 using Test
 
-@testset "pfilter" begin
+@testset verbose=true "pfilter" begin
 
     Random.seed!(263260083)
 
@@ -35,7 +35,7 @@ using Test
 
     P = simulate(
         t0=0,
-        times=[i for i=0:20],
+        times=0:20,
         params=p1,
         rinit=rin,
         rprocess=discrete_time(rlin,dt=1),
@@ -59,9 +59,9 @@ using Test
     x0 = rinit(P,params=p1,nsim=10);
     y = obs(P);
     t = times(P);
-    x = Array{eltype(x0)}(undef,size(x0,1),1,1);
+    x = similar(x0,1,size(x0)...);
     rprocess!(P,x,x0=x0,times=t[1:1],params=[p1])
-    @test x0==x[:,:,1]
+    @test x0==x[1,:,:]
 
     @time Q = pfilter(P,Np=1000,params=p1)
     @time Q = pfilter(P,Np=1000,params=p1)
@@ -69,7 +69,7 @@ using Test
     @test isa(Q,POMP.PfilterdPompObject)
     @time pfilter(Q,params=(a=1.5,k=7.0,x₀=5.0));
     @time pfilter(Q,params=(a=1.5,k=7.0,x₀=5.0));
-    @test all(Q.x0.==Q.pred[:,1])
+    @test all(Q.x0.==Q.pred[1,:])
     @test_throws "in `pfilter`: in `rinit`" pfilter(Q,params=(a=1.5,k=7.0));
 
     d = melt(Q);

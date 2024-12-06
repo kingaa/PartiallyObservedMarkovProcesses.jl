@@ -106,7 +106,7 @@ ll |>
     @time Q = simulate(P,nsim=5);
     @test typeof(Q[1])==typeof(P)
 
-    d1 = melt(Q,:rep,:parset);
+    d1 = melt(Q,:parset,:rep);
 
     R"""
 library(tidyverse)

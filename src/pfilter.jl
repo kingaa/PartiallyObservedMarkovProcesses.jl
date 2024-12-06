@@ -53,20 +53,21 @@ pfilter(
         t = times(object)
         y = obs(object)
         x0 = POMP.rinit(object;t0=t0,nsim=Np)
-        X = eltype(x0)
-        xf = Array{X}(undef,Np,length(t))
-        xp = Array{X}(undef,Np,length(t))
-        w = Array{LogLik}(undef,Np,length(t))
-        cond_logLik = Array{LogLik}(undef,length(t))
-        eff_sample_size = Array{LogLik}(undef,length(t))
+        @assert(size(x0)==(1,Np))
+        xf = similar(x0,length(t),Np)
+        xp = similar(x0,length(t),Np)
+        w = Array{LogLik}(undef,length(t),Np)
+        cond_logLik = similar(w,length(t))
+        eff_sample_size = similar(w,length(t))
+        ## allocate storage for the permutation indices here
         pfilter_internal!(
             object,
             x0,
-            reshape(xf,Np,1,length(t)),
-            reshape(xp,Np,1,length(t)),
-            reshape(w,1,Np,1,length(t)),
+            reshape(xf,length(t),1,Np),
+            reshape(xp,length(t),1,Np),
+            reshape(w,length(t),1,Np,1),
             t0,t,
-            reshape(y,1,1,length(t)),
+            reshape(y,length(t),1,1),
             eff_sample_size,
             cond_logLik
         )
@@ -113,38 +114,38 @@ pfilter_internal!(
     cond_logLik::AbstractVector{LogLik},
 ) where {T,X,Y} = let
     for k ∈ eachindex(t)
-        @inbounds rprocess!(
+        rprocess!(
             object,
-            @view(xp[:,:,[k]]);
+            @view(xp[[k],:,:]);
             x0=x0,
             t0=t0,
             times=@view(t[[k]])
         )
-        @inbounds logdmeasure!(
+        logdmeasure!(
             object,
-            @view(w[:,:,:,[k]]);
+            @view(w[[k],:,:,:]);
             times=@view(t[[k]]),
-            y=@view(y[:,:,[k]]),
-            x=@view(xp[:,:,[k]])
+            y=@view(y[[k],:,:]),
+            x=@view(xp[[k],:,:])
         )
-        @inbounds pfilt_step_comps!(
+        pfilt_step_comps!(
             @view(cond_logLik[k]),
             @view(eff_sample_size[k]),
-            @view(w[1,:,1,k]),
-            @view(xp[:,:,k]),
-            @view(xf[:,:,k]),
+            @view(w[k,1,:,1]),
+            @view(xp[k,1,:]),
+            @view(xf[k,1,:]),
         )
-        @inbounds t0 = t[k]
-        @inbounds x0 = view(xf,:,:,k)
+        t0 = t[k]
+        x0 = view(xf,k,:,:)
     end
 end
 
 pfilt_step_comps!(
     logLik::AbstractArray{W,0},
     ess::AbstractArray{W,0},
-    w::AbstractArray{W,1},
-    xp::AbstractArray{X,2},
-    xf::AbstractArray{X,2},
+    w::AbstractVector{W},
+    xp::AbstractVector{X},
+    xf::AbstractVector{X},
     n::Int64 = length(w),
 ) where {W<:Real,X<:NamedTuple} = let
     p = Array{Int64}(undef,n)
@@ -152,34 +153,34 @@ pfilt_step_comps!(
     s::W = 0
     ss::W = 0
     for k ∈ eachindex(w)
-        @inbounds wmax = (w[k] > wmax) ? w[k] : wmax
+        wmax = (w[k] > wmax) ? w[k] : wmax
     end
     if isfinite(wmax)
         for k ∈ eachindex(w)
-            @inbounds v::W = exp(w[k]-wmax)
+            v::W = exp(w[k]-wmax)
             s += v
             ss += v*v
-            @inbounds w[k] = s
+            w[k] = s
         end
         ess[] = s*s/ss
         logLik[] = wmax+log(s/n)
         du::W = s/n
         u::W = -du*rand(LogLik)
         i::Int64 = 1
-        for j ∈ axes(xf,1)
+        for j ∈ eachindex(xf)
             u += du
-            @inbounds while (u > w[i] && i < n)
+            while (u > w[i] && i < n)
                 i += 1
             end
-            @inbounds p[j] = i
+            p[j] = i
         end
-        @inbounds xf[:,:] = xp[p,:]
+        xf[:] = xp[p]
     else
         s = 0
         ss = 0
         wmax = 0
         ess[] = 0
         logLik[] = -Inf
-        @inbounds xf[:,:] = xp[:,:]
+        xf[:] = xp[:]
     end
 end

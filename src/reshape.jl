@@ -7,7 +7,7 @@ val_array(x::Array{X,N}, dim::Vararg{Integer}) where {X,N} = let
     if r != 0
         error("in `val_array`: size mismatch.")
     else
-        reshape(x,q,dim...)
+        reshape(x,dim...,q)
     end
 end
 

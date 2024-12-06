@@ -8,16 +8,16 @@ export logdmeasure, logdmeasure!
 logdmeasure(
     object::AbstractPompObject;
     times::Union{T,AbstractVector{T}} = times(object),
-    y::Union{Y,AbstractArray{Y,M}} = obs(object),
-    x::Union{X,AbstractArray{X,N}} = states(object),
+    y::Union{Y,AbstractArray{Y}} = obs(object),
+    x::Union{X,AbstractArray{X}} = states(object),
     params::Union{P,AbstractVector{P}} = coef(object),
-) where {M,N,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
+) where {T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
     try
         times = val_array(times)
         params = val_array(params)
-        x = val_array(x,length(params),length(times))
-        y = val_array(y,length(params),length(times))
-        ell = Array{LogLik}(undef,size(y,1),size(x)...)
+        x = val_array(x,length(times),length(params))
+        y = val_array(y,length(times),length(params))
+        ell = Array{LogLik}(undef,size(x)...,size(y,3))
         logdmeasure!(object,ell;times=times,y=y,x=x,params=params)
         ell
     catch e
@@ -38,16 +38,16 @@ logdmeasure!(
     object::AbstractPompObject,
     ell::AbstractArray{W,4};
     times::AbstractVector{T} = times(object),
-    y::AbstractArray{Y,M} = obs(object),
-    x::AbstractArray{X,N} = states(object),
+    y::AbstractArray{Y} = obs(object),
+    x::AbstractArray{X} = states(object),
     params::Union{P,AbstractVector{P}} = coef(object),
-) where {M,N,W<:Real,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
+) where {W<:Real,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
     try
         params = val_array(params)
+        @assert length(times)==size(x,1)
+        @assert length(times)==size(y,1)
         @assert length(params)==size(x,2)
         @assert length(params)==size(y,2)
-        @assert length(times)==size(x,3)
-        @assert length(times)==size(y,3)
         logdmeasure_internal!(ell,pomp(object).logdmeasure,times,y,x,params)
     catch e
         if isa(e,UndefKeywordError)
@@ -66,7 +66,7 @@ logdmeasure_internal!(
     _...,
 ) where {W<:Real} = begin
     for i ∈ eachindex(ell)
-        @inbounds ell[i] = W(0.0)
+        @inbounds ell[i] = W(0)
     end
 end
 
@@ -78,7 +78,7 @@ logdmeasure_internal!(
     x::AbstractArray{X,3},
     params::AbstractVector{P},
 ) where {W<:Real,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
-    for iy ∈ axes(y,1), ix ∈ axes(x,1), j ∈ eachindex(params), k ∈ eachindex(times)
-        @inbounds ell[iy,ix,j,k] = f(;t=times[k],y[iy,j,k]...,x[ix,j,k]...,params[j]...)::W
+    for i ∈ eachindex(times), j ∈ eachindex(params), kx ∈ axes(x,3), ky ∈ axes(y,3)
+        @inbounds ell[i,j,kx,ky] = f(;t=times[i],y[i,j,ky]...,x[i,j,kx]...,params[j]...)::W
     end
 end
