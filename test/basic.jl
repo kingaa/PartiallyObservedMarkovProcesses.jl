@@ -2,11 +2,11 @@ using POMP
 using Random: seed!
 using Test
 
-seed!(263260083)
-
-include("test1.jl")
-
 @testset "constructor and workhorses" begin
+
+    seed!(263260083)
+
+    include("test1.jl")
 
     @test_throws "must be no later than" pomp(times=0:20,t0=5)
     @test_throws "times must be nondecreasing" pomp(t0=0,times=[-t for t in 0:7])
@@ -45,7 +45,7 @@ include("test1.jl")
     @test size(x)==(7,2,21)
     @test x[:,:,21]==x0
 
-    P = pomp(P,rprocess=euler(rlin,dt=1));
+    P = pomp(P,rprocess=discrete_time(rlin));
     x = rprocess(P,x0=x0,params=[p1;p2]);
     @test isa(x,Array{<:NamedTuple,3})
     @test size(x)==(7,2,21)

@@ -38,7 +38,7 @@ using Test
         times=[i for i=0:20],
         params=p1,
         rinit=rin,
-        rprocess=euler(rlin,dt=1),
+        rprocess=discrete_time(rlin),
         rmeasure=rmeas,
         logdmeasure=logdmeas
     );
@@ -50,7 +50,7 @@ using Test
         times=times(P),
         t0=0,
         rinit=rin,
-        rprocess=euler(rlin,dt=1),
+        rprocess=discrete_time(rlin),
         rmeasure=rmeas,
         logdmeasure=logdmeas
     );

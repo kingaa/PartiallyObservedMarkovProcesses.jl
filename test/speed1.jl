@@ -56,13 +56,12 @@ P |>
         rinit=function(;X₀,_...)
             (X=X₀,)
         end,
-        rprocess=euler(
+        rprocess=discrete_time(
             function(;t,X,K,r,σ,_...)
                 S = exp(-r)
                 eps = if (σ > 0) exp(σ*randn()) else 1 end
                 (X=K^(1-S)*X^S*eps,)
-            end,
-            dt=1
+            end
         ),
         rmeasure=function(;X,τ,_...)
             d = LogNormal(log(X),τ)

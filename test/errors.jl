@@ -1,9 +1,9 @@
 using POMP
 using Test
 
-include("test1.jl")
-
 @testset "error messages" begin
+
+    include("test1.jl")
 
     @test_throws "must be no later than" pomp(parus_data,times=:year,t0=1999)
     @test_throws "times must be nondecreasing" pomp(sort(parus_data,:pop),times=:year,t0=1940)
@@ -14,7 +14,7 @@ include("test1.jl")
         t0=0,
         params=theta,
         rinit=rin,
-        rprocess=euler(rlin,dt=1),
+        rprocess=discrete_time(rlin),
         rmeasure=rmeas,
         logdmeasure=logdmeas
     )

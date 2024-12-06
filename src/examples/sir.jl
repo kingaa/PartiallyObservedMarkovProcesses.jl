@@ -33,14 +33,14 @@ sir = function(
     times = range(start=1.0,stop=90,step=1.0)
     )
     simulate(
-        params=(
+        params = (
             β=β,γ=γ,N=N,
             ρ=ρ,k=k,
             S₀=S₀,I₀=I₀,R₀=R₀,
         ),
-        t0=t₀,
-        times=times,
-        accumvars=(C=0,),
+        t0 = t₀,
+        times = times,
+        accumvars = (C=0,),
         rinit = function (;S₀,I₀,R₀,N,_...)
             m = Float64(N)/(Float64(S₀)+Float64(I₀)+Float64(R₀))
             (
@@ -61,7 +61,7 @@ sir = function(
                     C=C+recovery,
                 )
             end,
-            dt=δt
+            dt = δt
         ),
         rmeasure = function (;ρ,k,C,_...)
             (

@@ -127,11 +127,11 @@ $d1 |>
         dat,
         times=:time,
         t0=0.0,
-        accumvars=(C=0,),
         rinit=P.rinit,
         rprocess=P.rprocess,
         logdmeasure=P.logdmeasure,
-        params=coef(P)
+        params=coef(P),
+        accumvars=(C=0,)
     )
 
     println("POMP.jl pfilter times (SIR)")

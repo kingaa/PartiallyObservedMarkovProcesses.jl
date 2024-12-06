@@ -3,9 +3,9 @@ using RCall
 using Test
 using Random: seed!
 
-seed!(875002133)
-
 @testset "Rosenzweig-MacArthur model" begin
+
+    seed!(875002133)
 
     println("POMP.jl simulations (Rosenzweig-MacArthur)")
     @time P = rmca()

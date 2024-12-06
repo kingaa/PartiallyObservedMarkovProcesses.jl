@@ -91,7 +91,7 @@ rmca = function(
             ;r = r, K = K, A = A,
             b = b, c = c, m = m,
             N₀ = N₀, P₀ = P₀,
-            V = V, σ = σ, δt = δt
+            V = V, σ = σ
         ),
         t0=t₀,
         times=times,
@@ -119,7 +119,7 @@ rmca = function(
                     Y=Y+dY
                 )
             end,
-            dt=δt
+            dt = δt
         ),
         rmeasure = function (;X,Y,σ,_...)
             (

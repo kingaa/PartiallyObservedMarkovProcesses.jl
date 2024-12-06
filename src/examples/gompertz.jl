@@ -33,13 +33,12 @@ gompertz = function()
         rinit = function (;X₀,_...)
             (;X=X₀,)
         end,
-        rprocess = euler(
+        rprocess = discrete_time(
             function (;t,X,σₚ,r,K,_...)
                 s = exp(-r)
                 d = LogNormal(s*log(X)+(1-s)*log(K),σₚ)
                 (;X=rand(d),)
-            end,
-            dt=1
+            end
         ),
         rmeasure = function (;X,σₘ,_...)
             d = LogNormal(log(X),σₘ)

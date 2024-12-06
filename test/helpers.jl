@@ -1,14 +1,15 @@
 using POMP
 using Test
 
-include("test1.jl")
-
 @testset "helpers" begin
+
+    include("test1.jl")
+
     P = pomp(
         times=1:21,
         t0=0,
         rinit=rin,
-        rprocess=euler(rlin,dt=1),
+        rprocess=discrete_time(rlin),
         rmeasure=rmeas,
         logdmeasure=logdmeas
     )

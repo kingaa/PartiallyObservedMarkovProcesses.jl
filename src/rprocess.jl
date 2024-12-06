@@ -1,4 +1,4 @@
-export rprocess, rprocess!, euler
+export rprocess, rprocess!, euler, discrete_time
 
 """
     rprocess(object; x0, t0 = timezero(object), times=times(object), params = coef(object))
@@ -70,7 +70,7 @@ end
 ## the default (persistence) rprocess
 rproc_internal!(
     x::AbstractArray{X,3},
-    f::Nothing,
+    plugin::Nothing,
     x0::AbstractArray{X,2},
     times::AbstractVector{T},
     _...,
@@ -95,8 +95,9 @@ rproc_internal!(
         t = t0
         @inbounds x1 = x0[i,j]
         for k ∈ eachindex(times)
-            @inbounds t,x1 = plugin(t,times[k],x1,params[j])
+            @inline @inbounds x1 = plugin(t,times[k],x1,params[j])
             @inbounds x[i,j,k] = x1
+            t = times[k]
         end
     end
 end
@@ -110,28 +111,46 @@ rproc_internal!(
     times::AbstractVector{T},
     t0::T,
     params::AbstractVector{P},
-    accumvars::NamedTuple,
-) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = let
+    accumvars::A
+) where {T<:Time,X<:NamedTuple,P<:NamedTuple,A<:NamedTuple} = let
     for i ∈ axes(x0,1), j ∈ eachindex(params)
         t = t0
         @inbounds x1 = x0[i,j]
         for k ∈ eachindex(times)
-            x1 = merge(x1,accumvars)
-            @inbounds t,x1 = plugin(t,times[k],x1,params[j])
+            x1 = merge(x1,accumvars)::X
+            @inline @inbounds x1 = plugin(t,times[k],x1,params[j])::X
             @inbounds x[i,j,k] = x1
+            @inbounds t = times[k]
         end
+    end
+end
+
+discrete_time(
+    stepfun::F,
+) where {F<:Function} = let
+    function(t, tf, x::X, params) where X
+        while t < tf
+            @inline x = stepfun(;t=t,x...,params...)::X
+            t += 1
+        end
+        x::X
     end
 end
 
 euler(
     stepfun::F;
     dt::T,
-) where {F<:Function,T<:Time} = let
-    function(t,tf,x,params)
-        while t < tf
-            x = stepfun(;t=t,dt=dt,x...,params...)
-            t = t+dt
+) where {F<:Function,T<:Time} =
+    let dt = RealTime(dt)
+        function(t, tf, x::X, params) where X
+            n = ceil(Int64,(tf-t)/dt)
+            if n > 0
+                tstep = (tf-t)/n
+                for _ in 1:n
+                    @inline x = stepfun(;t=t,dt=tstep,x...,params...)::X
+                    t += tstep
+                end
+            end
+            x::X
         end
-        t, x
     end
-end
