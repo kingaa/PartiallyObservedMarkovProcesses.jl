@@ -2,7 +2,7 @@ using POMP
 using DataFrames
 using Test
 
-@testset "melt" begin
+@testset verbose=true "melt" begin
     d = melt(nothing);
     @test isa(d,DataFrame)
     @test size(d)==(0,0)

@@ -38,7 +38,7 @@ using Test
         times=[i for i=0:20],
         params=p1,
         rinit=rin,
-        rprocess=discrete_time(rlin),
+        rprocess=discrete_time(rlin,dt=1),
         rmeasure=rmeas,
         logdmeasure=logdmeas
     );

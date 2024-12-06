@@ -5,8 +5,9 @@ struct PfilterdPompObject{
     X0 <: Union{<:NamedTuple,Nothing},
     X <: Union{Vector{<:NamedTuple},Nothing},
     Y <: Vector{<:NamedTuple},
-    } <: AbstractPompObject{T,P,A,X0,X,Y}
-    pompobj::PompObject{T,P,A,X0,X,Y}
+    F
+    } <: AbstractPompObject{T,P,A,X0,X,Y,F}
+    pompobj::PompObject{T,P,A,X0,X,Y,F}
     Np::Integer
     x0::Array{<:NamedTuple,1}
     filt::Array{<:NamedTuple,2}
@@ -35,7 +36,7 @@ pfilter(
     Np::Integer = 1,
     params::P = coef(object),
     rinit::Union{Function,Missing} = missing,
-    rprocess::Union{Function,Missing} = missing,
+    rprocess::Union{PompPlugin,Missing} = missing,
     logdmeasure::Union{Function,Missing} = missing,
     args...,
 ) where {P<:NamedTuple} = let

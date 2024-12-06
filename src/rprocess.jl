@@ -1,4 +1,18 @@
-export rprocess, rprocess!, euler, discrete_time
+export rprocess, rprocess!, euler, discrete_time, onestep
+
+struct EulerPlugin{F<:Function} <: PompPlugin
+    stepfun::F
+    stepsize::RealTime
+end
+
+struct DiscreteTimePlugin{F<:Function,T<:Time} <: PompPlugin
+    stepfun::F
+    stepsize::T
+end
+
+struct OneStepPlugin{F<:Function} <: PompPlugin
+    stepfun::F
+end
 
 """
     rprocess(object; x0, t0 = timezero(object), times=times(object), params = coef(object))
@@ -81,10 +95,10 @@ rproc_internal!(
 end
 
 ## advance the state for each IC and parameter
-## this the case with no accumulator variables
+## without accumulators
 rproc_internal!(
     x::AbstractArray{X,3},
-    plugin::Function,
+    plugin::PompPlugin,
     x0::AbstractArray{X,2},
     times::AbstractVector{T},
     t0::T,
@@ -95,18 +109,17 @@ rproc_internal!(
         t = t0
         @inbounds x1 = x0[i,j]
         for k ∈ eachindex(times)
-            @inline @inbounds x1 = plugin(t,times[k],x1,params[j])
+            @inbounds t,x1 = rprocess_step(plugin,t,times[k],x1,params[j])
             @inbounds x[i,j,k] = x1
-            t = times[k]
         end
     end
 end
 
 ## advance the state for each IC and parameter
-## this the case with accumulator variables
+## without accumulators
 rproc_internal!(
     x::AbstractArray{X,3},
-    plugin::Function,
+    plugin::PompPlugin,
     x0::AbstractArray{X,2},
     times::AbstractVector{T},
     t0::T,
@@ -118,39 +131,68 @@ rproc_internal!(
         @inbounds x1 = x0[i,j]
         for k ∈ eachindex(times)
             x1 = merge(x1,accumvars)::X
-            @inline @inbounds x1 = plugin(t,times[k],x1,params[j])::X
+            @inbounds t,x1 = rprocess_step(plugin,t,times[k],x1,params[j])
             @inbounds x[i,j,k] = x1
-            @inbounds t = times[k]
         end
     end
+end
+
+rprocess_step(
+    p::DiscreteTimePlugin{F,T},
+    t0::T,
+    tf::T,
+    x::X,
+    params::NamedTuple,
+) where {F,T<:Time,X<:NamedTuple} = let
+    t = t0
+    while t < tf
+        @inline x = p.stepfun(;t=t,dt=p.stepsize,x...,params...)::X
+        t += p.stepsize
+    end
+    t,x
+end
+
+rprocess_step(
+    p::EulerPlugin{F},
+    t0::T,
+    tf::T,
+    x::X,
+    params::NamedTuple,
+) where {F,T<:RealTime,X<:NamedTuple} = let
+    n = ceil(Int64,(tf-t0)/p.stepsize)
+    if n > 0
+        tstep = (tf-t0)/n
+        t = t0
+        for _ in 1:n
+            @inline x = p.stepfun(;t=t,dt=tstep,x...,params...)::X
+            t += tstep
+        end
+    end
+    tf,x
+end
+
+rprocess_step(
+    p::OneStepPlugin{F},
+    t0::T,
+    tf::T,
+    x::X,
+    params::NamedTuple,
+) where {F,T<:Time,X<:NamedTuple} = let
+    t = t0
+    @inline x = p.stepfun(;t=t,dt=tf-t0,x...,params...)::X
+    tf,x
 end
 
 discrete_time(
-    stepfun::F,
-) where {F<:Function} = let
-    function(t, tf, x::X, params) where X
-        while t < tf
-            @inline x = stepfun(;t=t,x...,params...)::X
-            t += 1
-        end
-        x::X
-    end
-end
+    stepfun::Function;
+    dt::Time = 1,
+) = DiscreteTimePlugin(stepfun,dt)
 
 euler(
-    stepfun::F;
-    dt::T,
-) where {F<:Function,T<:Time} =
-    let dt = RealTime(dt)
-        function(t, tf, x::X, params) where X
-            n = ceil(Int64,(tf-t)/dt)
-            if n > 0
-                tstep = (tf-t)/n
-                for _ in 1:n
-                    @inline x = stepfun(;t=t,dt=tstep,x...,params...)::X
-                    t += tstep
-                end
-            end
-            x::X
-        end
-    end
+    stepfun::Function;
+    dt::Time,
+) = EulerPlugin(stepfun,RealTime(dt))
+
+onestep(
+    stepfun::Function,
+) = OneStepPlugin(stepfun)

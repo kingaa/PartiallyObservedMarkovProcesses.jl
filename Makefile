@@ -9,6 +9,7 @@ xcov:
 
 clean:
 	julia --project -e 'using LocalCoverage; clean_coverage()'
+	rm profile.pb.gz
 
 build:
 	julia --project -e 'import Pkg; Pkg.build()'
@@ -21,5 +22,8 @@ docs:
 
 session: build
 	julia --project
+
+opto: build
+	julia --project -O3
 
 .PHONY: test coverage clean build session docs update

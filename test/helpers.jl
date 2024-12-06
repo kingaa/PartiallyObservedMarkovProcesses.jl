@@ -1,7 +1,7 @@
 using POMP
 using Test
 
-@testset "helpers" begin
+@testset verbose=true "helpers" begin
 
     include("test1.jl")
 

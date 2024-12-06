@@ -2,7 +2,7 @@ using POMP
 using Random: seed!
 using Test
 
-@testset "constructor and workhorses" begin
+@testset verbose=true "constructor and workhorses" begin
 
     seed!(263260083)
 
@@ -45,7 +45,7 @@ using Test
     @test size(x)==(7,2,21)
     @test x[:,:,21]==x0
 
-    P = pomp(P,rprocess=discrete_time(rlin));
+    P = pomp(P,rprocess=discrete_time(rlin,dt=1));
     x = rprocess(P,x0=x0,params=[p1;p2]);
     @test isa(x,Array{<:NamedTuple,3})
     @test size(x)==(7,2,21)

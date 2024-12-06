@@ -38,7 +38,8 @@ gompertz = function()
                 s = exp(-r)
                 d = LogNormal(s*log(X)+(1-s)*log(K),σₚ)
                 (;X=rand(d),)
-            end
+            end,
+            dt=1
         ),
         rmeasure = function (;X,σₘ,_...)
             d = LogNormal(log(X),σₘ)

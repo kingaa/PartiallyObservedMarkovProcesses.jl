@@ -2,7 +2,8 @@ export pomp
 
 import DataFrames: DataFrame
 
-abstract type AbstractPompObject{T,P,A,X0,X,Y} end
+abstract type AbstractPompObject{T,P,A,X0,X,Y,F} end
+abstract type PompPlugin end
 
 struct PompObject{
     T <: Time,
@@ -10,8 +11,9 @@ struct PompObject{
     A <: Union{<:NamedTuple,Nothing},
     X0 <: Union{<:NamedTuple,Nothing},
     X <: Union{Vector{<:NamedTuple},Nothing},
-    Y <: Union{Vector{<:NamedTuple},Nothing}
-    } <: AbstractPompObject{T,P,A,X0,X,Y}
+    Y <: Union{Vector{<:NamedTuple},Nothing},
+    F <: Union{PompPlugin,Nothing},
+    } <: AbstractPompObject{T,P,A,X0,X,Y,F}
     t0::T
     times::Vector{T}
     timevar::Symbol
@@ -21,7 +23,7 @@ struct PompObject{
     states::X
     obs::Y
     rinit::Union{Function,Nothing}
-    rprocess::Union{Function,Nothing}
+    rprocess::F
     rmeasure::Union{Function,Nothing}
     logdmeasure::Union{Function,Nothing}
 end
@@ -59,7 +61,7 @@ ValidPompData = Union{
 - `rinit`: simulator of the latent-state distribution at t₀.
   This component should be a function that takes parameters and, optionally, `t0`, the initial time.
 - `rprocess`: simulator of the latent-state process.
-  This component should be a function that takes states, parameters, and current time (`t`) and returns the updated time and state.
+  This component should be a plugin.
 - `rmeasure`: simulator of the measurement process.
   This component should be a function that takes states, parameters, and, optionally, `t`, the current time.
 - `logdmeasure`: log pdf of the measurement process.
@@ -73,7 +75,7 @@ pomp(
     params::Union{P,Nothing} = nothing,
     accumvars::Union{<:NamedTuple,Nothing} = nothing,
     rinit::Union{Function,Nothing} = nothing,
-    rprocess::Union{Function,Nothing} = nothing,
+    rprocess::Union{<:PompPlugin,Nothing} = nothing,
     rmeasure::Union{Function,Nothing} = nothing,
     logdmeasure::Union{Function,Nothing} = nothing,
 ) where {Y<:NamedTuple,T1<:Time,T<:Time,P<:NamedTuple} = begin
@@ -141,7 +143,7 @@ pomp(
     timevar::Union{Symbol,Missing} = missing,
     accumvars::Union{NamedTuple,Nothing,Missing} = missing,
     rinit::Union{Function,Nothing,Missing} = missing,
-    rprocess::Union{Function,Nothing,Missing} = missing,
+    rprocess::Union{PompPlugin,Nothing,Missing} = missing,
     rmeasure::Union{Function,Nothing,Missing} = missing,
     logdmeasure::Union{Function,Nothing,Missing} = missing,
 ) = begin

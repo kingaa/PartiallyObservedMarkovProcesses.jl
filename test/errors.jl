@@ -1,7 +1,7 @@
 using POMP
 using Test
 
-@testset "error messages" begin
+@testset verbose=true "error messages" begin
 
     include("test1.jl")
 
@@ -14,7 +14,7 @@ using Test
         t0=0,
         params=theta,
         rinit=rin,
-        rprocess=discrete_time(rlin),
+        rprocess=discrete_time(rlin,dt=1),
         rmeasure=rmeas,
         logdmeasure=logdmeas
     )
@@ -26,7 +26,7 @@ using Test
     P = pomp(P,rinit=function(;_...) error("yikes!") end);
     @test_throws "in `rinit`: yikes!" rinit(P,params=(x₀=3,))
     @test_throws "in `rinit!`: yikes!" rinit!(P,x0,params=(x₀=3,))
-    P = pomp(P,rprocess=function(_...) error("yikes!") end);
+    P = pomp(P,rprocess=onestep(function(;_...) error("yikes!") end));
     @test_throws "in `rprocess!`: yikes!" rprocess(P,params=(x₀=3,),x0=x0)
     P = pomp(P,rmeasure=function(;_...) error("yikes!") end);
     @test_throws "in `rmeasure`: yikes!" rmeasure(P,params=(a=1,),x=x)
