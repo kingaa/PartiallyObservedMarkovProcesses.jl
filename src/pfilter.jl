@@ -13,6 +13,7 @@ struct PfilterdPompObject{
     filt::Array{<:NamedTuple,2}
     pred::Array{<:NamedTuple,2}
     weights::Array{LogLik,2}
+    perm::Array{Int64,2}
     eff_sample_size::Array{LogLik,1}
     cond_logLik::Array{LogLik,1}
     logLik::LogLik
@@ -59,7 +60,7 @@ pfilter(
         w = Array{LogLik}(undef,length(t),Np)
         cond_logLik = similar(w,length(t))
         eff_sample_size = similar(w,length(t))
-        ## allocate storage for the permutation indices here
+        perm = Array{Int64}(undef,length(t),Np)
         pfilter_internal!(
             object,
             x0,
@@ -69,12 +70,12 @@ pfilter(
             t0,t,
             reshape(y,length(t),1,1),
             eff_sample_size,
-            cond_logLik
+            cond_logLik,
+            perm
         )
         PfilterdPompObject(
-            object,
-            Np,
-            vec(x0),xf,xp,w,
+            object,Np,
+            vec(x0),xf,xp,w,perm,
             eff_sample_size,
             cond_logLik,
             sum(cond_logLik)
@@ -112,6 +113,7 @@ pfilter_internal!(
     y::AbstractArray{Y,3},
     eff_sample_size::AbstractVector{LogLik},
     cond_logLik::AbstractVector{LogLik},
+    perm::AbstractArray{Int64,2}
 ) where {T,X,Y} = let
     for k ∈ eachindex(t)
         rprocess!(
@@ -132,6 +134,7 @@ pfilter_internal!(
             @view(cond_logLik[k]),
             @view(eff_sample_size[k]),
             @view(w[k,1,:,1]),
+            @view(perm[k,:]),
             @view(xp[k,1,:]),
             @view(xf[k,1,:]),
         )
@@ -144,11 +147,11 @@ pfilt_step_comps!(
     logLik::AbstractArray{W,0},
     ess::AbstractArray{W,0},
     w::AbstractVector{W},
+    p::AbstractVector{I},
     xp::AbstractVector{X},
     xf::AbstractVector{X},
     n::Int64 = length(w),
-) where {W<:Real,X<:NamedTuple} = let
-    p = Array{Int64}(undef,n)
+) where {W<:Real,I<:Integer,X<:NamedTuple} = let
     wmax::W = -Inf
     s::W = 0
     ss::W = 0
@@ -166,8 +169,8 @@ pfilt_step_comps!(
         logLik[] = wmax+log(s/n)
         du::W = s/n
         u::W = -du*rand(LogLik)
-        i::Int64 = 1
-        for j ∈ eachindex(xf)
+        i::I = 1
+        for j ∈ eachindex(p)
             u += du
             while (u > w[i] && i < n)
                 i += 1
@@ -184,3 +187,5 @@ pfilt_step_comps!(
         xf[:] = xp[:]
     end
 end
+
+pfilter(_...) = error("Incorrect call to `pfilter`.")

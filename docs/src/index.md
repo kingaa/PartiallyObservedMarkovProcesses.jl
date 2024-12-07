@@ -19,8 +19,18 @@ mkpath("assets/figures")
 
 ### Implementation of POMP models
 
+#### Basic constructor
+
 ```@docs
 pomp
+```
+
+#### `rprocess` plugins
+
+```@docs
+euler
+discrete_time
+onestep
 ```
 
 ### Simulation

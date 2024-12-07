@@ -54,3 +54,5 @@ simulate1(
         object.logdmeasure
     )
 end
+
+simulate(_...) = error("Incorrect call to `simulate`.")

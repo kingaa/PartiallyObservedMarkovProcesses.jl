@@ -12,7 +12,7 @@ clean:
 	rm profile.pb.gz
 
 build:
-	julia --project -e 'import Pkg; Pkg.build()'
+	julia --project -e 'import Pkg; Pkg.build(); Pkg.precompile()'
 
 update:
 	julia --project -e 'import Pkg; Pkg.update(); Pkg.gc()'

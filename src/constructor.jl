@@ -61,7 +61,7 @@ ValidPompData = Union{
 - `rinit`: simulator of the latent-state distribution at t₀.
   This component should be a function that takes parameters and, optionally, `t0`, the initial time.
 - `rprocess`: simulator of the latent-state process.
-  This component should be a plugin.
+  This component should be a plugin (see [`euler`](@ref), [`onestep`](@ref), and [`discrete_time`](@ref)).
 - `rmeasure`: simulator of the measurement process.
   This component should be a function that takes states, parameters, and, optionally, `t`, the current time.
 - `logdmeasure`: log pdf of the measurement process.
@@ -79,33 +79,41 @@ pomp(
     rmeasure::Union{Function,Nothing} = nothing,
     logdmeasure::Union{Function,Nothing} = nothing,
 ) where {Y<:NamedTuple,T1<:Time,T<:Time,P<:NamedTuple} = begin
-    if T != T1
-        error("`t0` and time-vector must have the same elementary type.")
+    try
+        if T != T1
+            error("`t0` and time-vector must have the same elementary type.")
+        end
+        times = val_array(collect(times))
+        if t0 > times[1]
+            error("`t0` must be no later than first observation time.")
+        end
+        if any(diff(times).<0)
+            error("observation times must be nondecreasing.")
+        end
+        if !isnothing(data) && length(data) != length(times)
+            error("data and times must be of the same length.")
+        end
+        PompObject(
+            t0,
+            times,
+            timevar,
+            accumvars,
+            params,
+            nothing,
+            nothing,
+            data,
+            rinit,
+            rprocess,
+            rmeasure,
+            logdmeasure
+        )
+    catch e
+        if hasproperty(e,:msg)
+            error("in `pomp` constructor : " * e.msg)
+        else
+            throw(e)            # COV_EXCL_LINE
+        end
     end
-    times = val_array(collect(times))
-    if t0 > times[1]
-        error("`t0` must be no later than first observation time.")
-    end
-    if any(diff(times).<0)
-        error("observation times must be nondecreasing.")
-    end
-    if !isnothing(data) && length(data) != length(times)
-        error("data and times must be of the same length.")
-    end
-    PompObject(
-        t0,
-        times,
-        timevar,
-        accumvars,
-        params,
-        nothing,
-        nothing,
-        data,
-        rinit,
-        rprocess,
-        rmeasure,
-        logdmeasure
-    )
 end
 
 import DataFrames: DataFrame, select, eachrow
@@ -147,39 +155,49 @@ pomp(
     rmeasure::Union{Function,Nothing,Missing} = missing,
     logdmeasure::Union{Function,Nothing,Missing} = missing,
 ) = begin
-    if ismissing(params)
-        params = pomp(object).params
+    try
+        if ismissing(params)
+            params = pomp(object).params
+        end
+        if ismissing(timevar)
+            timevar = pomp(object).timevar
+        end
+        if ismissing(accumvars)
+            accumvars = pomp(object).accumvars
+        end
+        if ismissing(rinit)
+            rinit = pomp(object).rinit
+        end
+        if ismissing(rprocess)
+            rprocess = pomp(object).rprocess
+        end
+        if ismissing(rmeasure)
+            rmeasure = pomp(object).rmeasure
+        end
+        if ismissing(logdmeasure)
+            logdmeasure = pomp(object).logdmeasure
+        end
+        PompObject(
+            pomp(object).t0,
+            pomp(object).times,
+            timevar,
+            accumvars,
+            params,
+            nothing,
+            nothing,
+            pomp(object).obs,
+            rinit,
+            rprocess,
+            rmeasure,
+            logdmeasure
+        )
+    catch e
+        if hasproperty(e,:msg)
+            error("in `pomp` reconfigure: " * e.msg)
+        else
+            throw(e)            # COV_EXCL_LINE
+        end
     end
-    if ismissing(timevar)
-        timevar = pomp(object).timevar
-    end
-    if ismissing(accumvars)
-        accumvars = pomp(object).accumvars
-    end
-    if ismissing(rinit)
-        rinit = pomp(object).rinit
-    end
-    if ismissing(rprocess)
-        rprocess = pomp(object).rprocess
-    end
-    if ismissing(rmeasure)
-        rmeasure = pomp(object).rmeasure
-    end
-    if ismissing(logdmeasure)
-        logdmeasure = pomp(object).logdmeasure
-    end
-    PompObject(
-        pomp(object).t0,
-        pomp(object).times,
-        timevar,
-        accumvars,
-        params,
-        nothing,
-        nothing,
-        pomp(object).obs,
-        rinit,
-        rprocess,
-        rmeasure,
-        logdmeasure
-    )
 end
+
+pomp(_...) = error("Incorrect call to `pomp`.")

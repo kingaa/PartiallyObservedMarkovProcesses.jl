@@ -1,18 +1,4 @@
-export rprocess, rprocess!, euler, discrete_time, onestep
-
-struct EulerPlugin{F<:Function} <: PompPlugin
-    stepfun::F
-    stepsize::RealTime
-end
-
-struct DiscreteTimePlugin{F<:Function,T<:Time} <: PompPlugin
-    stepfun::F
-    stepsize::T
-end
-
-struct OneStepPlugin{F<:Function} <: PompPlugin
-    stepfun::F
-end
+export rprocess, rprocess!
 
 """
     rprocess(object; x0, t0 = timezero(object), times=times(object), params = coef(object))
@@ -136,63 +122,3 @@ rproc_internal!(
         end
     end
 end
-
-rprocess_step(
-    p::DiscreteTimePlugin{F,T},
-    t0::T,
-    tf::T,
-    x::X,
-    params::NamedTuple,
-) where {F,T<:Time,X<:NamedTuple} = let
-    t = t0
-    while t < tf
-        @inline x = p.stepfun(;t=t,dt=p.stepsize,x...,params...)::X
-        t += p.stepsize
-    end
-    t,x
-end
-
-rprocess_step(
-    p::EulerPlugin{F},
-    t0::T,
-    tf::T,
-    x::X,
-    params::NamedTuple,
-) where {F,T<:RealTime,X<:NamedTuple} = let
-    n = ceil(Int64,(tf-t0)/p.stepsize)
-    if n > 0
-        tstep = (tf-t0)/n
-        t = t0
-        for _ in 1:n
-            @inline x = p.stepfun(;t=t,dt=tstep,x...,params...)::X
-            t += tstep
-        end
-    end
-    tf,x
-end
-
-rprocess_step(
-    p::OneStepPlugin{F},
-    t0::T,
-    tf::T,
-    x::X,
-    params::NamedTuple,
-) where {F,T<:Time,X<:NamedTuple} = let
-    t = t0
-    @inline x = p.stepfun(;t=t,dt=tf-t0,x...,params...)::X
-    tf,x
-end
-
-discrete_time(
-    stepfun::Function;
-    dt::Time = 1,
-) = DiscreteTimePlugin(stepfun,dt)
-
-euler(
-    stepfun::Function;
-    dt::Time,
-) = EulerPlugin(stepfun,RealTime(dt))
-
-onestep(
-    stepfun::Function,
-) = OneStepPlugin(stepfun)
