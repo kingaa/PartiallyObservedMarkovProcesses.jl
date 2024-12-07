@@ -33,4 +33,11 @@ using Test
     P = pomp(P,logdmeasure=function(;_...) error("yikes!") end);
     @test_throws "in `logdmeasure!`: yikes!" logdmeasure(P,params=(a=1,),x=x,y=y)
 
+    @test_throws "Incorrect call" simulate(P,rprocess=onestep("bob"))
+    @test_throws "Incorrect call" simulate(P,rprocess=euler("bob"))
+    @test_throws "Incorrect call" discrete_time("bob")
+    @test_throws "Incorrect call" pomp("bob")    
+    @test_throws "Incorrect call" pfilter("bob")
+    @test_throws "Incorrect call" simulate("bob")    
+
 end

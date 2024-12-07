@@ -17,7 +17,6 @@ end
 """
     discrete_time(stepfun; dt = 1)
 
-An `rprocess` plugin.
 The function `stepfun` should advance the state by one time unit.
 The magnitude of the time unit is `dt`.
 """
@@ -26,12 +25,11 @@ discrete_time(
     dt::Time = 1,
 ) = DiscreteTimePlugin(stepfun,dt)
 
-discrete_time(_...) = error("Incorrect call sequence for `discrete_time`.")
+discrete_time(_...) = error("Incorrect call to `discrete_time`.")
 
 """
     euler(stepfun; dt)
 
-An `rprocess` plugin.
 The function `stepfun` should advance the state by an arbitrary time-increment.
 The time-increment will be chosen so that equal-sized steps of duration at most `dt` are taken over any desired interval.
 """
@@ -40,19 +38,18 @@ euler(
     dt::Time,
 ) = EulerPlugin(stepfun,RealTime(dt))
 
-euler(_...) = error("Incorrect call sequence for `euler`.")
+euler(_...) = error("Incorrect call to `euler`.")
 
 """
     onestep(stepfun)
 
-An `rprocess` plugin.
 The function `stepfun` will be called once to advance the latent-state process over an interval of arbitrary duration.
 """
 onestep(
     stepfun::Function,
 ) = OneStepPlugin(stepfun)
 
-onestep(_...) = error("Incorrect call sequence for `onestep`.")
+onestep(_...) = error("Incorrect call to `onestep`.")
 
 rprocess_step(
     p::DiscreteTimePlugin{F,T},

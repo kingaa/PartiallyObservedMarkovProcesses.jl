@@ -192,8 +192,8 @@ pomp(
             logdmeasure
         )
     catch e
-        if hasproperty(e,:msg)
-            error("in `pomp` reconfigure: " * e.msg)
+        if hasproperty(e,:msg)                       # COV_EXCL_LINE
+            error("in `pomp` reconfigure: " * e.msg) # COV_EXCL_LINE
         else
             throw(e)            # COV_EXCL_LINE
         end

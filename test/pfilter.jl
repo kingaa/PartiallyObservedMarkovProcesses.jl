@@ -59,12 +59,12 @@ using Test
     rprocess!(P,x,x0=x0,times=t[1:1],params=[p1])
     @test x0==x[1,:,:]
 
-    @time Q = pfilter(P,Np=1000,params=p1)
-    @time Q = pfilter(P,Np=1000,params=p1)
-    @time Q = pfilter(P,Np=1000,params=p1)
+    Q = pfilter(P,Np=1000,params=p1);
     @test isa(Q,POMP.PfilterdPompObject)
     @time pfilter(Q,params=(a=1.5,k=7.0,x₀=5.0));
     @time pfilter(Q,params=(a=1.5,k=7.0,x₀=5.0));
+    @time pfilter(Q,params=(k=7.0,a=1.5,x₀=5.0));
+    @time pfilter(Q,params=(k=7.0,a=1.5,x₀=5.0));
     @test all(Q.x0.==Q.pred[1,:])
     @test_throws "in `pfilter`: in `rinit`" pfilter(Q,params=(a=1.5,k=7.0));
 

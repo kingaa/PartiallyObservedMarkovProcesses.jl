@@ -73,7 +73,7 @@ P |>
 
 cat("pomp pfilter times (SIR)\n")
 P |>
-  pfilter(Np=1000,save.states="unweighted") |>
+  pfilter(Np=1000,save.states="unweighted",filter.traj=TRUE) |>
   system.time() |>
   getElement(3) |>
   replicate(n=3) |>
@@ -97,13 +97,14 @@ ll |>
     println(theta)
 
     println("POMP.jl simulation times (SIR)")
-    @time Q = simulate(P,nsim=1000,params=theta);
+    Q = simulate(P,nsim=1000,params=theta);
     @test typeof(Q[1])!=typeof(P)
+    Q = simulate(Q[1],nsim=1000);
     @time Q = simulate(Q[1],nsim=1000);
     @time Q = simulate(Q[1],nsim=1000);
     @time Q = simulate(Q[1],nsim=1000);
-    @time Q = simulate(P,nsim=5);
-    @time Q = simulate(P,nsim=5);
+
+    Q = simulate(P,nsim=5);
     @test typeof(Q[1])==typeof(P)
 
     d1 = melt(Q,:parset,:rep);
@@ -135,7 +136,7 @@ $d1 |>
     )
 
     println("POMP.jl pfilter times (SIR)")
-    @time Pf = pfilter(P,Np=1000,params=theta);
+    Pf = pfilter(P,Np=1000,params=theta);
     @time Pf = pfilter(P,Np=1000,params=theta);
     @time Pf = pfilter(P,Np=1000,params=theta);
     @time Pf = pfilter(P,Np=1000,params=theta);

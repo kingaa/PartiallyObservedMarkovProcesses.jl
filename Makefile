@@ -9,7 +9,7 @@ xcov:
 
 clean:
 	julia --project -e 'using LocalCoverage; clean_coverage()'
-	rm profile.pb.gz
+	$(RM) profile.pb.gz
 
 build:
 	julia --project -e 'import Pkg; Pkg.build(); Pkg.precompile()'

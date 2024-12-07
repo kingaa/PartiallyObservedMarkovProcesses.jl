@@ -1,22 +1,18 @@
 struct PfilterdPompObject{
-    T <: Time,
-    P <: NamedTuple,
-    A <: Union{<:NamedTuple,Nothing},
-    X0 <: Union{<:NamedTuple,Nothing},
-    X <: Union{Vector{<:NamedTuple},Nothing},
-    Y <: Vector{<:NamedTuple},
-    F
+    T,P,A,X0,X,Y,F,
+    Z <: NamedTuple,
+    W <: Real
     } <: AbstractPompObject{T,P,A,X0,X,Y,F}
     pompobj::PompObject{T,P,A,X0,X,Y,F}
     Np::Integer
-    x0::Array{<:NamedTuple,1}
-    filt::Array{<:NamedTuple,2}
-    pred::Array{<:NamedTuple,2}
-    weights::Array{LogLik,2}
-    perm::Array{Int64,2}
-    eff_sample_size::Array{LogLik,1}
-    cond_logLik::Array{LogLik,1}
-    logLik::LogLik
+    x0::Array{Z,1}
+    filt::Array{Z,2}
+    pred::Array{Z,2}
+    traj::Vector{Z}
+    weights::Array{W,2}
+    eff_sample_size::Array{W,1}
+    cond_logLik::Array{W,1}
+    logLik::W
 end
 
 export pomp
@@ -57,6 +53,7 @@ pfilter(
         @assert(size(x0)==(1,Np))
         xf = similar(x0,length(t),Np)
         xp = similar(x0,length(t),Np)
+        xt = similar(x0,length(t))
         w = Array{LogLik}(undef,length(t),Np)
         cond_logLik = similar(w,length(t))
         eff_sample_size = similar(w,length(t))
@@ -73,9 +70,10 @@ pfilter(
             cond_logLik,
             perm
         )
+        trace_ancestry!(xt,xf,perm)
         PfilterdPompObject(
             object,Np,
-            vec(x0),xf,xp,w,perm,
+            vec(x0),xf,xp,xt,w,
             eff_sample_size,
             cond_logLik,
             sum(cond_logLik)
@@ -101,6 +99,8 @@ pfilter(
     args...,
 ) =
     pfilter(pomp(object;args...);Np=Np)
+
+pfilter(_...) = error("Incorrect call to `pfilter`.")
 
 pfilter_internal!(
     object::AbstractPompObject,
@@ -156,14 +156,14 @@ pfilt_step_comps!(
     s::W = 0
     ss::W = 0
     for k ∈ eachindex(w)
-        wmax = (w[k] > wmax) ? w[k] : wmax
+        @inbounds wmax = (w[k] > wmax) ? w[k] : wmax
     end
     if isfinite(wmax)
         for k ∈ eachindex(w)
-            v::W = exp(w[k]-wmax)
+            @inbounds v::W = exp(w[k]-wmax)
             s += v
             ss += v*v
-            w[k] = s
+            @inbounds w[k] = s
         end
         ess[] = s*s/ss
         logLik[] = wmax+log(s/n)
@@ -172,20 +172,33 @@ pfilt_step_comps!(
         i::I = 1
         for j ∈ eachindex(p)
             u += du
-            while (u > w[i] && i < n)
+            @inbounds while (u > w[i] && i < n)
                 i += 1
             end
-            p[j] = i
+            @inbounds p[j] = i
         end
-        xf[:] = xp[p]
+        @inbounds xf[:] = xp[p]
     else
         s = 0
         ss = 0
         wmax = 0
         ess[] = 0
         logLik[] = -Inf
-        xf[:] = xp[:]
+        p[:] = collect(eachindex(p))
+        @inbounds xf[:] = xp[:]
     end
 end
 
-pfilter(_...) = error("Incorrect call to `pfilter`.")
+trace_ancestry!(
+    traj::AbstractVector{X},
+    filt::AbstractArray{X,2},
+    perm::AbstractArray{I,2},
+) where {X,I<:Integer} = let
+    @assert size(traj,1)==size(perm,1)
+    @assert size(filt)==size(perm)
+    j = rand(axes(perm,2))
+    for i ∈ Iterators.reverse(axes(perm,1))
+        @inbounds traj[i] = filt[i,j]
+        @inbounds j = perm[i,j]
+    end
+end

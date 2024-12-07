@@ -8,6 +8,8 @@ using Random: seed!
     seed!(875002133)
 
     println("POMP.jl simulations (Rosenzweig-MacArthur)")
+    P = rmca()
+    @time P = rmca()
     @time P = rmca()
     @time P = rmca()
     @test isa(P,POMP.PompObject)
@@ -38,6 +40,8 @@ $(melt(P)) |>
 
     println("POMP.jl pfilter (Rosenzweig-MacArthur)")
     P = rmca(δt=0.1,σ=0.1,times=range(1.0,20.0,step=1.0))
+    Pf = pfilter(P,Np=1000)
+    @time Pf = pfilter(P,Np=1000)
     @time Pf = pfilter(P,Np=1000)
     @time Pf = pfilter(P,Np=1000)
     @test isa(Pf,POMP.PfilterdPompObject)

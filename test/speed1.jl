@@ -29,7 +29,7 @@ P |>
 
 cat("pomp pfilter times (Gompertz)\n")
 P |>
-  pfilter(Np=10000,save.states="unweighted") |>
+  pfilter(Np=10000,save.states="unweighted",filter.traj=TRUE) |>
   system.time() |>
   getElement(3) |>
   replicate(n=3) |>
@@ -74,15 +74,23 @@ P |>
     )
 
     println("POMP.jl simulation times (Gompertz)")
+    simulate(P,params=theta,nsim=10000)
     @time simulate(P,params=theta,nsim=10000)
     @time simulate(P,params=theta,nsim=10000)
+    @time simulate(P,params=theta,nsim=10000)
+
+    println("POMP.jl simulation scaling (Gompertz)")
     @time Q = simulate(P,params=theta,nsim=100)
     @time Q = simulate(P,params=theta,nsim=1000)
     @time Q = simulate(P,params=theta,nsim=10000)
 
     println("POMP.jl pfilter times (Gompertz)")
+    pfilter(P,params=theta,Np=10000)
     @time pfilter(P,params=theta,Np=10000)
     @time pfilter(P,params=theta,Np=10000)
+    @time pfilter(P,params=theta,Np=10000)
+
+    println("POMP.jl pfilter scaling (Gompertz)")
     @time Pf = pfilter(P,params=theta,Np=100)
     @time Pf = pfilter(P,params=theta,Np=1000)
     @time Pf = pfilter(P,params=theta,Np=10000)
