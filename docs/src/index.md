@@ -147,6 +147,46 @@ nothing #hide
 sir
 ```
 
+```@setup
+using LatexSVG
+
+texengine!(PDFLaTeX)
+add_preamble!(
+    "\\usepackage{tikz}",
+    "\\definecolor{maize}{rgb}{1.0,0.796,0.020}",
+    "\\definecolor{darkblue}{rgb}{0,0.153,0.298}",
+    "\\definecolor{purple}{rgb}{0.518,0.082,0.765}",
+    "\\definecolor{darkgreen}{rgb}{0,0.392,0}",
+    "\\definecolor{royalblue}{rgb}{0.263,0.431,0.933}",
+    "\\usetikzlibrary{arrows.meta,positioning,decorations,calc,math}",
+)
+
+sv = Lsvg"""
+\resizebox{0.9\linewidth}{!}{
+  \begin{tikzpicture}[scale=1]
+    \tikzstyle{box}=[draw=black, text=black, fill=white, very thick, minimum size=3em]
+    \tikzstyle{label}=[font=\Large]
+    \tikzstyle{coordinate}=[inner sep=0pt,outer sep=0pt]
+    \tikzstyle{flow}=[draw=black, very thick, >=stealth]
+    \tikzstyle{modulate}=[draw=darkgreen, thick, >=Circle]
+    \coordinate (origin) at (0,0);
+    \node [box] (S) at ($(origin)+(1,-1)$) {${S}$};
+    \node [box] (I) at ($(S)+(2,0)$) {${I}$};
+    \node [box] (R) at ($(I)+(2,0)$) {${R}$};
+    \coordinate (overR) at ($(R)+(0,1)$);
+    \coordinate (midSI) at ($(S)!0.5!(I)$);
+    \draw [flow,->] (S) -- (I);
+    \draw [flow,->] (I) -- (R);
+	%% \draw [flow,->] (R) -- (overR) -- (S |- overR) -- (S);
+    \draw [modulate,->] (I.north west) .. controls ($(I)+(-0.5,0.5)$) and ($(midSI)+(0,1)$) .. (midSI);
+  \end{tikzpicture}
+}
+"""
+savesvg("assets/figures/sir_diagram.svg",sv,web_display=true)
+```
+
+![sir diagram](assets/figures/sir_diagram.svg)
+
 ### The Rosenzweig-MacArthur model
 
 ```@docs

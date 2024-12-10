@@ -1,7 +1,8 @@
 [deps]
-POMP = "32433216-4d85-4b2d-94ed-a614743ba12b"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+LatexSVG = "b81a8e73-d03d-4f31-826c-30040db55cb2"
+POMP = "32433216-4d85-4b2d-94ed-a614743ba12b"
 RCall = "6f49c342-dc21-5d91-9882-a32aef131414"
 
 [sources]
-POMP = {path="../"}
+POMP = {path = "../"}
