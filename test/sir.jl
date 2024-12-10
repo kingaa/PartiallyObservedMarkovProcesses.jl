@@ -107,6 +107,33 @@ ll |>
     Q = simulate(P,nsim=5);
     @test typeof(Q[1])==typeof(P)
 
+    d = simulate_array(
+        P,
+        nsim=5,
+        params=[
+            (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S₀=0.9,I₀=0.01,R₀=0.1,δt=0.1);
+            (γ=0.5,ρ=0.3,k=10,β=0.25,N=10000,S₀=0.9,I₀=0.01,R₀=0.1,δt=0.1);
+        ]
+    )
+    @time d = simulate_array(
+        P,
+        nsim=5,
+        params=[
+            (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S₀=0.9,I₀=0.01,R₀=0.1,δt=0.1);
+            (γ=0.5,ρ=0.3,k=10,β=0.25,N=10000,S₀=0.9,I₀=0.01,R₀=0.1,δt=0.1);
+        ]
+    )
+    @time d = simulate_array(
+        P,
+        nsim=5,
+        params=[
+            (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S₀=0.9,I₀=0.01,R₀=0.1,δt=0.1);
+            (γ=0.5,ρ=0.3,k=10,β=0.25,N=10000,S₀=0.9,I₀=0.01,R₀=0.1,δt=0.1);
+        ]
+    )
+    @test size(d)==(90,2,5)
+    @test keys(d[1])==(:time,:reports,:S,:I,:R,:C)
+
     d1 = melt(Q,:parset,:rep);
 
     R"""
@@ -130,6 +157,7 @@ $d1 |>
         t0=0.0,
         rinit=P.rinit,
         rprocess=P.rprocess,
+        rmeasure=P.rmeasure,
         logdmeasure=P.logdmeasure,
         params=coef(P),
         accumvars=(C=0,)

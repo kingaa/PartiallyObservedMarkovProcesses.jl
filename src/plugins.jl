@@ -92,7 +92,6 @@ rprocess_step(
     x::X,
     params::NamedTuple,
 ) where {F<:Function,T<:Time,X<:NamedTuple} = let
-    t = t0
-    @inline x = p.stepfun(;t=t,dt=tf-t0,x...,params...)::X
+    @inline x = p.stepfun(;t=t0,dt=tf-t0,x...,params...)::X
     tf,x
 end
