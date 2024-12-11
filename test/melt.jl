@@ -1,4 +1,4 @@
-using POMP
+using PartiallyObservedMarkovProcesses
 using DataFrames
 using Test
 

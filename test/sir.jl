@@ -1,4 +1,5 @@
-using POMP
+using PartiallyObservedMarkovProcesses
+import PartiallyObservedMarkovProcesses as POMP
 using Random
 using RCall
 using Test
@@ -65,7 +66,16 @@ print(coef(P))
 
 cat("pomp simulation times (SIR)\n")
 P |>
-  simulate(nsim=1000,format="a") |>
+  simulate(nsim=1000,format="p") |>
+  system.time() |>
+  getElement(3) |>
+  replicate(n=3) |>
+  print()
+
+pp <- parmat(c(gamma=0.25,rho=0.3,k=10,Beta=0.5,N=10000,S_0=0.9,I_0=0.01,R_0=0.1),2)
+pp[c("gamma","Beta"),2] <- c(0.5,0.25)
+P |>
+  simulate(nsim=1000,format="a",params=pp) |>
   system.time() |>
   getElement(3) |>
   replicate(n=3) |>
@@ -92,11 +102,11 @@ ll |>
     @test isa(P,POMP.PompObject)
     print(P)
 
-    println("POMP.jl SIR parameters")
+    println("PartiallyObservedMarkovProcesses.jl SIR parameters")
     theta = (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S₀=0.9,I₀=0.01,R₀=0.1,δt=0.1);
     println(theta)
 
-    println("POMP.jl simulation times (SIR)")
+    println("PartiallyObservedMarkovProcesses.jl simulation times (SIR)")
     Q = simulate(P,nsim=1000,params=theta);
     @test typeof(Q[1])!=typeof(P)
     Q = simulate(Q[1],nsim=1000);
@@ -117,7 +127,7 @@ ll |>
     )
     @time d = simulate_array(
         P,
-        nsim=5,
+        nsim=1000,
         params=[
             (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S₀=0.9,I₀=0.01,R₀=0.1,δt=0.1);
             (γ=0.5,ρ=0.3,k=10,β=0.25,N=10000,S₀=0.9,I₀=0.01,R₀=0.1,δt=0.1);
@@ -125,13 +135,13 @@ ll |>
     )
     @time d = simulate_array(
         P,
-        nsim=5,
+        nsim=1000,
         params=[
             (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S₀=0.9,I₀=0.01,R₀=0.1,δt=0.1);
             (γ=0.5,ρ=0.3,k=10,β=0.25,N=10000,S₀=0.9,I₀=0.01,R₀=0.1,δt=0.1);
         ]
     )
-    @test size(d)==(90,2,5)
+    @test size(d)==(90,2,1000)
     @test keys(d[1])==(:time,:reports,:S,:I,:R,:C)
 
     d1 = melt(Q,:parset,:rep);
@@ -163,7 +173,7 @@ $d1 |>
         accumvars=(C=0,)
     )
 
-    println("POMP.jl pfilter times (SIR)")
+    println("PartiallyObservedMarkovProcesses.jl pfilter times (SIR)")
     Pf = pfilter(P,Np=1000,params=theta);
     @time Pf = pfilter(P,Np=1000,params=theta);
     @time Pf = pfilter(P,Np=1000,params=theta);
@@ -171,7 +181,7 @@ $d1 |>
 
     Pf = pfilter(Pf,Np=1000);
     println(
-        "POMP.jl likelihood estimate (SIR): ",
+        "PartiallyObservedMarkovProcesses.jl likelihood estimate (SIR): ",
         round(Pf.logLik,digits=2)
     )
 

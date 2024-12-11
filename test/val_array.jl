@@ -1,4 +1,5 @@
-using POMP
+using PartiallyObservedMarkovProcesses
+import PartiallyObservedMarkovProcesses as POMP
 using Test
 
 @testset "val_array" begin

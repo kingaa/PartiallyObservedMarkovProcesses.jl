@@ -1,4 +1,4 @@
-# POMP.jl
+# PartiallyObservedMarkovProcesses.jl
 
 The package is a Julia implementation of the [pomp package for R](https://kingaa.github.io/pomp/).
 
@@ -37,6 +37,7 @@ onestep
 
 ```@docs
 simulate
+simulate_array
 ```
 
 ### Particle filter
@@ -80,7 +81,7 @@ timezero
 ## Examples
 
 ```@setup
-using POMP, RCall
+using PartiallyObservedMarkovProcesses, RCall
 R"""
 options(tidyverse.quiet=TRUE)
 library(tidyverse)
@@ -96,7 +97,7 @@ gompertz
 View the Parus data:
 
 ```@example
-using POMP, RCall
+using PartiallyObservedMarkovProcesses, RCall
 P = gompertz()
 d = melt(P)
 R"""
@@ -119,7 +120,7 @@ nothing #hide
 View a few representative simulations:
 
 ```@example
-using POMP, RCall
+using PartiallyObservedMarkovProcesses, RCall
 P = gompertz()
 Q = simulate(P;params=(r=4.5,K=210.0,σₚ=0.7,σₘ=0.1,X₀=150.0),nsim=5)
 d = melt(Q,:parset,:rep)
@@ -196,7 +197,7 @@ rmca
 A sample simulation.
 
 ```@example
-using POMP, RCall #hide
+using PartiallyObservedMarkovProcesses, RCall #hide
 P = rmca(σ=0.1,times=range(0,400.0,step=1.0))
 d = melt(P)
 R"""

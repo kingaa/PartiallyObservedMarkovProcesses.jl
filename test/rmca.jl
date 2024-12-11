@@ -1,4 +1,5 @@
-using POMP
+using PartiallyObservedMarkovProcesses
+import PartiallyObservedMarkovProcesses as POMP
 using RCall
 using Test
 using Random: seed!
@@ -7,7 +8,7 @@ using Random: seed!
 
     seed!(875002133)
 
-    println("POMP.jl simulations (Rosenzweig-MacArthur)")
+    println("PartiallyObservedMarkovProcesses.jl simulations (Rosenzweig-MacArthur)")
     P = rmca()
     @time P = rmca()
     @time P = rmca()
@@ -38,7 +39,7 @@ $(melt(P)) |>
 
     R"""ggsave(filename="rmca-02.png",width=7,height=4)"""
 
-    println("POMP.jl pfilter (Rosenzweig-MacArthur)")
+    println("PartiallyObservedMarkovProcesses.jl pfilter (Rosenzweig-MacArthur)")
     P = rmca(δt=0.1,σ=0.1,times=range(1.0,20.0,step=1.0))
     Pf = pfilter(P,Np=1000)
     @time Pf = pfilter(P,Np=1000)
@@ -46,7 +47,7 @@ $(melt(P)) |>
     @time Pf = pfilter(P,Np=1000)
     @test isa(Pf,POMP.PfilterdPompObject)
     println(
-        "POMP.jl likelihood estimate (Rosenzweig-MacArthur): ",
+        "PartiallyObservedMarkovProcesses.jl likelihood estimate (Rosenzweig-MacArthur): ",
         round(Pf.logLik,digits=2)
     )
 

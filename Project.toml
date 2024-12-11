@@ -1,4 +1,4 @@
-name = "POMP"
+name = "PartiallyObservedMarkovProcesses"
 uuid = "32433216-4d85-4b2d-94ed-a614743ba12b"
 authors = ["Aaron A. King <kingaa@umich.edu>"]
 version = "0.4.5"

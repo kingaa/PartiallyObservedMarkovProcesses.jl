@@ -1,4 +1,5 @@
-using POMP
+using PartiallyObservedMarkovProcesses
+import PartiallyObservedMarkovProcesses as POMP
 using Random
 using RCall
 using Test

@@ -28,7 +28,7 @@ struct PompObject{
     logdmeasure::Union{Function,Nothing}
 end
 
-## The following type is valid for the `object` in a call to a POMP function.
+## The following type is valid for the `object` in a call to most package functions.
 ValidPompData = Union{
     Nothing,
     Vector{<:NamedTuple},

@@ -1,4 +1,4 @@
-using POMP
+using PartiallyObservedMarkovProcesses
 using DataFrames
 using Distributions
 using Random
@@ -73,30 +73,30 @@ P |>
         end
     )
 
-    println("POMP.jl simulation times (Gompertz)")
+    println("PartiallyObservedMarkovProcesses.jl simulation times (Gompertz)")
     simulate(P,params=theta,nsim=10000)
     @time simulate(P,params=theta,nsim=10000)
     @time simulate(P,params=theta,nsim=10000)
     @time simulate(P,params=theta,nsim=10000)
 
-    println("POMP.jl simulation scaling (Gompertz)")
+    println("PartiallyObservedMarkovProcesses.jl simulation scaling (Gompertz)")
     @time Q = simulate(P,params=theta,nsim=100)
     @time Q = simulate(P,params=theta,nsim=1000)
     @time Q = simulate(P,params=theta,nsim=10000)
 
-    println("POMP.jl pfilter times (Gompertz)")
+    println("PartiallyObservedMarkovProcesses.jl pfilter times (Gompertz)")
     pfilter(P,params=theta,Np=10000)
     @time pfilter(P,params=theta,Np=10000)
     @time pfilter(P,params=theta,Np=10000)
     @time pfilter(P,params=theta,Np=10000)
 
-    println("POMP.jl pfilter scaling (Gompertz)")
+    println("PartiallyObservedMarkovProcesses.jl pfilter scaling (Gompertz)")
     @time Pf = pfilter(P,params=theta,Np=100)
     @time Pf = pfilter(P,params=theta,Np=1000)
     @time Pf = pfilter(P,params=theta,Np=10000)
 
     println(
-        "POMP.jl likelihood estimate (Gompertz): ",
+        "PartiallyObservedMarkovProcesses.jl likelihood estimate (Gompertz): ",
         round(Pf.logLik,digits=2)
     )
 

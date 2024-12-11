@@ -1,4 +1,4 @@
-using POMP
+using PartiallyObservedMarkovProcesses
 using Test
 
 @testset verbose=true "error messages" begin
