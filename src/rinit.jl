@@ -25,6 +25,8 @@ rinit(
     catch e
         if isa(e,UndefKeywordError)
             error("in `rinit`: parameter " * string(e.var) * " undefined.")
+        elseif isa(e,MethodError)
+            error("in `rinit`: no matching method for args " * string(e.args[1]))
         elseif hasproperty(e,:msg)
             error("in `rinit`: " * e.msg)
         else
@@ -50,6 +52,8 @@ rinit!(
     catch e
         if isa(e,UndefKeywordError)
             error("in `rinit!`: parameter " * string(e.var) * " undefined.")
+       elseif isa(e,MethodError)
+            error("in `rinit!`: no matching method for args " * string(e.args[1]))
         elseif hasproperty(e,:msg)
             error("in `rinit!`: " * e.msg)
         else

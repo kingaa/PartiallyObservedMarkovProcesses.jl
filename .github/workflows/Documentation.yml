@@ -14,10 +14,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: texlive-latex-base texlive-pictures
       - uses: actions/checkout@v4
+      - run: |
+          sudo apt-get update
+          sudo apt-get -y install texlive-latex-base texlive-binaries texlive-pictures context
       - uses: julia-actions/setup-julia@v2
         with:
           version: '1.11'

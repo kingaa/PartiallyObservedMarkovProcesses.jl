@@ -40,4 +40,18 @@ using Test
     @test_throws "Incorrect call" pfilter("bob")
     @test_throws "Incorrect call" simulate("bob")
 
+    P1 = pomp(
+        sir(),
+        rinit=(x)->x,
+        rprocess=onestep((x)->x),
+        rmeasure=(x)->x,
+        logdmeasure=(x)->1
+    );
+    x0 = rinit(sir());
+    @test_throws "no matching method" rinit(P1)
+    @test_throws "no matching method" rinit!(P1,x0)
+    @test_throws "no matching method" rprocess(P1)
+    @test_throws "no matching method" rmeasure(P1)
+    @test_throws "no matching method" logdmeasure(P1)
+
 end

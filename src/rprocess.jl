@@ -59,6 +59,8 @@ rprocess!(
     catch e
         if isa(e,UndefKeywordError)
             error("in `rprocess!`: parameter " * string(e.var) * " undefined.")
+        elseif isa(e,MethodError)
+            error("in `rprocess!`: no matching method for args " * string(e.args[1]))
         elseif hasproperty(e,:msg)
             error("in `rprocess!`: " * e.msg)
         else

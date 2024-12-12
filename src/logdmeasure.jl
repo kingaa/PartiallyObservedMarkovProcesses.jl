@@ -52,6 +52,8 @@ logdmeasure!(
     catch e
         if isa(e,UndefKeywordError)
             error("in `logdmeasure!`: parameter " * string(e.var) * " undefined.")
+        elseif isa(e,MethodError)
+            error("in `logdmeasure!`: no matching method for args " * string(e.args[1]))
         elseif hasproperty(e,:msg)
             error("in `logdmeasure!`: " * e.msg)
         else
