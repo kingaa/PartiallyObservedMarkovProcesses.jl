@@ -7,7 +7,7 @@ export rmeasure
 """
 rmeasure(
     object::AbstractPompObject;
-    x::Union{X,AbstractArray{X}},
+    x::Union{X,AbstractArray{X}} = states(object),
     times::Union{T,AbstractVector{T}} = times(object),
     params::Union{P,AbstractVector{P}} = coef(object),
 ) where {T,X<:NamedTuple,P<:NamedTuple} = begin
@@ -43,8 +43,10 @@ rmeas_internal(
 ) where {T,X<:NamedTuple,P<:NamedTuple} = begin
     @assert(size(x,1)==length(times))
     @assert(size(x,2)==length(params))
-    @inbounds [f(;t=times[i],x[i,j,k]...,params[j]...)
-               for i ∈ eachindex(times),
-                   j ∈ eachindex(params),
-                   k ∈ axes(x,3)]
+    @inbounds(
+        [f(;t=times[i],x[i,j,k]...,params[j]...)
+         for i ∈ eachindex(times),
+             j ∈ eachindex(params),
+             k ∈ axes(x,3)]
+    )
 end

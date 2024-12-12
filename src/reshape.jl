@@ -13,4 +13,4 @@ end
 
 val_array(x) = [x]
 
-val_array(x, dim::Vararg{Integer}) = reshape([x],dim...)
+val_array(x, dim::Vararg{Integer}) = val_array([x],dim...)

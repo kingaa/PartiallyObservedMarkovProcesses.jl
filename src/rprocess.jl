@@ -9,7 +9,7 @@ If there is no user-supplied *rprocess* component, the dynamics are trivial.
 """
 rprocess(
     object::AbstractPompObject;
-    x0::Union{X,AbstractArray{X,N}} = object.init_state,
+    x0::Union{X,AbstractArray{X,N}} = init_state(object),
     t0::T = timezero(object),
     times::Union{T,AbstractVector{T}} = times(object),
     params::Union{P,AbstractVector{P}} = coef(object),
