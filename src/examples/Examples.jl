@@ -1,4 +1,5 @@
 include("parus_data.jl")
 include("gompertz.jl")
+include("brownian_motion.jl")
 include("sir.jl")
 include("rmca.jl")

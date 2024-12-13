@@ -8,6 +8,7 @@ using Test
     include("helpers.jl")
     include("melt.jl")
     include("gompertz.jl")
+    include("brown.jl")
     include("sir.jl")
     include("rmca.jl")
     include("pfilter.jl")
