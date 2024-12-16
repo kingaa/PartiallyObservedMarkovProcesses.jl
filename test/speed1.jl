@@ -79,10 +79,17 @@ P |>
     @time simulate(P,params=theta,nsim=10000)
     @time simulate(P,params=theta,nsim=10000)
 
-    println("PartiallyObservedMarkovProcesses.jl simulation scaling (Gompertz)")
+    println("PartiallyObservedMarkovProcesses.jl simulate scaling (Gompertz)")
+    Q = simulate(P,params=theta,nsim=100);
     @time Q = simulate(P,params=theta,nsim=100)
     @time Q = simulate(P,params=theta,nsim=1000)
     @time Q = simulate(P,params=theta,nsim=10000)
+
+    println("PartiallyObservedMarkovProcesses.jl simulate_array scaling (Gompertz)")
+    simulate_array(P,params=theta,nsim=100);
+    @time simulate_array(P,params=theta,nsim=100)
+    @time simulate_array(P,params=theta,nsim=1000)
+    @time simulate_array(P,params=theta,nsim=10000)
 
     println("PartiallyObservedMarkovProcesses.jl pfilter times (Gompertz)")
     pfilter(P,params=theta,Np=10000)
