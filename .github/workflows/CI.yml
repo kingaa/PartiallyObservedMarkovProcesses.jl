@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - '*'
-    tags: ['*']
     paths:
       - Project.toml
       - src/**

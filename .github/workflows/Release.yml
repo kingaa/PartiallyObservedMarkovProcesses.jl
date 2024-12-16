@@ -1,0 +1,24 @@
+# Workflow derived from https://github.com/r-lib/actions/tree/master/examples
+# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+on:
+  push:
+    tags:
+      - '*.*.*.*'
+  workflow_dispatch:
+
+name: release
+
+env:
+  release_name: ${{ vars.repo_name }}_${{ github.ref_name }}
+
+jobs:
+# Workflow derived from https://github.com/marketplace/actions/create-release
+  create_release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ncipollo/release-action@v1
+      with:
+        draft: true
