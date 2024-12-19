@@ -32,9 +32,9 @@ pfilter(
     object::ValidPompData;
     Np::Integer = 1,
     params::P = coef(object),
-    rinit::Union{Function,Missing} = missing,
-    rprocess::Union{PompPlugin,Missing} = missing,
-    logdmeasure::Union{Function,Missing} = missing,
+    rinit::Union{Function,Nothing,Missing} = missing,
+    rprocess::Union{PompPlugin,Nothing,Missing} = missing,
+    logdmeasure::Union{Function,Nothing,Missing} = missing,
     args...,
 ) where {P<:NamedTuple} = let
     try

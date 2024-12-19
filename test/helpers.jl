@@ -34,4 +34,7 @@ using Test
     @test isa(coef(Q[3]),NamedTuple)
     @test isa(coef(Q),Array{<:NamedTuple,2})
     @test size(coef(Q))==(2,3)
+    @test isa(coef(Q[3],:k,:a),NamedTuple)
+    @test isa(coef(Q,:k,:a),Array{<:NamedTuple,2})
+    
 end

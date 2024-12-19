@@ -11,9 +11,9 @@ simulate(
     object::ValidPompData = nothing;
     nsim::Integer = 1,
     params::Union{P,AbstractVector{P}} = coef(object),
-    rinit::Union{Function,Missing} = missing,
-    rprocess::Union{PompPlugin,Missing} = missing,
-    rmeasure::Union{Function,Missing} = missing,
+    rinit::Union{Function,Nothing,Missing} = missing,
+    rprocess::Union{PompPlugin,Nothing,Missing} = missing,
+    rmeasure::Union{Function,Nothing,Missing} = missing,
     args...,
 ) where {P<:NamedTuple} = let
     try

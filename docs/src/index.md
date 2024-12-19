@@ -216,3 +216,9 @@ nothing #hide
 ```
 
 ![rmca_dynamics](assets/figures/rmca1.svg)
+
+### Multivariate Brownian motion
+
+```@docs
+brownian_motion
+```

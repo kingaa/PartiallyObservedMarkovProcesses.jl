@@ -1,5 +1,13 @@
 export brownian_motion
 
+"""
+    brownian_motion(;times, t₀ = 0, x₀, σ, τ)
+
+returns a *PompObject* for a multivariate Brownian motion process with observations at `times`.
+The zero-time is `t₀` and the starting state at that time is `x₀`.
+The intensity of the Brownian motion is given by the matrix `σ`.
+The measurement error is multivariate normal with variance `τ^⊤ τ`.
+"""
 brownian_motion = function(
     ;times::AbstractVector{<:Real},
     t₀::Real = 0,

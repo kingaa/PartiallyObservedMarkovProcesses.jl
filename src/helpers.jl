@@ -39,12 +39,26 @@ states(object::AbstractPompObject) = pomp(object).states
 states(object::AbstractArray{<:AbstractPompObject}) = stack(states.(object))
 
 """
-    coef(object)
+    coef(object,names...)
 
-`coef` extracts the parameter vector of a *PompObject*.
+`coef` extracts the parameters stored in an *AbstractPompObject* or array thereof.
 """
 coef(object::AbstractPompObject) = pomp(object).params
+
+coef(
+    object::AbstractPompObject,
+    names::Vararg{Symbol},
+) = let
+    nm = intersect(names,keys(pomp(object).params))
+    pomp(object).params[nm]
+end
+
 coef(object::AbstractArray{<:AbstractPompObject}) = coef.(object)
+
+coef(
+    object::AbstractArray{<:AbstractPompObject},
+    names::Vararg{Symbol},
+) = map(x -> coef(x,names...), object)
 
 Base.show(io::IO, object::AbstractPompObject) =
     println(io,"<" * string(typeof(object).name.name) * ">")
