@@ -1,4 +1,5 @@
 using PartiallyObservedMarkovProcesses
+using PartiallyObservedMarkovProcesses.Examples
 using DataFrames
 using Distributions
 using Random

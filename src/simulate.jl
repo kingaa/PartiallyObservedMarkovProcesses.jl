@@ -1,4 +1,3 @@
-export simulate
 
 """
     simulate(object; nsim = 1, params, rinit, rprocess, rmeasure, args...)
@@ -57,7 +56,6 @@ simulate1(
     )
 end
 
-export simulate_array
 
 """
     simulate_array(object; nsim = 1, params, rinit, rprocess, rmeasure, args...)

@@ -1,5 +1,3 @@
-export brownian_motion
-
 """
     brownian_motion(;times, t₀ = 0, x₀, σ, τ)
 

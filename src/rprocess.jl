@@ -1,4 +1,3 @@
-export rprocess, rprocess!
 
 """
     rprocess(object; x0, t0 = timezero(object), times=times(object), params = coef(object))

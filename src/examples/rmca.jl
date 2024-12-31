@@ -1,7 +1,3 @@
-export rmca
-
-import Distributions: Normal, LogNormal, logpdf
-
 """
     rmca(
          r = 1, K = 1e4, A = 1e3,

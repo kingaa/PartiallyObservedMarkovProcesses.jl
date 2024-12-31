@@ -1,4 +1,3 @@
-export euler, discrete_time, onestep
 
 struct EulerPlugin{F<:Function} <: PompPlugin
     stepfun::F

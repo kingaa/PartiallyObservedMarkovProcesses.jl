@@ -1,4 +1,3 @@
-export rinit, rinit!
 
 """
     rinit(object; t0=timezero(object), params=coef(object), nsim=1)

@@ -1,4 +1,5 @@
 using PartiallyObservedMarkovProcesses
+using PartiallyObservedMarkovProcesses.Examples
 using Test
 
 @testset verbose=true "error messages" begin
