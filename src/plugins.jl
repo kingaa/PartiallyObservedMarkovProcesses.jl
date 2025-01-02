@@ -4,6 +4,11 @@ struct EulerPlugin{F<:Function} <: PompPlugin
     stepsize::RealTime
 end
 
+struct EulerPluginGPU{F<:Function} <: PompPlugin
+    stepfun::F # must have positional arguments 
+    stepsize::RealTimeGPU
+end
+
 struct DiscreteTimePlugin{F<:Function,T<:Time} <: PompPlugin
     stepfun::F
     stepsize::T
@@ -40,15 +45,30 @@ euler(
 euler(_...) = error("Incorrect call to `euler`.")
 
 """
+    eulergpu(stepfun; dt)
+
+The function `stepfun` should advance the state by an arbitrary time-increment.
+The time-increment will be chosen so that equal-sized steps of duration at most `dt` are taken over any desired interval.
+"""
+eulergpu(
+    stepfun::Function;
+    dt::Time,
+) = EulerPlugin(stepfun,RealTimeGPU(dt))
+"""
     onestep(stepfun)
 
 The function `stepfun` will be called once to advance the latent-state process over an interval of arbitrary duration.
 """
+
+eulergpu(_...) = error("Incorrect call to `eulergpu`.")
+
 onestep(
     stepfun::Function,
 ) = OneStepPlugin(stepfun)
 
 onestep(_...) = error("Incorrect call to `onestep`.")
+
+# @device_code_warntype your_kernel(args...)
 
 rprocess_step(
     p::DiscreteTimePlugin{F,T},
@@ -78,6 +98,27 @@ rprocess_step(
         t = t0
         for _ in 1:n
             @inline x = p.stepfun(;t=t,dt=tstep,x...,params...)::X
+            t += tstep
+        end
+    end
+    tf,x
+end
+
+# gpu version
+rprocess_step(
+    p::EulerPluginGPU{F},
+    t0::T,
+    tf::T,
+    x::X,
+    params::NamedTuple,
+) where {F<:Function,T<:Time,X<:NamedTuple} = let
+    n = ceil(Int32,(tf-t0)/p.stepsize)
+    if n > 0
+        tstep = (tf-t0)/n
+        t = t0
+        args = CuArray( [t,tstep,x...,params...] )
+        for _ in 1:n
+            @inline x = p.stepfun(args...)::X # must have positional arguments 
             t += tstep
         end
     end

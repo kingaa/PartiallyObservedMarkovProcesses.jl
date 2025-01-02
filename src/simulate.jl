@@ -1,3 +1,5 @@
+using Debugger
+# using Revise
 
 """
     simulate(object; nsim = 1, params, rinit, rprocess, rmeasure, args...)
@@ -15,26 +17,62 @@ simulate(
     rmeasure::Union{Function,Nothing,Missing} = missing,
     args...,
 ) where {P<:NamedTuple} = let
-    try
+    @show " TEST 2 "
+    # try
         params = val_array(params)
         object = pomp(
             object;
-            rinit=rinit,
+            rinit= rinit, #ismissing(rinit) ? POMP.rinit : rinit,
             rprocess=rprocess,
             rmeasure=rmeasure,
             args...,
         )
-        [simulate1(object,params[i])
-         for i ∈ eachindex(params), j ∈ 1:nsim]
-    catch e
-        if hasproperty(e,:msg)
-            error("in `simulate`: " * e.msg)
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
+
+        # [simulate1(object,params[i])
+        #  for i ∈ eachindex(params), j ∈ 1:nsim]
+        #
+
+        ix = Iterators.product( eachindex(params), 1:nsim )
+
+
+        x0 = (CONFIG.usethreads) ? 
+            Threads.map( jk -> POMP.rinit( object, params = params[jk[1]] ), ix  ) :
+            map( jk -> POMP.rinit( object, params = params[jk[1]] ), ix )
+
+        # TODO unwrap 
+        x = (CONFIG.usethreads) ? 
+            Threads.map( jk -> POMP.rprocess( object, x0 = x0[jk[2]], params = params[jk[1]] ), ix ) :
+            map( jk -> POMP.rprocess( object, x0 = x0[jk[2]], params = params[jk[1]] ), ix )
+
+        y = (CONFIG.usethreads) ? 
+            Threads.map( jk -> POMP.rmeasure( object, x = x[jk...], params = params[jk[1]] ) , ix ) :
+            map( jk -> POMP.rmeasure( object, x = x[jk...], params = params[jk[1]] ), ix )
+
+@bp 
+       [ 
+            PompObject(
+                object.t0,
+                object.times,
+                object.timevar,
+                object.accumvars,
+                params[i],x0[j][1],vec(x[i,j]),vec(y[i,j]),
+                object.rinit,
+                object.rprocess,
+                object.rmeasure,
+                object.logdmeasure
+            )
+            for (i,j) in ix  
+       ] 
+    # catch e
+    #     if hasproperty(e,:msg)
+    #         error("in `simulate`: " * e.msg)
+    #     else
+    #         throw(e)            # COV_EXCL_LINE
+    #     end
+    # end
 end
 
+# deprecate ?
 simulate1(
     object::PompObject,
     params::P,

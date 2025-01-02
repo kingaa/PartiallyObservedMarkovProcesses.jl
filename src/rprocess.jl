@@ -92,12 +92,21 @@ rproc_internal!(
     params::AbstractVector{P},
     accumvars::Nothing,
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = let
-    for j ∈ eachindex(params), k ∈ axes(x0,2)
+    proc(j::Int,k::Int) = begin
         t = t0
         @inbounds x1 = x0[j,k]
         for i ∈ eachindex(times)
             @inbounds t,x1 = rprocess_step(plugin,t,times[i],x1,params[j])
             @inbounds x[i,j,k] = x1
+        end
+    end
+    if CONFIG.usethreads
+        Threads.@threads for (j,k) ∈ collect(  Iterators.product( eachindex(params), axes(x0,2) )  )
+            proc(j,k)
+        end
+    else 
+        for j ∈ eachindex(params), k ∈ axes(x0,2)
+            proc(j,k)
         end
     end
 end
@@ -113,13 +122,22 @@ rproc_internal!(
     params::AbstractVector{P},
     accumvars::A
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple,A<:NamedTuple} = let
-    for j ∈ eachindex(params), k ∈ axes(x0,2)
+    proc(j::Int,k::Int) = begin
         t = t0
         @inbounds x1 = x0[j,k]
         for i ∈ eachindex(times)
             x1 = merge(x1,accumvars)::X
             @inbounds t,x1 = rprocess_step(plugin,t,times[i],x1,params[j])
             @inbounds x[i,j,k] = x1
+        end
+    end
+    if CONFIG.usethreads
+        Threads.@threads for (j,k) ∈ collect(  Iterators.product( eachindex(params), axes(x0,2) )  )
+            proc(j,k)
+        end
+    else 
+        for j ∈ eachindex(params), k ∈ axes(x0,2)
+            proc(j,k)
         end
     end
 end

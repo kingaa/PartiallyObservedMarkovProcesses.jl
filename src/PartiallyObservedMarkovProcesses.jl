@@ -3,7 +3,7 @@ module PartiallyObservedMarkovProcesses
 import PartiallyObservedMarkovProcesses as POMP
 import DataFrames: DataFrame, select, eachrow
 import InvertedIndices: Not
-
+# using CUDA
 
 ## Time is the (abstract) type for times.
 const Time = Union{Int64,Float64}
@@ -14,6 +14,15 @@ const RealTimeGPU = Float32
 ## We may at some point need more precision....
 const LogLik = Float64
 const LogLikGPU = Float32 
+
+# some global options that can be changed at run-time 
+mutable struct Config
+    usethreads::Bool 
+end
+const CONFIG = Config(false)
+setusethreads!(x::Bool) = begin 
+    CONFIG.usethreads = x 
+end
 
 include("reshape.jl")
 
