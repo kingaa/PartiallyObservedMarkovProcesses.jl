@@ -1,3 +1,5 @@
+import Distributions: Binomial, NegativeBinomial, logpdf
+
 """
     sir(
         β = 0.5, γ = 0.25, N = 10000,

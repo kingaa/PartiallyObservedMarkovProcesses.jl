@@ -1,11 +1,6 @@
-
-module Examples 
+module Examples
 
 using ..PartiallyObservedMarkovProcesses
-
-import DataFrames: DataFrame
-import CSV: File
-import Distributions: Normal, LogNormal, logpdf, Binomial, NegativeBinomial
 
 export brownian_motion
 export gompertz
@@ -19,4 +14,4 @@ include("brownian_motion.jl")
 include("sir.jl")
 include("rmca.jl")
 
-end 
+end

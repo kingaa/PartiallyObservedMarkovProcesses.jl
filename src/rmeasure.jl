@@ -1,4 +1,3 @@
-
 """
     rmeasure(object; x, times=times(object), params=coef(object))
 

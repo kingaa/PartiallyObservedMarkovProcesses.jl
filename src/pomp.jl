@@ -1,4 +1,3 @@
-
 abstract type AbstractPompObject{T,P,A,X0,X,Y,F} end
 abstract type PompPlugin end
 
@@ -24,6 +23,8 @@ struct PompObject{
     rmeasure::Union{Function,Nothing}
     logdmeasure::Union{Function,Nothing}
 end
+
+import DataFrames: DataFrame
 
 ## The following type is valid for the `object` in a call to most package functions.
 ValidPompData = Union{
@@ -112,6 +113,9 @@ pomp(
         end
     end
 end
+
+import DataFrames: DataFrame, select, eachrow
+import InvertedIndices: Not
 
 pomp(
     data::DataFrame;

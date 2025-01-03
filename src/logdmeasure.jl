@@ -1,4 +1,3 @@
-
 """
     logdmeasure(object; times=times(object), y=obs(object), x=states(object), params=coef(object))
 

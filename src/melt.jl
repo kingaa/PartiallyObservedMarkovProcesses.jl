@@ -1,4 +1,3 @@
-
 melt(x::Nothing) = DataFrame()
 
 melt(x::NamedTuple; id...) = DataFrame(;merge(NamedTuple(id),x)...)

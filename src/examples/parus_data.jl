@@ -1,3 +1,6 @@
+import DataFrames: DataFrame
+import CSV: File
+
 const parus_data = DataFrame(
     File(
         IOBuffer("""

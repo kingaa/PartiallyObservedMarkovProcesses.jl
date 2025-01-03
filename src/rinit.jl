@@ -1,4 +1,3 @@
-
 """
     rinit(object; t0=timezero(object), params=coef(object), nsim=1)
 
@@ -51,7 +50,7 @@ rinit!(
     catch e
         if isa(e,UndefKeywordError)
             error("in `rinit!`: parameter " * string(e.var) * " undefined.")
-       elseif isa(e,MethodError)
+        elseif isa(e,MethodError)
             error("in `rinit!`: no matching method for args " * string(e.args[1]))
         elseif hasproperty(e,:msg)
             error("in `rinit!`: " * e.msg)

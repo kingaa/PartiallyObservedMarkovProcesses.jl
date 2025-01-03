@@ -1,4 +1,3 @@
-
 """
     simulate(object; nsim = 1, params, rinit, rprocess, rmeasure, args...)
 
