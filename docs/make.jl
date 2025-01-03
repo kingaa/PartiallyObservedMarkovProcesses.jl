@@ -1,8 +1,10 @@
-using Documenter, PartiallyObservedMarkovProcesses, RCall
+using Documenter, RCall
+using PartiallyObservedMarkovProcesses
+using PartiallyObservedMarkovProcesses.Examples
 
 makedocs(
     sitename = "PartiallyObservedMarkovProcesses.jl",
-    modules  = [PartiallyObservedMarkovProcesses],
+    modules  = [PartiallyObservedMarkovProcesses,PartiallyObservedMarkovProcesses.Examples],
     repo = Remotes.GitHub("kingaa","PartiallyObservedMarkovProcesses.jl"),
     format = Documenter.HTML(
         prettyurls = get(ENV, "CI", nothing) == "true", # easier local build

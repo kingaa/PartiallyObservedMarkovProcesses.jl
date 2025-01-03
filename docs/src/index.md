@@ -82,6 +82,7 @@ timezero
 
 ```@setup
 using PartiallyObservedMarkovProcesses, RCall
+using PartiallyObservedMarkovProcesses.Examples
 R"""
 options(tidyverse.quiet=TRUE)
 library(tidyverse)
@@ -98,6 +99,7 @@ View the Parus data:
 
 ```@example
 using PartiallyObservedMarkovProcesses, RCall
+using PartiallyObservedMarkovProcesses.Examples
 P = gompertz()
 d = melt(P)
 R"""
@@ -121,6 +123,7 @@ View a few representative simulations:
 
 ```@example
 using PartiallyObservedMarkovProcesses, RCall
+using PartiallyObservedMarkovProcesses.Examples
 P = gompertz()
 Q = simulate(P;params=(r=4.5,K=210.0,σₚ=0.7,σₘ=0.1,X₀=150.0),nsim=5)
 d = melt(Q,:parset,:rep)
@@ -198,6 +201,7 @@ A sample simulation.
 
 ```@example
 using PartiallyObservedMarkovProcesses, RCall #hide
+using PartiallyObservedMarkovProcesses.Examples #hide
 P = rmca(σ=0.1,times=range(0,400.0,step=1.0))
 d = melt(P)
 R"""
