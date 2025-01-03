@@ -11,8 +11,7 @@ using Test
 
 import PartiallyObservedMarkovProcesses as POMP 
 
-#@testset "speed trials 2" 
-begin
+@testset "speed trials 2"  begin
 
     NSIM = 100_000
     # NSIM = 10
