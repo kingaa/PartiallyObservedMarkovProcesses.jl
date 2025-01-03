@@ -1,7 +1,5 @@
 ## To-do List
 
-- speed trials for `rmca`
-- simulate an array of trajectories at once
 - iterated filtering
 - weighted particle filter
 - multiparameter particle filter? should be trivial from existing
