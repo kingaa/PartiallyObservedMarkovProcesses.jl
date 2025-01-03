@@ -1,6 +1,3 @@
-export melt
-
-import DataFrames: DataFrame
 
 melt(x::Nothing) = DataFrame()
 

@@ -12,5 +12,6 @@ using Test
     include("rmca.jl")
     include("pfilter.jl")
     include("speed1.jl")
+    include("speed2.jl")
     include("brown.jl")
 end

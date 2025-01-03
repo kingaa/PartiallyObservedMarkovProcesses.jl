@@ -15,11 +15,9 @@ struct PfilterdPompObject{
     logLik::W
 end
 
-export pomp
 
 pomp(object::PfilterdPompObject) = object.pompobj
 
-export pfilter
 
 """
     pfilter(object; Np = 1, params, rinit, rprocess, logmeasure, args...)

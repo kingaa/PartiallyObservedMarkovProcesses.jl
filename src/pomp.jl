@@ -1,6 +1,3 @@
-export pomp
-
-import DataFrames: DataFrame
 
 abstract type AbstractPompObject{T,P,A,X0,X,Y,F} end
 abstract type PompPlugin end
@@ -115,9 +112,6 @@ pomp(
         end
     end
 end
-
-import DataFrames: DataFrame, select, eachrow
-import InvertedIndices: Not
 
 pomp(
     data::DataFrame;

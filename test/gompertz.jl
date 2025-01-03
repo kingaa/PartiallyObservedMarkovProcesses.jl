@@ -1,4 +1,5 @@
 using PartiallyObservedMarkovProcesses
+using PartiallyObservedMarkovProcesses.Examples
 import PartiallyObservedMarkovProcesses as POMP
 using Random
 using RCall

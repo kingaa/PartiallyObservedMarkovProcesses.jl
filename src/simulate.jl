@@ -1,4 +1,3 @@
-export simulate
 
 """
     simulate(object; nsim = 1, params, rinit, rprocess, rmeasure, args...)
@@ -20,13 +19,40 @@ simulate(
         params = val_array(params)
         object = pomp(
             object;
-            rinit=rinit,
+            rinit= rinit, 
             rprocess=rprocess,
             rmeasure=rmeasure,
             args...,
         )
-        [simulate1(object,params[i])
-         for i ∈ eachindex(params), j ∈ 1:nsim]
+
+        # [simulate1(object,params[i])
+        #  for i ∈ eachindex(params), j ∈ 1:nsim]
+        #
+
+        ix = Iterators.product( eachindex(params), 1:nsim )
+
+
+        x0 = (CONFIG.usethreads) ? 
+            Threads.map( jk -> POMP.rinit( object, params = params[jk[1]] )[1], ix  ) |> vec :
+            map( jk -> POMP.rinit( object, params = params[jk[1]] )[1], ix ) |> vec
+
+        x = POMP.rprocess( object, x0 = x0, params = params )
+
+        y = POMP.rmeasure( object, x = x, params = params )
+
+        map( ix ) do (i,j)  
+            PompObject(
+                object.t0,
+                object.times,
+                object.timevar,
+                object.accumvars,
+                params[i],x0[j],vec(x[:,i,j]),vec(y[:,i,j]),
+                object.rinit,
+                object.rprocess,
+                object.rmeasure,
+                object.logdmeasure
+            )
+        end 
     catch e
         if hasproperty(e,:msg)
             error("in `simulate`: " * e.msg)
@@ -36,6 +62,7 @@ simulate(
     end
 end
 
+# deprecate ?
 simulate1(
     object::PompObject,
     params::P,
@@ -57,7 +84,6 @@ simulate1(
     )
 end
 
-export simulate_array
 
 """
     simulate_array(object; nsim = 1, params, rinit, rprocess, rmeasure, args...)

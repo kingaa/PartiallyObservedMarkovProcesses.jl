@@ -1,7 +1,3 @@
-export gompertz
-
-import Distributions: LogNormal, logpdf
-
 @doc raw"""
     gompertz()
 
