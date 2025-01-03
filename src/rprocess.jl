@@ -78,6 +78,7 @@ rproc_internal!(
 ) where {T<:Time,X<:NamedTuple} = begin
     for k ∈ eachindex(times)
         @inbounds x[k,:,:] = x0
+        # better to broadcast? ^
     end
 end
 

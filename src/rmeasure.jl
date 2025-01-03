@@ -44,10 +44,20 @@ rmeas_internal(
 ) where {T,X<:NamedTuple,P<:NamedTuple} = begin
     @assert(size(x,1)==length(times))
     @assert(size(x,2)==length(params))
-    @inbounds(
-        [f(;t=times[i],x[i,j,k]...,params[j]...)
-         for i ∈ eachindex(times),
-             j ∈ eachindex(params),
-             k ∈ axes(x,3)]
+    # @inbounds(
+    #     [f(;t=times[i],x[i,j,k]...,params[j]...)
+    #      for i ∈ eachindex(times),
+    #          j ∈ eachindex(params),
+    #          k ∈ axes(x,3)]
+    # )
+    ix = Iterators.product(eachindex(times), eachindex(params), axes(x,3) )
+    @inbounds(  CONFIG.usethreads ? 
+        Threads.map( ix ) do (i,j,k)  
+            f(;t=times[i],x[i,j,k]...,params[j]...)
+        end : 
+        map( ix ) do (i,j,k) 
+            f(;t=times[i],x[i,j,k]...,params[j]...)
+        end
     )
+
 end

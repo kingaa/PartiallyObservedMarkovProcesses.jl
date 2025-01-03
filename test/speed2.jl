@@ -1,3 +1,6 @@
+# using Revise
+# using Debugger
+
 using PartiallyObservedMarkovProcesses
 using PartiallyObservedMarkovProcesses.Examples
 using DataFrames
@@ -5,16 +8,14 @@ using Distributions
 using Random
 using RCall
 using Test
-# using Revise
-using Debugger
 
 import PartiallyObservedMarkovProcesses as POMP 
 
-@testset "speed trials 2" begin
+#@testset "speed trials 2" 
+begin
 
     NSIM = 100_000
-    # NSIM = 1_000_000
-    # NSIM = 1_000 
+    # NSIM = 10
     NP = 10_000
     theta = (K=1.0,r=0.1,σ=0.1,τ=0.1,X₀=1.0)
 
@@ -52,20 +53,22 @@ print(coef(P))
         rmeasure=function(;X,τ,_...)
             # d = LogNormal(log(X),τ)
             # (Y=rand(d),)
-            (Y=1 ,)
+            (Y=1.0 ,)
         end,
         logdmeasure=function(;Y,X,τ,_...)
             # d = LogNormal(log(X),τ)
             # logpdf(d,Y)
-            1 
+            0.0 
         end
     )
 
     # POMP.setusethreads!(false)
     # @run simulate(P,params=theta,nsim=NSIM)
+    # @run pfilter(P,params=theta,Np=NSIM)
      
     POMP.setusethreads!(false)
     println("PartiallyObservedMarkovProcesses.jl simulation times (Gompertz)")
+    a = simulate(P,params=theta,nsim=NSIM)
     @time simulate(P,params=theta,nsim=NSIM)
 
     println("PartiallyObservedMarkovProcesses.jl pfilter times (Gompertz)")
@@ -75,11 +78,12 @@ print(coef(P))
 
     POMP.setusethreads!(true)
     println("Multi-threaded PartiallyObservedMarkovProcesses.jl simulation times (Gompertz)")
-    simulate(P,params=theta,nsim=NSIM)
+    b = simulate(P,params=theta,nsim=NSIM)
     @time simulate(P,params=theta,nsim=NSIM)
 
     println("Multi-threaded PartiallyObservedMarkovProcesses.jl pfilter times (Gompertz)")
     pfilter(P,params=theta,Np=NSIM)
     @time pfilter(P,params=theta,Np=NP)
 
+    POMP.setusethreads!(false)
 end

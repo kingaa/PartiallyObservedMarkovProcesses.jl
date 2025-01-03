@@ -1,5 +1,3 @@
-using Debugger
-# using Revise
 
 """
     simulate(object; nsim = 1, params, rinit, rprocess, rmeasure, args...)
@@ -17,12 +15,11 @@ simulate(
     rmeasure::Union{Function,Nothing,Missing} = missing,
     args...,
 ) where {P<:NamedTuple} = let
-    @show " TEST 2 "
-    # try
+    try
         params = val_array(params)
         object = pomp(
             object;
-            rinit= rinit, #ismissing(rinit) ? POMP.rinit : rinit,
+            rinit= rinit, 
             rprocess=rprocess,
             rmeasure=rmeasure,
             args...,
@@ -36,40 +33,33 @@ simulate(
 
 
         x0 = (CONFIG.usethreads) ? 
-            Threads.map( jk -> POMP.rinit( object, params = params[jk[1]] ), ix  ) :
-            map( jk -> POMP.rinit( object, params = params[jk[1]] ), ix )
+            Threads.map( jk -> POMP.rinit( object, params = params[jk[1]] )[1], ix  ) |> vec :
+            map( jk -> POMP.rinit( object, params = params[jk[1]] )[1], ix ) |> vec
 
-        # TODO unwrap 
-        x = (CONFIG.usethreads) ? 
-            Threads.map( jk -> POMP.rprocess( object, x0 = x0[jk[2]], params = params[jk[1]] ), ix ) :
-            map( jk -> POMP.rprocess( object, x0 = x0[jk[2]], params = params[jk[1]] ), ix )
+        x = POMP.rprocess( object, x0 = x0, params = params )
 
-        y = (CONFIG.usethreads) ? 
-            Threads.map( jk -> POMP.rmeasure( object, x = x[jk...], params = params[jk[1]] ) , ix ) :
-            map( jk -> POMP.rmeasure( object, x = x[jk...], params = params[jk[1]] ), ix )
+        y = POMP.rmeasure( object, x = x, params = params )
 
-@bp 
-       [ 
+        map( ix ) do (i,j)  
             PompObject(
                 object.t0,
                 object.times,
                 object.timevar,
                 object.accumvars,
-                params[i],x0[j][1],vec(x[i,j]),vec(y[i,j]),
+                params[i],x0[j],vec(x[:,i,j]),vec(y[:,i,j]),
                 object.rinit,
                 object.rprocess,
                 object.rmeasure,
                 object.logdmeasure
             )
-            for (i,j) in ix  
-       ] 
-    # catch e
-    #     if hasproperty(e,:msg)
-    #         error("in `simulate`: " * e.msg)
-    #     else
-    #         throw(e)            # COV_EXCL_LINE
-    #     end
-    # end
+        end 
+    catch e
+        if hasproperty(e,:msg)
+            error("in `simulate`: " * e.msg)
+        else
+            throw(e)            # COV_EXCL_LINE
+        end
+    end
 end
 
 # deprecate ?
