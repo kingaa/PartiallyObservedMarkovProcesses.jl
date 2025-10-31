@@ -101,7 +101,7 @@ ll |>
 
     P = sir();
     @test isa(P,POMP.PompObject)
-    print(P)
+    println(P)
 
     println("PartiallyObservedMarkovProcesses.jl SIR parameters")
     theta = (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S₀=0.9,I₀=0.01,R₀=0.1);

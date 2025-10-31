@@ -28,6 +28,7 @@ jobs:
         config:
           - {os: ubuntu-latest, version: 'pre', arch: 'x64', R: 'release'}
           - {os: ubuntu-latest, version: '1.11', arch: 'x64', R: 'release'}
+          - {os: ubuntu-latest, version: '1.12', arch: 'x64', R: 'release'}
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2
