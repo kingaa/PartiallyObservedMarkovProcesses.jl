@@ -13,7 +13,7 @@ simulate(
     rprocess::Union{PompPlugin,Nothing,Missing} = missing,
     rmeasure::Union{Function,Nothing,Missing} = missing,
     args...,
-) where {P<:NamedTuple} = let
+) where {P<:NamedTuple} = begin
     try
         params = val_array(params)
         object = pomp(
@@ -37,7 +37,7 @@ end
 simulate1(
     object::PompObject,
     params::P,
-) where {P<:NamedTuple} = let
+) where {P<:NamedTuple} = begin
     params = val_array(params)
     x0 = rinit(object,params=params,nsim=1)
     x = rprocess(object,x0=x0,params=params)
@@ -71,7 +71,7 @@ simulate_array(
     rprocess::Union{PompPlugin,Missing} = missing,
     rmeasure::Union{Function,Missing} = missing,
     args...,
-) where {P<:NamedTuple} = let
+) where {P<:NamedTuple} = begin
     try
         params = val_array(params)
         object = pomp(

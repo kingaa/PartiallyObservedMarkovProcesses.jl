@@ -45,8 +45,8 @@ coef(object::AbstractPompObject) = pomp(object).params
 
 coef(
     object::AbstractPompObject,
-    names::Vararg{Symbol},
-) = let
+    names::Symbol...,
+) = begin
     nm = intersect(names,keys(pomp(object).params))
     pomp(object).params[nm]
 end
@@ -55,8 +55,8 @@ coef(object::AbstractArray{<:AbstractPompObject}) = coef.(object)
 
 coef(
     object::AbstractArray{<:AbstractPompObject},
-    names::Vararg{Symbol},
+    names::Symbol...,
 ) = map(x -> coef(x,names...), object)
 
 Base.show(io::IO, object::AbstractPompObject) =
-    println(io,"<" * string(typeof(object).name.name) * ">")
+    show(io,"<" * string(typeof(object).name.name) * ">")

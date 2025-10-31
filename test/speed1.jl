@@ -30,7 +30,7 @@ P |>
 
 cat("pomp pfilter times (Gompertz)\n")
 P |>
-  pfilter(Np=10000,save.states="unweighted",filter.traj=TRUE) |>
+  pfilter(Np=10000,save.states="filter",filter.traj=TRUE) |>
   system.time() |>
   getElement(3) |>
   replicate(n=3) |>

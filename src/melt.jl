@@ -2,7 +2,7 @@ melt(x::Nothing) = DataFrame()
 
 melt(x::NamedTuple; id...) = DataFrame(;merge(NamedTuple(id),x)...)
 
-melt(x::AbstractPompObject; id...) = let
+melt(x::AbstractPompObject; id...) = begin
     timevar = pomp(x).timevar
     t = NamedTuple{(timevar,)}.(times(x))
     n = length(t)
@@ -28,7 +28,7 @@ melt(x::PfilterdPompObject; id...) =
 melt(
     x::AbstractArray{T,N},
     names::Vararg{Symbol,N},
-) where {T,N} = let
+) where {T,N} = begin
     c = NamedTuple{Tuple(names)}.(Tuple.(CartesianIndices(axes(x))))
     reduce(vcat,[melt(x[i];c[i]...) for i ∈ eachindex(x)])
 end

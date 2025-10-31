@@ -34,7 +34,7 @@ pfilter(
     rprocess::Union{PompPlugin,Nothing,Missing} = missing,
     logdmeasure::Union{Function,Nothing,Missing} = missing,
     args...,
-) where {P<:NamedTuple} = let
+) where {P<:NamedTuple} = begin
     try
         object = pomp(
             object;
@@ -112,7 +112,7 @@ pfilter_internal!(
     eff_sample_size::AbstractVector{LogLik},
     cond_logLik::AbstractVector{LogLik},
     perm::AbstractArray{Int64,2}
-) where {T,X,Y} = let
+) where {T,X,Y} = begin
     for k ∈ eachindex(t)
         rprocess!(
             object,
@@ -149,7 +149,7 @@ pfilt_step_comps!(
     xp::AbstractVector{X},
     xf::AbstractVector{X},
     n::Int64 = length(w),
-) where {W<:Real,I<:Integer,X<:NamedTuple} = let
+) where {W<:Real,I<:Integer,X<:NamedTuple} = begin
     wmax::W = -Inf
     s::W = 0
     ss::W = 0
@@ -191,7 +191,7 @@ trace_ancestry!(
     traj::AbstractVector{X},
     filt::AbstractArray{X,2},
     perm::AbstractArray{I,2},
-) where {X,I<:Integer} = let
+) where {X,I<:Integer} = begin
     @assert size(traj,1)==size(perm,1)
     @assert size(filt)==size(perm)
     j = rand(axes(perm,2))

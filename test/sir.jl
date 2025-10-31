@@ -84,7 +84,7 @@ P |>
 
 cat("pomp pfilter times (SIR)\n")
 P |>
-  pfilter(Np=1000,save.states="unweighted",filter.traj=TRUE) |>
+  pfilter(Np=1000,save.states="filter",filter.traj=TRUE) |>
   system.time() |>
   getElement(3) |>
   replicate(n=3) |>

@@ -11,7 +11,7 @@ rprocess(
     t0::T = timezero(object),
     times::Union{T,AbstractVector{T}} = times(object),
     params::Union{P,AbstractVector{P}} = coef(object),
-) where {N,T<:Time,X<:NamedTuple,P<:NamedTuple} = let
+) where {N,T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
     try
         times = val_array(times)
         params = val_array(params)
@@ -90,7 +90,7 @@ rproc_internal!(
     t0::T,
     params::AbstractVector{P},
     accumvars::Nothing,
-) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = let
+) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
     for j ∈ eachindex(params), k ∈ axes(x0,2)
         t = t0
         @inbounds x1 = x0[j,k]
@@ -111,7 +111,7 @@ rproc_internal!(
     t0::T,
     params::AbstractVector{P},
     accumvars::A
-) where {T<:Time,X<:NamedTuple,P<:NamedTuple,A<:NamedTuple} = let
+) where {T<:Time,X<:NamedTuple,P<:NamedTuple,A<:NamedTuple} = begin
     for j ∈ eachindex(params), k ∈ axes(x0,2)
         t = t0
         @inbounds x1 = x0[j,k]

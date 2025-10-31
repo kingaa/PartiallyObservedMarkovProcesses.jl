@@ -56,7 +56,7 @@ rprocess_step(
     tf::T,
     x::X,
     params::NamedTuple,
-) where {F<:Function,T<:Time,X<:NamedTuple} = let
+) where {F<:Function,T<:Time,X<:NamedTuple} = begin
     t = t0
     while t < tf
         @inline x = p.stepfun(;t=t,dt=p.stepsize,x...,params...)::X
@@ -71,7 +71,7 @@ rprocess_step(
     tf::T,
     x::X,
     params::NamedTuple,
-) where {F<:Function,T<:Time,X<:NamedTuple} = let
+) where {F<:Function,T<:Time,X<:NamedTuple} = begin
     n = ceil(Int64,(tf-t0)/p.stepsize)
     if n > 0
         tstep = (tf-t0)/n
@@ -90,7 +90,7 @@ rprocess_step(
     tf::T,
     x::X,
     params::NamedTuple,
-) where {F<:Function,T<:Time,X<:NamedTuple} = let
+) where {F<:Function,T<:Time,X<:NamedTuple} = begin
     @inline x = p.stepfun(;t=t0,dt=tf-t0,x...,params...)::X
     tf,x
 end

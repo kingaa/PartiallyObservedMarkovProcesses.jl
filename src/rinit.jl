@@ -16,7 +16,7 @@ rinit(
     t0::T = timezero(object),
     params::Union{P,AbstractVector{P}} = coef(object),
     nsim::Integer = 1,
-) where {T,P<:NamedTuple} = let
+) where {T,P<:NamedTuple} = begin
     try
         params = val_array(params)
         rinit_internal(pomp(object).rinit,t0,params,nsim)
@@ -43,7 +43,7 @@ rinit!(
     x0::AbstractArray{X,2};
     t0::T = timezero(object),
     params::Union{P,AbstractVector{P}} = coef(object),
-) where {T,X,P<:NamedTuple} = let
+) where {T,X,P<:NamedTuple} = begin
     try
         params = val_array(params)
         rinit_internal!(x0,pomp(object).rinit,t0,params)
