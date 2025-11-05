@@ -1,6 +1,6 @@
 name = "PartiallyObservedMarkovProcesses"
 uuid = "32433216-4d85-4b2d-94ed-a614743ba12b"
-version = "0.4.9"
+version = "0.4.9-1"
 authors = ["Aaron A. King <kingaa@umich.edu>"]
 
 [deps]

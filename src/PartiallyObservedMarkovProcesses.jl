@@ -38,7 +38,7 @@ include("logdmeasure.jl")
 export simulate, simulate_array
 include("simulate.jl")
 
-export pomp, pfilter
+export pfilter
 include("pfilter.jl")
 
 export melt
