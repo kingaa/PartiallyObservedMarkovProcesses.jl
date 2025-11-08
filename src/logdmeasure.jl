@@ -60,7 +60,7 @@ logdmeasure!(
     end
 end
 
-logdmeasure_internal!(
+logdmeasure_internal!(          # COV_EXCL_LINE
     ell::AbstractArray{W,4},
     f::Nothing,
     _...,

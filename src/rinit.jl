@@ -76,7 +76,7 @@ rinit_internal(
 ) where {T<:Time,P<:NamedTuple} =
     [f(;params[i]...,t0=t0) for i ∈ eachindex(params), _ ∈ 1:nsim]
 
-rinit_internal!(
+rinit_internal!(                # COV_EXCL_LINE
     x0::AbstractArray{X},
     f::Nothing,
     _...,
