@@ -42,16 +42,12 @@ simulate1(
     x0 = rinit(object,params=params,nsim=1)
     x = rprocess(object,x0=x0,params=params)
     y = rmeasure(object,x=x,params=params)
-    PompObject(
-        object.t0,
-        object.times,
-        object.timevar,
-        object.accumvars,
-        params[1],x0[1],vec(x),vec(y),
-        object.rinit,
-        object.rprocess,
-        object.rmeasure,
-        object.logdmeasure
+    adjust_pomp(
+        object,
+        params=params[1],
+        init_state=x0[1],
+        states=vec(x),
+        obs=vec(y)
     )
 end
 
@@ -92,11 +88,7 @@ simulate_array(
                 nsim
             )
         )
-        n = length(t)
-        map(
-            (t,y,x) -> merge(t,y,x),
-            t,y,x
-        )
+        map(merge,t,y,x)
     catch e
         if hasproperty(e,:msg)
             error("in `simulate`: " * e.msg)

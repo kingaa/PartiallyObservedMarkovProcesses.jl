@@ -22,6 +22,33 @@ struct PompObject{
     rprocess::F
     rmeasure::Union{Function,Nothing}
     logdmeasure::Union{Function,Nothing}
+    logdprior::Union{Function,Nothing}
+    PompObject(
+        ;t0,
+        times,
+        timevar=:time,
+        accumvars=(;),
+        params=nothing,
+        init_state=nothing,
+        states=nothing,
+        obs=nothing,
+        rinit=nothing,
+        rprocess=nothing,
+        rmeasure=nothing,
+        logdmeasure=nothing,
+        logdprior=nothing
+    ) = begin
+        new{
+            typeof(t0),
+            typeof(params),typeof(accumvars),
+            typeof(init_state),typeof(states),typeof(obs),
+            typeof(rprocess)
+        }(
+            t0,times,timevar,accumvars,
+            params,init_state,states,obs,
+            rinit,rprocess,rmeasure,logdmeasure,logdprior
+        )
+    end
 end
 
 import DataFrames: DataFrame
@@ -43,7 +70,8 @@ ValidPompData = Union{
         params,
         accumvars,
         rinit, rprocess,
-        rmeasure, logdmeasure
+        rmeasure, logdmeasure,
+        logdprior
         )
 
 ## Arguments
@@ -64,6 +92,8 @@ ValidPompData = Union{
   This component should be a function that takes states, parameters, and, optionally, `t`, the current time.
 - `logdmeasure`: log pdf of the measurement process.
   This component should be a function that takes data, states, parameters, and, optionally, `t`, the current time.
+- `logdprior`: log pdf of the prior distribution on parameters.
+  This component should be a function that takes parameters.
 """
 pomp(
     data::Union{Vector{Y},Nothing} = nothing;
@@ -76,6 +106,7 @@ pomp(
     rprocess::Union{<:PompPlugin,Nothing} = nothing,
     rmeasure::Union{Function,Nothing} = nothing,
     logdmeasure::Union{Function,Nothing} = nothing,
+    logdprior::Union{Function,Nothing} = nothing,
 ) where {Y<:NamedTuple,T1<:Time,T<:Time,P<:NamedTuple} = begin
     try
         if T != T1
@@ -92,18 +123,17 @@ pomp(
             error("data and times must be of the same length.")
         end
         PompObject(
-            t0,
-            times,
-            timevar,
-            accumvars,
-            params,
-            nothing,
-            nothing,
-            data,
-            rinit,
-            rprocess,
-            rmeasure,
-            logdmeasure
+            t0=t0,
+            times=times,
+            timevar=timevar,
+            accumvars=accumvars,
+            params=params,
+            obs=data,
+            rinit=rinit,
+            rprocess=rprocess,
+            rmeasure=rmeasure,
+            logdmeasure=logdmeasure,
+            logdprior=logdprior
         )
     catch e
         if hasproperty(e,:msg)
@@ -152,42 +182,19 @@ pomp(
     rprocess::Union{PompPlugin,Nothing,Missing} = missing,
     rmeasure::Union{Function,Nothing,Missing} = missing,
     logdmeasure::Union{Function,Nothing,Missing} = missing,
+    logdprior::Union{Function,Nothing,Missing} = missing,
 ) = begin
     try
-        if ismissing(params)
-            params = pomp(object).params
-        end
-        if ismissing(timevar)
-            timevar = pomp(object).timevar
-        end
-        if ismissing(accumvars)
-            accumvars = pomp(object).accumvars
-        end
-        if ismissing(rinit)
-            rinit = pomp(object).rinit
-        end
-        if ismissing(rprocess)
-            rprocess = pomp(object).rprocess
-        end
-        if ismissing(rmeasure)
-            rmeasure = pomp(object).rmeasure
-        end
-        if ismissing(logdmeasure)
-            logdmeasure = pomp(object).logdmeasure
-        end
-        PompObject(
-            pomp(object).t0,
-            pomp(object).times,
-            timevar,
-            accumvars,
-            params,
-            pomp(object).init_state,
-            pomp(object).states,
-            pomp(object).obs,
-            rinit,
-            rprocess,
-            rmeasure,
-            logdmeasure
+        adjust_pomp(
+            object,
+            timevar=timevar,
+            accumvars=accumvars,
+            params=params,
+            rinit=rinit,
+            rprocess=rprocess,
+            rmeasure=rmeasure,
+            logdmeasure=logdmeasure,
+            logdprior=logdprior
         )
     catch e
         if hasproperty(e,:msg)                       # COV_EXCL_LINE
@@ -199,3 +206,78 @@ pomp(
 end
 
 pomp(_...) = error("Incorrect call to `pomp`.")
+
+## `adjust_pomp` should only be used internally because it cannot
+## guarantee that it returns a valid `PompObject`.
+
+adjust_pomp(
+    object::AbstractPompObject;
+    t0 = missing,
+    times = missing,
+    timevar = missing,
+    accumvars = missing,
+    params = missing,
+    init_state = missing,
+    states = missing,
+    obs = missing,
+    rinit = missing,
+    rprocess = missing,
+    rmeasure = missing,
+    logdmeasure = missing,
+    logdprior = missing,
+) = begin
+    if ismissing(t0)
+        t0 = pomp(object).t0
+    end
+    if ismissing(times)
+        times = pomp(object).times
+    end
+    if ismissing(params)
+        params = pomp(object).params
+    end
+    if ismissing(timevar)
+        timevar = pomp(object).timevar
+    end
+    if ismissing(accumvars)
+        accumvars = pomp(object).accumvars
+    end
+    if ismissing(init_state)
+        init_state = pomp(object).init_state
+    end
+    if ismissing(states)
+        states = pomp(object).states
+    end
+    if ismissing(obs)
+        obs = pomp(object).obs
+    end
+    if ismissing(rinit)
+        rinit = pomp(object).rinit
+    end
+    if ismissing(rprocess)
+        rprocess = pomp(object).rprocess
+    end
+    if ismissing(rmeasure)
+        rmeasure = pomp(object).rmeasure
+    end
+    if ismissing(logdmeasure)
+        logdmeasure = pomp(object).logdmeasure
+    end
+    if ismissing(logdprior)
+        logdprior = pomp(object).logdprior
+    end
+    PompObject(
+        t0=t0,
+        times=times,
+        timevar=timevar,
+        accumvars=accumvars,
+        params=params,
+        init_state=init_state,
+        states=states,
+        obs=obs,
+        rinit=rinit,
+        rprocess=rprocess,
+        rmeasure=rmeasure,
+        logdmeasure=logdmeasure,
+        logdprior=logdprior
+    )
+end

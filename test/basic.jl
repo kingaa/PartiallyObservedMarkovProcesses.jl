@@ -79,4 +79,16 @@ using Test
     @test all(ell.<=0)
     @test_throws r"parameter .* undefined" logdmeasure(P,y=y,x=x,params=(a=1.0,))
 
+    ell = logdprior(P,params=[p1;p2]);
+    @test isa(ell,Array{POMP.LogLik,1})
+    @test size(ell)==(2,)
+    @test all(ell.==0.0)
+
+    P = pomp(P,logdprior=logdpri);
+    ell = logdprior(P,params=[p1;p2]);
+    @test isa(ell,Array{POMP.LogLik,1})
+    @test size(ell)==(2,)
+    @test all(ell.<=0)
+    @test_throws r"parameter .* undefined" logdprior(P,params=(a=1.0,))
+
 end

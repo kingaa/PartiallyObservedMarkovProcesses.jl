@@ -67,6 +67,11 @@ logdmeasure
 logdmeasure!
 ```
 
+```@docs
+logdprior
+logdprior!
+```
+
 ### Helper functions
 
 ```@docs

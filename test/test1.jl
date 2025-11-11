@@ -20,6 +20,11 @@ logdmeas = function (;x,y,k,_...)
     logpdf(d,y)
 end
 
+logdpri = function (;x₀,_...)
+    d = LogNormal(1,1)
+    logpdf(d,x₀)
+end
+
 theta = (a=1.0,k=7.0,x₀=5.0);
 
 nothing
