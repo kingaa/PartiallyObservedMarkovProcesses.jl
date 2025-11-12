@@ -133,7 +133,7 @@ pomp(
             rprocess=rprocess,
             rmeasure=rmeasure,
             logdmeasure=logdmeasure,
-            logdprior=logdprior
+            logdprior=logdprior,
         )
     catch e
         if hasproperty(e,:msg)
@@ -185,7 +185,7 @@ pomp(
     logdprior::Union{Function,Nothing,Missing} = missing,
 ) = begin
     try
-        adjust_pomp(
+        _adjust_pomp(
             object,
             timevar=timevar,
             accumvars=accumvars,
@@ -194,7 +194,9 @@ pomp(
             rprocess=rprocess,
             rmeasure=rmeasure,
             logdmeasure=logdmeasure,
-            logdprior=logdprior
+            logdprior=logdprior,
+            init_state=nothing,
+            states=nothing
         )
     catch e
         if hasproperty(e,:msg)                       # COV_EXCL_LINE
@@ -207,10 +209,10 @@ end
 
 pomp(_...) = error("Incorrect call to `pomp`.")
 
-## `adjust_pomp` should only be used internally because it cannot
-## guarantee that it returns a valid `PompObject`.
+## `_adjust_pomp` should only be used internally because it is
+## not guaranteed to return a valid `PompObject`.
 
-adjust_pomp(
+_adjust_pomp(
     object::AbstractPompObject;
     t0 = missing,
     times = missing,

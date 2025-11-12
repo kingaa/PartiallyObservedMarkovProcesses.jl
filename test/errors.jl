@@ -17,7 +17,8 @@ using Test
         rinit=rin,
         rprocess=discrete_time(rlin,dt=1),
         rmeasure=rmeas,
-        logdmeasure=logdmeas
+        logdmeasure=logdmeas,
+        logdprior=logdpri
     )
 
     x0 = rinit(P);
@@ -33,6 +34,8 @@ using Test
     @test_throws "in `rmeasure`: yikes!" rmeasure(P,params=(a=1,),x=x)
     P = pomp(P,logdmeasure=function(;_...) error("yikes!") end);
     @test_throws "in `logdmeasure!`: yikes!" logdmeasure(P,params=(a=1,),x=x,y=y)
+    P = pomp(P,logdprior=function(;_...) error("yikes!") end);
+    @test_throws "in `logdprior!`: yikes!" logdprior(P,params=(a=1,))
 
     @test_throws "Incorrect call" simulate(P,rprocess=onestep("bob"))
     @test_throws "Incorrect call" simulate(P,rprocess=euler("bob"))
@@ -46,13 +49,16 @@ using Test
         rinit=(x)->x,
         rprocess=onestep((x)->x),
         rmeasure=(x)->x,
-        logdmeasure=(x)->1
+        logdmeasure=(x)->1,
+        logdprior=(x)->1
     );
     x0 = rinit(sir());
+    x = rprocess(sir());
     @test_throws "no matching method" rinit(P1)
     @test_throws "no matching method" rinit!(P1,x0)
-    @test_throws "no matching method" rprocess(P1)
-    @test_throws "no matching method" rmeasure(P1)
-    @test_throws "no matching method" logdmeasure(P1)
+    @test_throws "no matching method" rprocess(P1,x0=x0)
+    @test_throws "no matching method" rmeasure(P1,x=x)
+    @test_throws "no matching method" logdmeasure(P1,x=x)
+    @test_throws "no matching method" logdprior(P1)
 
 end

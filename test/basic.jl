@@ -91,4 +91,16 @@ using Test
     @test all(ell.<=0)
     @test_throws r"parameter .* undefined" logdprior(P,params=(a=1.0,))
 
+    ## merely for coverage purposes:
+    ## do not try this at home!
+    ## '_adjust_pomp' is strictly for internal use
+    @test isa(
+        POMP._adjust_pomp(P,init_state=x0[1],states=x[:,1,1]),
+        POMP.PompObject
+    )
+    @test isa(
+        POMP._adjust_pomp(P),
+        POMP.PompObject
+    )
+
 end
