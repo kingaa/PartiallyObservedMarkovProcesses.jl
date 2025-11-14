@@ -18,7 +18,7 @@ update:
 	julia --project -e 'import Pkg; Pkg.update(); Pkg.gc()'
 
 docs:
-	julia --project docs/make.jl
+	make -C docs
 
 session: build
 	julia --project

@@ -5,11 +5,11 @@ using RCall
 using Test
 using Random: seed!
 
-@testset "Rosenzweig-MacArthur model" begin
+@testset "stochastic Rosenzweig-MacArthur model" begin
 
     seed!(875002133)
 
-    println("PartiallyObservedMarkovProcesses.jl simulations (Rosenzweig-MacArthur)")
+    println("PartiallyObservedMarkovProcesses.jl simulations (stoch Rosenzweig-MacArthur)")
     P = rmca()
     @time P = rmca()
     @time P = rmca()
@@ -40,7 +40,7 @@ $(melt(P)) |>
 
     R"""ggsave(filename="rmca-02.png",width=7,height=4)"""
 
-    println("PartiallyObservedMarkovProcesses.jl pfilter (Rosenzweig-MacArthur)")
+    println("PartiallyObservedMarkovProcesses.jl pfilter (stoch Rosenzweig-MacArthur)")
     P = rmca(δt=0.1,σ=0.1,times=range(1.0,20.0,step=1.0))
     Pf = pfilter(P,Np=1000)
     @time Pf = pfilter(P,Np=1000)
@@ -48,7 +48,7 @@ $(melt(P)) |>
     @time Pf = pfilter(P,Np=1000)
     @test isa(Pf,POMP.PfilterdPompObject)
     println(
-        "PartiallyObservedMarkovProcesses.jl likelihood estimate (Rosenzweig-MacArthur): ",
+        "PartiallyObservedMarkovProcesses.jl likelihood estimate (stoch Rosenzweig-MacArthur): ",
         round(Pf.logLik,digits=2)
     )
 

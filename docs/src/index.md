@@ -31,6 +31,7 @@ pomp
 euler
 discrete_time
 onestep
+vectorfield
 ```
 
 ### Simulation
@@ -200,6 +201,7 @@ savesvg("assets/figures/sir_diagram.svg",sv,web_display=true)
 
 ```@docs
 rmca
+drmca
 ```
 
 A sample simulation.
@@ -225,6 +227,28 @@ nothing #hide
 ```
 
 ![rmca_dynamics](assets/figures/rmca1.svg)
+
+```@example
+using PartiallyObservedMarkovProcesses, RCall #hide
+using PartiallyObservedMarkovProcesses.Examples #hide
+P = drmca(σ=0.1,times=range(0,400.0,step=1.0))
+d = melt(P)
+R"""
+svg("assets/figures/drmca1.svg",width=7,height=6) #hide
+$d |>
+  pivot_longer(-time) |>
+  ggplot(aes(x=time,y=value))+
+  geom_path()+
+  facet_wrap(~name,scales="free_y",ncol=1)+
+  labs(y="")+
+  theme_bw() -> pl
+print(pl)
+dev.off() #hide
+"""
+nothing #hide
+```
+
+![drmca_dynamics](assets/figures/drmca1.svg)
 
 ### Multivariate Brownian motion
 

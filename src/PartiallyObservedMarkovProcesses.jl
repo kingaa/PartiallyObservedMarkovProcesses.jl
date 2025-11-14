@@ -29,6 +29,9 @@ include("rprocess.jl")
 export euler, discrete_time, onestep
 include("plugins.jl")
 
+export vectorfield
+include("flow.jl")
+
 export rmeasure
 include("rmeasure.jl")
 

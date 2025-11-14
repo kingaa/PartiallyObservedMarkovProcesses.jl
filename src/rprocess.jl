@@ -102,7 +102,7 @@ rproc_internal!(
 end
 
 ## advance the state for each IC and parameter
-## without accumulators
+## with accumulators
 rproc_internal!(
     x::AbstractArray{X,3},
     plugin::PompPlugin,

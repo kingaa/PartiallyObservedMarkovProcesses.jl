@@ -2,16 +2,19 @@ module Examples
 
 using ..PartiallyObservedMarkovProcesses
 
-export brownian_motion
-export gompertz
-export sir
-export rmca
 export parus_data
-
 include("parus_data.jl")
+
+export gompertz
 include("gompertz.jl")
+
+export brownian_motion
 include("brownian_motion.jl")
+
+export sir
 include("sir.jl")
+
+export rmca, drmca
 include("rmca.jl")
 
 end
