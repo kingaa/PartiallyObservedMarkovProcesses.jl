@@ -25,7 +25,6 @@ $(melt(P)) |>
    scale_y_log10()+
    theme_bw()
 """
-
     R"""ggsave(filename="drmca-01.png",width=7,height=7)"""
 
     R"""
@@ -37,7 +36,14 @@ $(melt(P)) |>
    facet_grid(name~.,scales="free_y")+
    theme_bw()
 """
-
     R"""ggsave(filename="drmca-02.png",width=7,height=4)"""
+
+    println("PartiallyObservedMarkovProcesses.jl simulation scaling (det Rosenzweig-MacArthur)")
+    S = simulate(P,rmeasure=nothing,nsim=1)[1]
+    @time S1 = simulate(S,nsim=1)
+    @time S1 = simulate(S,nsim=1)
+    @time S1 = simulate(S,nsim=10)
+    @time S1 = simulate(S,nsim=100)
+    @time S1 = simulate(S,nsim=1000)
 
 end

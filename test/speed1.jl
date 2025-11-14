@@ -6,6 +6,8 @@ using Random
 using RCall
 using Test
 
+println("speed trials")
+
 @testset "speed trials" begin
 
     R"""

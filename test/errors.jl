@@ -39,6 +39,7 @@ using Test
 
     @test_throws "Incorrect call" simulate(P,rprocess=onestep("bob"))
     @test_throws "Incorrect call" simulate(P,rprocess=euler("bob"))
+    @test_throws "Incorrect call" simulate(P,rprocess=vectorfield("bob"))
     @test_throws "Incorrect call" discrete_time("bob")
     @test_throws "Incorrect call" pomp("bob")
     @test_throws "Incorrect call" pfilter("bob")

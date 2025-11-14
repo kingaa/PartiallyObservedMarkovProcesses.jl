@@ -4,6 +4,8 @@ using Distributions
 using Random
 using Test
 
+println("pfilter tests")
+
 @testset verbose=true "pfilter" begin
 
     Random.seed!(263260083)
