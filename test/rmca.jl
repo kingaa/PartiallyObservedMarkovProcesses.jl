@@ -19,7 +19,7 @@ println("- stochastic Rosenzweig-MacArthur model tests")
     @test isa(P,POMP.PompObject)
 
     R"""
-library(tidyverse)
+library(tidyverse,warn.conflicts=FALSE)
 $(melt(P)) |>
    ggplot(aes(x=n,y=p))+
    geom_path()+

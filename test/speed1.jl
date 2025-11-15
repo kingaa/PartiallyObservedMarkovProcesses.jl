@@ -11,8 +11,8 @@ println("- speed trials")
 @testset "speed trials" begin
 
     R"""
-library(pomp)
-library(tidyverse)
+library(tidyverse,warn.conflicts=FALSE)
+library(pomp,warn.conflicts=FALSE)
 set.seed(599586410L)
 
 P <- gompertz()

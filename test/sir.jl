@@ -12,8 +12,8 @@ println("- SIR model tests")
     Random.seed!(1558102772)
 
     R"""
-library(tidyverse)
-library(pomp)
+library(tidyverse,warn.conflicts=FALSE)
+library(pomp,warn.conflicts=FALSE)
 
 set.seed(1558102772)
 
@@ -151,7 +151,7 @@ ll |>
     d1 = melt(Q,:parset,:rep);
 
     R"""
-library(tidyverse)
+library(tidyverse,warn.conflicts=FALSE)
 $d1 |>
   select(-parset) |>
   pivot_longer(-c(rep,time)) |>
@@ -192,7 +192,7 @@ $d1 |>
     d2 = melt(Pf)
 
     R"""
-library(tidyverse)
+library(tidyverse,warn.conflicts=FALSE)
 $d2 |>
   pivot_longer(-time) |>
   ggplot(aes(x=time,y=value))+

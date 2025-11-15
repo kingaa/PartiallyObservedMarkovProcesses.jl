@@ -36,7 +36,7 @@ println("- Brownian motion tests")
 
     R"""
 options(tidyverse.quiet=TRUE)
-library(tidyverse)
+library(tidyverse,warn.conflicts=FALSE)
 $d |>
 select(time,x1,x2,y1,y2) |>
 filter(time<2000) |>
@@ -51,7 +51,7 @@ theme_bw()
 
     R"""
 options(tidyverse.quiet=TRUE)
-library(tidyverse)
+library(tidyverse,warn.conflicts=FALSE)
 $d |>
 select(time,x1,x2,y1,y2) |>
 ggplot(aes(x=x1,y=x2))+

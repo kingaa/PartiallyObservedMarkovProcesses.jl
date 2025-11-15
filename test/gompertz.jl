@@ -50,12 +50,12 @@ println("- Gompertz model tests")
     d = melt(P,rep=0);
 
     R"""
-library(tidyverse)
+library(tidyverse,warn.conflicts=FALSE)
 bind_rows($s,$d) |>
   mutate(data=if_else(rep==0,"data","simulation")) |>
   ggplot(aes(x=year,group=rep,color=factor(rep)))+
   geom_point(aes(y=pop,shape=data))+
-  geom_line(aes(y=X))+
+  geom_line(data=$s,aes(y=X))+
   guides(color="none",size="none")+
   labs(shape="")+
   scale_y_sqrt()+

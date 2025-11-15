@@ -20,7 +20,7 @@ println("- deterministic Rosenzweig-MacArthur model tests")
     println("    ",P)
 
     R"""
-library(tidyverse)
+library(tidyverse,warn.conflicts=FALSE)
 $(melt(P)) |>
    ggplot(aes(x=n,y=p))+
    geom_path()+
@@ -46,7 +46,6 @@ $(melt(P)) |>
     @time S1 = simulate(S,nsim=1)
     @time S1 = simulate(S,nsim=1)
     @time S1 = simulate(S,nsim=10)
-    println("    ",S1)
     @time S1 = simulate(S,nsim=100)
     @time S1 = simulate(S,nsim=1000)
 
