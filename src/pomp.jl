@@ -185,7 +185,7 @@ pomp(
     logdprior::Union{Function,Nothing,Missing} = missing,
 ) = begin
     try
-        _adjust_pomp(
+        _reconfigure(
             object,
             timevar=timevar,
             accumvars=accumvars,
@@ -209,10 +209,10 @@ end
 
 pomp(_...) = error("Incorrect call to `pomp`.")
 
-## `_adjust_pomp` should only be used internally because it is
+## `_reconfigure` should only be used internally because it is
 ## not guaranteed to return a valid `PompObject`.
 
-_adjust_pomp(
+_reconfigure(
     object::AbstractPompObject;
     t0 = missing,
     times = missing,

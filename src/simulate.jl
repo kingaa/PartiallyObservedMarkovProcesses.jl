@@ -42,7 +42,7 @@ simulate1(
     x0 = rinit(object,params=params,nsim=1)
     x = rprocess(object,x0=x0,params=params)
     y = rmeasure(object,x=x,params=params)
-    _adjust_pomp(
+    _reconfigure(
         object,
         params=params[1],
         init_state=x0[1],
@@ -63,9 +63,9 @@ simulate_array(
     object::ValidPompData = nothing;
     nsim::Integer = 1,
     params::Union{P,AbstractVector{P}} = coef(object),
-    rinit::Union{Function,Missing} = missing,
-    rprocess::Union{PompPlugin,Missing} = missing,
-    rmeasure::Union{Function,Missing} = missing,
+    rinit::Union{Function,Nothing,Missing} = missing,
+    rprocess::Union{PompPlugin,Nothing,Missing} = missing,
+    rmeasure::Union{Function,Nothing,Missing} = missing,
     args...,
 ) where {P<:NamedTuple} = begin
     try

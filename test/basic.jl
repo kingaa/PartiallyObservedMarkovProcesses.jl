@@ -95,13 +95,13 @@ println("- testing constructors and workhorses")
 
     ## merely for coverage purposes:
     ## do not try this at home!
-    ## '_adjust_pomp' is strictly for internal use
+    ## '_reconfigure' is strictly for internal use
     @test isa(
-        POMP._adjust_pomp(P,init_state=x0[1],states=x[:,1,1]),
+        POMP._reconfigure(P,init_state=x0[1],states=x[:,1,1]),
         POMP.PompObject
     )
     @test isa(
-        POMP._adjust_pomp(P),
+        POMP._reconfigure(P),
         POMP.PompObject
     )
 
