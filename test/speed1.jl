@@ -6,7 +6,7 @@ using Random
 using RCall
 using Test
 
-println("speed trials")
+println("- speed trials")
 
 @testset "speed trials" begin
 
@@ -22,7 +22,7 @@ P |>
 
 print(coef(P))
 
-cat("pomp simulation times (Gompertz)\n")
+cat("    pomp simulation times (Gompertz)\n")
 P |>
   simulate(nsim=10000) |>
   system.time() |>
@@ -30,7 +30,7 @@ P |>
   replicate(n=3) |>
   print()
 
-cat("pomp pfilter times (Gompertz)\n")
+cat("    pomp pfilter times (Gompertz)\n")
 P |>
   pfilter(Np=10000,save.states="filter",filter.traj=TRUE) |>
   system.time() |>
@@ -38,7 +38,7 @@ P |>
   replicate(n=3) |>
   print()
 
-cat("pomp likelihood estimate (Gompertz)\n")
+cat("    pomp likelihood estimate (Gompertz)\n")
 P |>
   pfilter(Np=10000) |>
   logLik() |>
@@ -76,37 +76,37 @@ P |>
         end
     )
 
-    println("PartiallyObservedMarkovProcesses.jl simulation times (Gompertz)")
+    println("    POMP.jl simulation times (Gompertz)")
     simulate(P,params=theta,nsim=10000)
     @time simulate(P,params=theta,nsim=10000)
     @time simulate(P,params=theta,nsim=10000)
     @time simulate(P,params=theta,nsim=10000)
 
-    println("PartiallyObservedMarkovProcesses.jl simulate scaling (Gompertz)")
+    println("    POMP.jl simulate scaling (Gompertz)")
     Q = simulate(P,params=theta,nsim=100);
     @time Q = simulate(P,params=theta,nsim=100)
     @time Q = simulate(P,params=theta,nsim=1000)
     @time Q = simulate(P,params=theta,nsim=10000)
 
-    println("PartiallyObservedMarkovProcesses.jl simulate_array scaling (Gompertz)")
+    println("    POMP.jl simulate_array scaling (Gompertz)")
     simulate_array(P,params=theta,nsim=100);
     @time simulate_array(P,params=theta,nsim=100)
     @time simulate_array(P,params=theta,nsim=1000)
     @time simulate_array(P,params=theta,nsim=10000)
 
-    println("PartiallyObservedMarkovProcesses.jl pfilter times (Gompertz)")
+    println("    POMP.jl pfilter times (Gompertz)")
     pfilter(P,params=theta,Np=10000)
     @time pfilter(P,params=theta,Np=10000)
     @time pfilter(P,params=theta,Np=10000)
     @time pfilter(P,params=theta,Np=10000)
 
-    println("PartiallyObservedMarkovProcesses.jl pfilter scaling (Gompertz)")
+    println("    POMP.jl pfilter scaling (Gompertz)")
     @time Pf = pfilter(P,params=theta,Np=100)
     @time Pf = pfilter(P,params=theta,Np=1000)
     @time Pf = pfilter(P,params=theta,Np=10000)
 
     println(
-        "PartiallyObservedMarkovProcesses.jl likelihood estimate (Gompertz): ",
+        "    POMP.jl likelihood estimate (Gompertz): ",
         round(Pf.logLik,digits=2)
     )
 

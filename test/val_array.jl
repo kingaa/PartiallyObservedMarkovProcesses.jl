@@ -2,6 +2,8 @@ using PartiallyObservedMarkovProcesses
 import PartiallyObservedMarkovProcesses as POMP
 using Test
 
+println("- testing val_array")
+
 @testset "val_array" begin
     y = fill((a=7,b=99,c="bob"),25,1)
     @test POMP.val_array("yes")==["yes"]

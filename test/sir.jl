@@ -5,6 +5,8 @@ using Random
 using RCall
 using Test
 
+println("- SIR model tests")
+
 @testset verbose=true "SIR model" begin
 
     Random.seed!(1558102772)
@@ -62,10 +64,10 @@ P |>
   as.data.frame() |>
   select(time,reports) -> dat
 
-cat("pomp SIR parameters\n")
+cat("    pomp SIR parameters\n")
 print(coef(P))
 
-cat("pomp simulation times (SIR)\n")
+cat("    pomp simulation times (SIR)\n")
 P |>
   simulate(nsim=1000,format="p") |>
   system.time() |>
@@ -82,7 +84,7 @@ P |>
   replicate(n=3) |>
   print()
 
-cat("pomp pfilter times (SIR)\n")
+cat("    pomp pfilter times (SIR)\n")
 P |>
   pfilter(Np=1000,save.states="filter",filter.traj=TRUE) |>
   system.time() |>
@@ -90,7 +92,7 @@ P |>
   replicate(n=3) |>
   print()
 
-cat("pomp likelihood estimate (SIR)\n")
+cat("    pomp likelihood estimate (SIR)\n")
 P |>
   pfilter(Np=1000) |>
   logLik() -> ll
@@ -101,13 +103,13 @@ ll |>
 
     P = sir();
     @test isa(P,POMP.PompObject)
-    println(P)
+    println("    printing the PompObject gives ",P)
 
-    println("PartiallyObservedMarkovProcesses.jl SIR parameters")
+    println("    POMP.jl SIR parameters")
     theta = (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S₀=0.9,I₀=0.01,R₀=0.1);
     println(theta)
 
-    println("PartiallyObservedMarkovProcesses.jl simulation times (SIR)")
+    println("    POMP.jl simulation times (SIR)")
     Q = simulate(P,nsim=1000,params=theta);
     @test typeof(Q[1])!=typeof(P)
     Q = simulate(Q[1],nsim=1000);
@@ -175,7 +177,7 @@ $d1 |>
         accumvars=(C=0,)
     )
 
-    println("PartiallyObservedMarkovProcesses.jl pfilter times (SIR)")
+    println("    POMP.jl pfilter times (SIR)")
     Pf = pfilter(P,Np=1000,params=theta);
     @time Pf = pfilter(P,Np=1000,params=theta);
     @time Pf = pfilter(P,Np=1000,params=theta);
@@ -183,7 +185,7 @@ $d1 |>
 
     Pf = pfilter(Pf,Np=1000);
     println(
-        "PartiallyObservedMarkovProcesses.jl likelihood estimate (SIR): ",
+        "    POMP.jl likelihood estimate (SIR): ",
         round(Pf.logLik,digits=2)
     )
 

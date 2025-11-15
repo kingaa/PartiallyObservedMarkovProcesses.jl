@@ -14,7 +14,10 @@ include("brownian_motion.jl")
 export sir
 include("sir.jl")
 
-export rmca, drmca
+export rmca
 include("rmca.jl")
+
+export drmca
+include("drmca.jl")
 
 end

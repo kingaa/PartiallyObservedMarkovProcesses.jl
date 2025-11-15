@@ -2,6 +2,8 @@ using PartiallyObservedMarkovProcesses
 using PartiallyObservedMarkovProcesses.Examples
 using Test
 
+println("- testing error capture")
+
 @testset verbose=true "error messages" begin
 
     include("test1.jl")

@@ -5,13 +5,15 @@ using Random
 using RCall
 using Test
 
+println("- Gompertz model tests")
+
 @testset verbose=true "Gompertz model" begin
 
     Random.seed!(1558102772)
 
     P = gompertz();
     @test isa(P,POMP.PompObject)
-    println(P)
+    println("    ",P)
 
     p1 = (r=4.5,K=210.0,σₚ=0.7,σₘ=0.1,X₀=150.0);
 

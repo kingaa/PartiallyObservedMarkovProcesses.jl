@@ -2,7 +2,9 @@ using PartiallyObservedMarkovProcesses
 using DataFrames
 using Test
 
-@testset verbose=true "melt" begin
+println("- testing 'melt' methods")
+
+@testset verbose=true "melt methods" begin
     d = melt(nothing);
     @test isa(d,DataFrame)
     @test size(d)==(0,0)

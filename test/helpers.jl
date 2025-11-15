@@ -1,6 +1,8 @@
 using PartiallyObservedMarkovProcesses
 using Test
 
+println("- testing helper functions")
+
 @testset verbose=true "helpers" begin
 
     include("test1.jl")

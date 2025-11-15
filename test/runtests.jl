@@ -7,11 +7,11 @@ using Test
     include("val_array.jl")
     include("helpers.jl")
     include("melt.jl")
+    include("brown.jl")
     include("gompertz.jl")
     include("sir.jl")
     include("rmca.jl")
     include("drmca.jl")
     include("pfilter.jl")
     include("speed1.jl")
-    include("brown.jl")
 end

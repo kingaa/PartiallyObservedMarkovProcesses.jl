@@ -7,7 +7,7 @@ using Random: seed!
 
 import PartiallyObservedMarkovProcesses as POMP
 
-println("Brownian motion tests")
+println("- Brownian motion tests")
 
 @testset verbose=true "Brownian motion" begin
 
