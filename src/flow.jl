@@ -7,7 +7,7 @@ struct VectorfieldPlugin{F<:Function, G<:Function} <: PompPlugin
     statenames::Vector{Symbol}
 end
 
-argnames(m::Method) = Base.method_argnames(m)[2:m.nargs]
+argnames(m::Method) = Base.rest(Base.method_argnames(m),2)
 
 """
     vectorfield(vf, integration_alg)

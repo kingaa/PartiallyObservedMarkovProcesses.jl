@@ -1,7 +1,7 @@
 using PartiallyObservedMarkovProcesses
 using Test
 
-@testset verbose=true "PartiallyObservedMarkovProcesses.jl" begin
+@testset verbose=true "POMP.jl" begin
     include("basic.jl")
     include("errors.jl")
     include("val_array.jl")
