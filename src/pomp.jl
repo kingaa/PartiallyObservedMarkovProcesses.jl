@@ -1,3 +1,5 @@
+import DataFrames: DataFrame, Not, select, eachrow
+
 abstract type AbstractPompObject{T,P,A,X0,X,Y,F} end
 abstract type PompPlugin end
 
@@ -50,8 +52,6 @@ struct PompObject{
         )
     end
 end
-
-import DataFrames: DataFrame
 
 ## The following type is valid for the `object` in a call to most package functions.
 ValidPompData = Union{
@@ -143,9 +143,6 @@ pomp(
         end
     end
 end
-
-import DataFrames: DataFrame, select, eachrow
-import InvertedIndices: Not
 
 pomp(
     data::DataFrame;
