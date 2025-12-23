@@ -22,11 +22,11 @@ rinit(
         rinit_internal(pomp(object).rinit,t0,params,nsim)
     catch e
         if isa(e,UndefKeywordError)
-            error("in `rinit`: parameter " * string(e.var) * " undefined.")
+            error("in `rinit`: parameter $(e.var) undefined.")
         elseif isa(e,MethodError)
-            error("in `rinit`: no matching method for args " * string(e.args[1]))
+            error("in `rinit`: no matching method for args $(e.args[1]).")
         elseif hasproperty(e,:msg)
-            error("in `rinit`: " * e.msg)
+            error("in `rinit`: $(e.msg)")
         else
             throw(e)            # COV_EXCL_LINE
         end
@@ -49,11 +49,11 @@ rinit!(
         rinit_internal!(x0,pomp(object).rinit,t0,params)
     catch e
         if isa(e,UndefKeywordError)
-            error("in `rinit!`: parameter " * string(e.var) * " undefined.")
+            error("in `rinit!`: parameter $(e.var) undefined.")
         elseif isa(e,MethodError)
-            error("in `rinit!`: no matching method for args " * string(e.args[1]))
+            error("in `rinit!`: no matching method for args $(e.args[1]).")
         elseif hasproperty(e,:msg)
-            error("in `rinit!`: " * e.msg)
+            error("in `rinit!`: $(e.msg)")
         else
             throw(e)            # COV_EXCL_LINE
         end

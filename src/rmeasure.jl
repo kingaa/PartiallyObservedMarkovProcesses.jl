@@ -16,11 +16,11 @@ rmeasure(
         rmeas_internal(pomp(object).rmeasure,x,times,params)
     catch e
         if isa(e,UndefKeywordError)
-            error("in `rmeasure`: parameter " * string(e.var) * " undefined.")
+            error("in `rmeasure`: parameter $(e.var) undefined.")
         elseif isa(e,MethodError)
-            error("in `rmeasure`: no matching method for args " * string(e.args[1]))
+            error("in `rmeasure`: no matching method for args $(e.args[1]).")
         elseif hasproperty(e,:msg)
-            error("in `rmeasure`: " * e.msg)
+            error("in `rmeasure`: $(e.msg)")
         else
             throw(e)            # COV_EXCL_LINE
         end

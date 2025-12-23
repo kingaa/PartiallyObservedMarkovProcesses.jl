@@ -27,7 +27,7 @@ simulate(
          for i ∈ eachindex(params), j ∈ 1:nsim]
     catch e
         if hasproperty(e,:msg)
-            error("in `simulate`: " * e.msg)
+            error("in `simulate`: $(e.msg)")
         else
             throw(e)            # COV_EXCL_LINE
         end
@@ -91,7 +91,7 @@ simulate_array(
         map(merge,t,y,x)
     catch e
         if hasproperty(e,:msg)
-            error("in `simulate`: " * e.msg)
+            error("in `simulate`: $(e.msg)")
         else
             throw(e)            # COV_EXCL_LINE
         end

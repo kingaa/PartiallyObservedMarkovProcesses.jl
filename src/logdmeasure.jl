@@ -20,7 +20,7 @@ logdmeasure(
         ell
     catch e
         if hasproperty(e,:msg)
-            error("in `logdmeasure`: " * e.msg)
+            error("in `logdmeasure`: $(e.msg)")
         else
             throw(e)            # COV_EXCL_LINE
         end
@@ -49,11 +49,11 @@ logdmeasure!(
         logdmeasure_internal!(ell,pomp(object).logdmeasure,times,y,x,params)
     catch e
         if isa(e,UndefKeywordError)
-            error("in `logdmeasure!`: parameter " * string(e.var) * " undefined.")
+            error("in `logdmeasure!`: parameter $(e.var) undefined.")
         elseif isa(e,MethodError)
-            error("in `logdmeasure!`: no matching method for args " * string(e.args[1]))
+            error("in `logdmeasure!`: no matching method for args $(e.args[1]).")
         elseif hasproperty(e,:msg)
-            error("in `logdmeasure!`: " * e.msg)
+            error("in `logdmeasure!`: $(e.msg)")
         else
             throw(e)            # COV_EXCL_LINE
         end

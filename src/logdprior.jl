@@ -14,7 +14,7 @@ logdprior(
         ell
     catch e
         if hasproperty(e,:msg)
-            error("in `logdprior`: " * e.msg)
+            error("in `logdprior`: $(e.msg)")
         else
             throw(e)            # COV_EXCL_LINE
         end
@@ -36,11 +36,11 @@ logdprior!(
         logdprior_internal!(ell,pomp(object).logdprior,params)
     catch e
         if isa(e,UndefKeywordError)
-            error("in `logdprior!`: parameter " * string(e.var) * " undefined.")
+            error("in `logdprior!`: parameter $(e.var) undefined.")
         elseif isa(e,MethodError)
-            error("in `logdprior!`: no matching method for args " * string(e.args[1]))
+            error("in `logdprior!`: no matching method for args $(e.args[1]).")
         elseif hasproperty(e,:msg)
-            error("in `logdprior!`: " * e.msg)
+            error("in `logdprior!`: $(e.msg)")
         else
             throw(e)            # COV_EXCL_LINE
         end

@@ -78,7 +78,7 @@ pfilter(
         )
     catch e
         if hasproperty(e,:msg)
-            error("in `pfilter`: " * e.msg)
+            error("in `pfilter`: $(e.msg)")
         else
             throw(e)            # COV_EXCL_LINE
         end

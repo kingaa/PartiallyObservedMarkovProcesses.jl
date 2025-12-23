@@ -21,7 +21,7 @@ rprocess(
         x
     catch e
         if hasproperty(e,:msg)
-            error("in `rprocess`: " * e.msg)
+            error("in `rprocess`: $(e.msg)")
         else
             throw(e)            # COV_EXCL_LINE
         end
@@ -56,11 +56,11 @@ rprocess!(
         )
     catch e
         if isa(e,UndefKeywordError)
-            error("in `rprocess!`: parameter " * string(e.var) * " undefined.")
+            error("in `rprocess!`: parameter $(e.var) undefined.")
         elseif isa(e,MethodError)
-            error("in `rprocess!`: no matching method for args " * string(e.args[1]))
+            error("in `rprocess!`: no matching method for args $(e.args[1]).")
         elseif hasproperty(e,:msg)
-            error("in `rprocess!`: " * e.msg)
+            error("in `rprocess!`: $(e.msg)")
         else
             throw(e)            # COV_EXCL_LINE
         end
