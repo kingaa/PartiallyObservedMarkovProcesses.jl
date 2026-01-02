@@ -5,4 +5,4 @@ PartiallyObservedMarkovProcesses = "32433216-4d85-4b2d-94ed-a614743ba12b"
 RCall = "6f49c342-dc21-5d91-9882-a32aef131414"
 
 [sources]
-PartiallyObservedMarkovProcesses = {path = "../"}
+PartiallyObservedMarkovProcesses = {path = ".."}

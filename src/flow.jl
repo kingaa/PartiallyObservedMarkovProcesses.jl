@@ -21,32 +21,32 @@ The `integration_alg` argument specifies the integration algorithm to be used.
 vectorfield(
     vf::Function,
     integration_alg;
-    integrator_args...
-        ) = begin
-            m = methods(vf)
-            @assert length(m)==1
-            statenames = argnames(m[1])
-            vf_eval!(du, u, p, t) = begin
-                du[:] = vf(u...;p...,t=t)
-                nothing
-            end
-            integrator!(
-                x::AbstractVector,
-                t::AbstractVector,
-                x0::NamedTuple,
-                params::NamedTuple,
-            ) = begin
-                tspan = extrema(t)
-                ic = [x0[statenames]...]
-                prob = ODEProblem{true,SciMLBase.NoSpecialize}(
-                    vf_eval!,
-                    ic,tspan,params
-                )
-                sol = solve(prob,integration_alg;integrator_args...)
-                x[:] = map(v->(;zip(statenames,v)...),sol(t))
-            end
-            VectorfieldPlugin(integrator!,vf_eval!,statenames)
-        end
+    integrator_args...,
+) = begin
+    m = methods(vf)
+    @assert length(m)==1
+    statenames = argnames(m[1])
+    vf_eval!(du, u, p, t) = begin
+        du[:] = vf(u...;p...,t=t)
+        nothing
+    end
+    integrator!(
+        x::AbstractVector,
+        t::AbstractVector,
+        x0::NamedTuple,
+        params::NamedTuple,
+    ) = begin
+        tspan = extrema(t)
+        ic = [x0[statenames]...]
+        prob = ODEProblem{true,SciMLBase.NoSpecialize}(
+            vf_eval!,
+            ic,tspan,params
+        )
+        sol = solve(prob,integration_alg;integrator_args...)
+        x[:] = map(v->(;zip(statenames,v)...),sol(t))
+    end
+    VectorfieldPlugin(integrator!,vf_eval!,statenames)
+end
 
 vectorfield(_...) = error("Incorrect call to `vectorfield`.")
 

@@ -16,6 +16,8 @@ build:
 
 update:
 	julia --project -e 'import Pkg; Pkg.update(); Pkg.gc()'
+	cd test; julia --project -e 'import Pkg; Pkg.update(); Pkg.gc()'
+	cd docs; julia --project -e 'import Pkg; Pkg.update(); Pkg.gc()'
 
 docs:
 	make -C docs
