@@ -3,7 +3,7 @@ import PartiallyObservedMarkovProcesses as POMP
 using Random: seed!
 using Test
 
-println("- testing constructors and workhorses")
+@info "testing constructors and workhorses"
 
 @testset verbose=true "constructor and workhorses" begin
 

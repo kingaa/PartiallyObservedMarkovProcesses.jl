@@ -6,9 +6,11 @@ using Random
 using RCall
 using Test
 
-println("- speed trials")
+@info "speed trials"
 
 @testset "speed trials" begin
+
+    @info "- speed tests in R"
 
     R"""
 library(tidyverse,warn.conflicts=FALSE)
@@ -76,38 +78,35 @@ P |>
         end
     )
 
-    println("    POMP.jl simulation times (Gompertz)")
+    @info "- POMP.jl simulation times (Gompertz)"
     simulate(P,params=theta,nsim=10000)
     @time simulate(P,params=theta,nsim=10000)
     @time simulate(P,params=theta,nsim=10000)
     @time simulate(P,params=theta,nsim=10000)
 
-    println("    POMP.jl simulate scaling (Gompertz)")
+    @info "- POMP.jl simulate scaling (Gompertz)"
     Q = simulate(P,params=theta,nsim=100);
     @time Q = simulate(P,params=theta,nsim=100)
     @time Q = simulate(P,params=theta,nsim=1000)
     @time Q = simulate(P,params=theta,nsim=10000)
 
-    println("    POMP.jl simulate_array scaling (Gompertz)")
+    @info "- POMP.jl simulate_array scaling (Gompertz)"
     simulate_array(P,params=theta,nsim=100);
     @time simulate_array(P,params=theta,nsim=100)
     @time simulate_array(P,params=theta,nsim=1000)
     @time simulate_array(P,params=theta,nsim=10000)
 
-    println("    POMP.jl pfilter times (Gompertz)")
+    @info "- POMP.jl pfilter times (Gompertz)"
     pfilter(P,params=theta,Np=10000)
     @time pfilter(P,params=theta,Np=10000)
     @time pfilter(P,params=theta,Np=10000)
     @time pfilter(P,params=theta,Np=10000)
 
-    println("    POMP.jl pfilter scaling (Gompertz)")
+    @info "- POMP.jl pfilter scaling (Gompertz)"
     @time Pf = pfilter(P,params=theta,Np=100)
     @time Pf = pfilter(P,params=theta,Np=1000)
     @time Pf = pfilter(P,params=theta,Np=10000)
 
-    println(
-        "    POMP.jl likelihood estimate (Gompertz): ",
-        round(Pf.logLik,digits=2)
-    )
+    @info "- POMP.jl likelihood estimate (Gompertz): $(round(Pf.logLik,digits=2))"
 
 end

@@ -5,19 +5,18 @@ using RCall
 using Test
 using Random: seed!
 
-println("- deterministic Rosenzweig-MacArthur model tests")
+@info "deterministic Rosenzweig-MacArthur model tests"
 
 @testset "deterministic Rosenzweig-MacArthur model" begin
 
     seed!(875002133)
 
-    println("    POMP.jl simulations (det Rosenzweig-MacArthur)")
+    @info "- POMP.jl simulations (det Rosenzweig-MacArthur)"
     P = drmca()
     @time P = drmca()
     @time P = drmca()
     @time P = drmca()
     @test isa(P,POMP.PompObject)
-    println("    ",P)
 
     R"""
 library(tidyverse,warn.conflicts=FALSE)
@@ -41,7 +40,7 @@ $(melt(P)) |>
 """
     R"""ggsave(filename="drmca-02.png",width=7,height=4)"""
 
-    println("    POMP.jl simulation scaling (det Rosenzweig-MacArthur)")
+    @info "- POMP.jl simulation scaling (det Rosenzweig-MacArthur)"
     S = simulate(P,rmeasure=nothing,nsim=1)[1]
     @time S1 = simulate(S,nsim=1)
     @time S1 = simulate(S,nsim=1)

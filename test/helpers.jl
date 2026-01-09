@@ -1,7 +1,7 @@
 using PartiallyObservedMarkovProcesses
 using Test
 
-println("- testing helper functions")
+@info "testing helper functions"
 
 @testset verbose=true "helpers" begin
 

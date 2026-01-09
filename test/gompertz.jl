@@ -5,7 +5,7 @@ using Random
 using RCall
 using Test
 
-println("- Gompertz model tests")
+@info "Gompertz model tests"
 
 @testset verbose=true "Gompertz model" begin
 
@@ -13,7 +13,7 @@ println("- Gompertz model tests")
 
     P = gompertz();
     @test isa(P,POMP.PompObject)
-    println("    ",P)
+    @info "- printing the PompObject gives $P"
 
     p1 = (r=4.5,K=210.0,σₚ=0.7,σₘ=0.1,X₀=150.0);
 

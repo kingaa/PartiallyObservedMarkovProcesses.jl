@@ -5,7 +5,7 @@ using Random: seed!
 
 import DifferentialEquations: AutoTsit5, Rosenbrock23
 
-println("- vectorfield integration tests")
+@info "vectorfield integration tests"
 
 @testset "vectorfield integration" begin
 
