@@ -61,7 +61,7 @@ rproc_internal!(
     t0::T,
     params::AbstractVector{P},
     accumvars::Nothing
-) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
+) where {T<:RealTime,X<:NamedTuple,P<:NamedTuple} = begin
     for j ∈ eachindex(params), k ∈ axes(x0,2)
         @inbounds plugin.integrator(@view(x[:,j,k]),times,x0[j,k],params[j])
     end

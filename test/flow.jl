@@ -17,8 +17,8 @@ println("- vectorfield integration tests")
             b = 1e-3, c = 1, m = 0.8,
             N₀ = 3000, P₀ = 4, t₀ = 0.0,
         ),
-        t0=0,
-        times=0:10,
+        t0=0.0,
+        times=Float64.(0:10),
         rinit = function (;N₀,P₀,_...)
             (
                 X=log(N₀),
