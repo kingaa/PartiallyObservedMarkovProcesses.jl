@@ -25,8 +25,8 @@ struct PompObject{
     rprocess::F
     rmeasure::Union{Function,Nothing}
     logdmeasure::Union{Function,Nothing}
-    logdprior::Union{Function,Nothing}
     rprior::Union{Function,Nothing}
+    logdprior::Union{Function,Nothing}
     userdata::U
     PompObject(
         ;t0,
@@ -41,8 +41,8 @@ struct PompObject{
         rprocess=nothing,
         rmeasure=nothing,
         logdmeasure=nothing,
-        logdprior=nothing,
         rprior=nothing,
+        logdprior=nothing,
         userdata=(;),
     ) = begin
         params = repair(params)
@@ -56,7 +56,7 @@ struct PompObject{
             t0,times,timevar,accumvars,
             params,init_state,states,obs,
             rinit,rprocess,rmeasure,logdmeasure,
-            logdprior,rprior,
+            rprior,logdprior,
             userdata
         )
     end
@@ -76,8 +76,8 @@ struct PompObject{
         rprocess = missing,
         rmeasure = missing,
         logdmeasure = missing,
-        logdprior = missing,
         rprior = missing,
+        logdprior = missing,
         userdata = missing,
     ) = begin
         if ismissing(t0)
@@ -116,11 +116,11 @@ struct PompObject{
         if ismissing(logdmeasure)
             logdmeasure = pomp(object).logdmeasure
         end
-        if ismissing(logdprior)
-            logdprior = pomp(object).logdprior
-        end
         if ismissing(rprior)
             rprior = pomp(object).rprior
+        end
+        if ismissing(logdprior)
+            logdprior = pomp(object).logdprior
         end
         if ismissing(userdata)
             userdata = pomp(object).userdata
@@ -138,7 +138,7 @@ struct PompObject{
             init_state,states,obs,
             rinit,rprocess,
             rmeasure,logdmeasure,
-            logdprior,rprior,
+            rprior,logdprior,
             userdata
         )
     end
@@ -165,7 +165,7 @@ ValidPompData = Union{
         accumvars,
         rinit, rprocess,
         rmeasure, logdmeasure,
-        logdprior, rprior,
+        rprior, logdprior,
         userdata
         )
 
@@ -181,17 +181,22 @@ ValidPompData = Union{
 - `accumvars`: a NamedTuple of state variables to be reset (usually to zero) immediately before each simulation stage.
 - `rinit`: simulator of the latent-state distribution at t₀.
   This component should be a function that takes parameters and, optionally, `t0`, the initial time.
+  It should return a NamedTuple of state variables.
 - `rprocess`: simulator of the latent-state process.
   This component should be a plugin (see [`euler`](@ref), [`onestep`](@ref), and [`discrete_time`](@ref)).
 - `rmeasure`: simulator of the measurement process.
   This component should be a function that takes states, parameters, and, optionally, `t`, the current time.
+  It should return a NamedTuple of observable variables.
 - `logdmeasure`: log pdf of the measurement process.
   This component should be a function that takes data, states, parameters, and, optionally, `t`, the current time.
-- `logdprior`: log pdf of the prior distribution on parameters.
-  This component should be a function that takes parameters.
+  It should return a scalar.
 - `rprior`: simulator of the prior distribution on parameters.
   This component should be a function that takes parameters and returns a NamedTuple of parameters.
-- `userdata`: an optional NamedTuple that will be passed to each basic model component.
+  It should return a NamedTuple of parameters.
+- `logdprior`: log pdf of the prior distribution on parameters.
+  This component should be a function that takes parameters.
+  It should return a scalar.
+- `userdata`: an optional NamedTuple containing elements that will be furnished to each of the basic model components.
 """
 pomp(
     data::Union{Vector{Y},Nothing} = nothing;
@@ -204,8 +209,8 @@ pomp(
     rprocess::Union{<:PompPlugin,Nothing} = nothing,
     rmeasure::Union{Function,Nothing} = nothing,
     logdmeasure::Union{Function,Nothing} = nothing,
-    logdprior::Union{Function,Nothing} = nothing,
     rprior::Union{Function,Nothing} = nothing,
+    logdprior::Union{Function,Nothing} = nothing,
     userdata::Union{<:NamedTuple,Nothing} = nothing,
 ) where {Y<:NamedTuple,T1<:Time,T<:Time,P<:NamedTuple} = begin
     if T != T1
@@ -232,8 +237,8 @@ pomp(
         rprocess=rprocess,
         rmeasure=rmeasure,
         logdmeasure=logdmeasure,
-        logdprior=logdprior,
         rprior=rprior,
+        logdprior=logdprior,
         userdata=userdata
     )
 end
@@ -273,8 +278,8 @@ pomp(
     rprocess::Union{PompPlugin,Nothing,Missing} = missing,
     rmeasure::Union{Function,Nothing,Missing} = missing,
     logdmeasure::Union{Function,Nothing,Missing} = missing,
-    logdprior::Union{Function,Nothing,Missing} = missing,
     rprior::Union{Function,Nothing,Missing} = missing,
+    logdprior::Union{Function,Nothing,Missing} = missing,
     userdata::Union{<:NamedTuple,Nothing,Missing} = missing,
 ) = begin
     PompObject(
@@ -286,8 +291,8 @@ pomp(
         rprocess=rprocess,
         rmeasure=rmeasure,
         logdmeasure=logdmeasure,
-        logdprior=logdprior,
         rprior=rprior,
+        logdprior=logdprior,
         userdata=userdata,
         init_state=nothing,
         states=nothing
