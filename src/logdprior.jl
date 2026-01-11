@@ -47,7 +47,7 @@ logdprior!(
     end
 end
 
-logdprior_internal!(          # COV_EXCL_LINE
+logdprior_internal!(
     ell::AbstractArray{W,1},
     f::Nothing,
     _...,

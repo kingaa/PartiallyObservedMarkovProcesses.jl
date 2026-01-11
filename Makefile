@@ -1,10 +1,10 @@
-test:
+test: build
 	julia --project -e 'import Pkg; Pkg.test()'
 
-coverage:
+coverage: build
 	julia --project -e 'using LocalCoverage; report_coverage_and_exit(target_coverage=90)'
 
-xcov:
+xcov: build
 	julia --project -e 'using LocalCoverage; html_coverage(open=true,dir="coverage")'
 
 clean:
@@ -19,7 +19,7 @@ update:
 	cd test; julia --project -e 'import Pkg; Pkg.update(); Pkg.gc()'
 	cd docs; julia --project -e 'import Pkg; Pkg.update(); Pkg.gc()'
 
-docs:
+docs: build
 	make -C docs
 
 session: build

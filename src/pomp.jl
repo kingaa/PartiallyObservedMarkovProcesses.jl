@@ -1,4 +1,4 @@
-import DataFrames: DataFrame, Not, select, eachrow
+using DataFrames: AbstractDataFrame, Not, select, eachrow
 
 abstract type AbstractPompObject{T,P,A,X0,X,Y,F} end
 abstract type PompPlugin end
@@ -57,7 +57,7 @@ end
 ValidPompData = Union{
     Nothing,
     Vector{<:NamedTuple},
-    DataFrame,
+    AbstractDataFrame,
     AbstractPompObject
 }
 
@@ -78,9 +78,9 @@ ValidPompData = Union{
 
 - `data`: observations.
   The default constructor takes a vector of NamedTuples as data.
-  One can also supply a DataFrame.
+  One can also supply an AbstractDataFrame.
 - `t0`: zero time, t₀.
-- `times`: observation times. If `data` is supplied as a DataFrame, `times` should be a Symbol which is the time variable in the DataFrame.
+- `times`: observation times. If `data` is supplied as a DataFrame (or AbstractDataFrame), `times` should be a Symbol which denotes the time variable in the DfataFrame. NB: the types of `times` and `t0` must match, or an error will be generated.
 - `timevar`: optional symbol.  Name of the time variable.
 - `params`: parameters. A NamedTuple or vector of NamedTuples.
 - `accumvars`: a NamedTuple of state variables to be reset (usually to zero) immediately before each simulation stage.
@@ -145,7 +145,7 @@ pomp(
 end
 
 pomp(
-    data::DataFrame;
+    data::AbstractDataFrame;
     t0::T,
     times::Symbol,
     args...,
