@@ -10,13 +10,13 @@ end
 argnames(m::Method) = Base.rest(Base.method_argnames(m),2)
 
 """
-    vectorfield(vf, integration_alg)
+    vectorfield(vf, integration_alg; integrator_args...)
 
 The function `vf` should return a vector containing the
 components of the vectorfield *in the same order* in which they are passed
 to `vf`.
 
-The `integration_alg` argument specifies the integration algorithm to be used.
+The `integration_alg` argument specifies the integration algorithm to be used.  See **DifferentialEquations.jl** for more on the choices.  The keyword arguments in `integrate_args...` are passed to the `DifferentialEquations.solve()` function.
 """
 vectorfield(
     vf::Function,
