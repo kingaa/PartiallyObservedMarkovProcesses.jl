@@ -150,7 +150,7 @@ pomp(
     times::Symbol,
     args...,
 ) where {T<:Time} = begin
-    time = getproperty(data,times)::Vector{T}
+    time = getproperty(data,times)::AbstractVector{T}
     data = NamedTuple.(eachrow(select(data,Not(times))))
     pomp(data;t0=t0,times=time,timevar=times,args...)
 end
