@@ -108,40 +108,32 @@ pomp(
     logdmeasure::Union{Function,Nothing} = nothing,
     logdprior::Union{Function,Nothing} = nothing,
 ) where {Y<:NamedTuple,T1<:Time,T<:Time,P<:NamedTuple} = begin
-    try
-        if T != T1
-            error("`t0` and time-vector must have the same elementary type.")
-        end
-        times = val_array(collect(times))
-        if t0 > times[1]
-            error("`t0` must be no later than first observation time.")
-        end
-        if any(diff(times).<0)
-            error("observation times must be nondecreasing.")
-        end
-        if !isnothing(data) && length(data) != length(times)
-            error("data and times must be of the same length.")
-        end
-        PompObject(
-            t0=t0,
-            times=times,
-            timevar=timevar,
-            accumvars=accumvars,
-            params=params,
-            obs=data,
-            rinit=rinit,
-            rprocess=rprocess,
-            rmeasure=rmeasure,
-            logdmeasure=logdmeasure,
-            logdprior=logdprior,
-        )
-    catch e
-        if hasproperty(e,:msg)
-            error("in `pomp` constructor: $(e.msg)")
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
+    if T != T1
+        error("`t0` and time-vector must have the same elementary type.")
     end
+    times = val_array(collect(times))
+    if t0 > times[1]
+        error("`t0` must be no later than first observation time.")
+    end
+    if any(diff(times).<0)
+        error("observation times must be nondecreasing.")
+    end
+    if !isnothing(data) && length(data) != length(times)
+        error("data and times must be of the same length.")
+    end
+    PompObject(
+        t0=t0,
+        times=times,
+        timevar=timevar,
+        accumvars=accumvars,
+        params=params,
+        obs=data,
+        rinit=rinit,
+        rprocess=rprocess,
+        rmeasure=rmeasure,
+        logdmeasure=logdmeasure,
+        logdprior=logdprior,
+    )
 end
 
 pomp(
@@ -181,27 +173,19 @@ pomp(
     logdmeasure::Union{Function,Nothing,Missing} = missing,
     logdprior::Union{Function,Nothing,Missing} = missing,
 ) = begin
-    try
-        _reconfigure(
-            object,
-            timevar=timevar,
-            accumvars=accumvars,
-            params=params,
-            rinit=rinit,
-            rprocess=rprocess,
-            rmeasure=rmeasure,
-            logdmeasure=logdmeasure,
-            logdprior=logdprior,
-            init_state=nothing,
-            states=nothing
-        )
-    catch e
-        if hasproperty(e,:msg)                       # COV_EXCL_LINE
-            error("in `pomp` reconfigure: $(e.msg)") # COV_EXCL_LINE
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
+    _reconfigure(
+        object,
+        timevar=timevar,
+        accumvars=accumvars,
+        params=params,
+        rinit=rinit,
+        rprocess=rprocess,
+        rmeasure=rmeasure,
+        logdmeasure=logdmeasure,
+        logdprior=logdprior,
+        init_state=nothing,
+        states=nothing
+    )
 end
 
 pomp(_...) = error("Incorrect call to `pomp`.")

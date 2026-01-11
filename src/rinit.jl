@@ -17,20 +17,8 @@ rinit(
     params::Union{P,AbstractVector{P}} = coef(object),
     nsim::Integer = 1,
 ) where {T,P<:NamedTuple} = begin
-    try
-        params = val_array(params)
-        rinit_internal(pomp(object).rinit,t0,params,nsim)
-    catch e
-        if isa(e,UndefKeywordError)
-            error("in `rinit`: parameter $(e.var) undefined.")
-        elseif isa(e,MethodError)
-            error("in `rinit`: no matching method for args $(e.args[1]).")
-        elseif hasproperty(e,:msg)
-            error("in `rinit`: $(e.msg)")
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
+    params = val_array(params)
+    rinit_internal(pomp(object).rinit,t0,params,nsim)
 end
 
 """
@@ -44,20 +32,8 @@ rinit!(
     t0::T = timezero(object),
     params::Union{P,AbstractVector{P}} = coef(object),
 ) where {T,X,P<:NamedTuple} = begin
-    try
-        params = val_array(params)
-        rinit_internal!(x0,pomp(object).rinit,t0,params)
-    catch e
-        if isa(e,UndefKeywordError)
-            error("in `rinit!`: parameter $(e.var) undefined.")
-        elseif isa(e,MethodError)
-            error("in `rinit!`: no matching method for args $(e.args[1]).")
-        elseif hasproperty(e,:msg)
-            error("in `rinit!`: $(e.msg)")
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
+    params = val_array(params)
+    rinit_internal!(x0,pomp(object).rinit,t0,params)
 end
 
 rinit_internal(

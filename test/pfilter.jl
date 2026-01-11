@@ -42,7 +42,7 @@ using Test
         logdmeasure=logdmeas
     );
     P = P[1];
-    @test_throws "in `simulate`" simulate(P,params=(a=1.5,k=7.0))
+    @test_throws r"keyword argument .* not assigned" simulate(P,params=(a=1.5,k=7.0))
 
     P = pomp(
         obs(P),
@@ -70,7 +70,7 @@ using Test
     @time pfilter(Q,params=(k=7.0,a=1.5,x₀=5.0));
     @time pfilter(Q,params=(k=7.0,a=1.5,x₀=5.0));
     @test all(Q.x0.==Q.pred[1,:])
-    @test_throws "in `pfilter`: in `rinit`" pfilter(Q,params=(a=1.5,k=7.0));
+    @test_throws r"keyword argument .* not assigned" pfilter(Q,params=(a=1.5,k=7.0));
 
     d = melt(Q);
     @test size(d)==(21,4)

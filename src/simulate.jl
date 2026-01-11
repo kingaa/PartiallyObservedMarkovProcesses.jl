@@ -14,24 +14,16 @@ simulate(
     rmeasure::Union{Function,Nothing,Missing} = missing,
     args...,
 ) where {P<:NamedTuple} = begin
-    try
-        params = val_array(params)
-        object = pomp(
-            object;
-            rinit=rinit,
-            rprocess=rprocess,
-            rmeasure=rmeasure,
-            args...,
-        )
-        [simulate1(object,params[i])
-         for i ∈ eachindex(params), j ∈ 1:nsim]
-    catch e
-        if hasproperty(e,:msg)
-            error("in `simulate`: $(e.msg)")
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
+    params = val_array(params)
+    object = pomp(
+        object;
+        rinit=rinit,
+        rprocess=rprocess,
+        rmeasure=rmeasure,
+        args...,
+    )
+    [simulate1(object,params[i])
+     for i ∈ eachindex(params), j ∈ 1:nsim]
 end
 
 simulate1(
@@ -68,34 +60,26 @@ simulate_array(
     rmeasure::Union{Function,Nothing,Missing} = missing,
     args...,
 ) where {P<:NamedTuple} = begin
-    try
-        params = val_array(params)
-        object = pomp(
-            object;
-            rinit=rinit,
-            rprocess=rprocess,
-            rmeasure=rmeasure,
-            args...,
+    params = val_array(params)
+    object = pomp(
+        object;
+        rinit=rinit,
+        rprocess=rprocess,
+        rmeasure=rmeasure,
+        args...,
+    )
+    x0 = POMP.rinit(object,params=params,nsim=nsim)
+    x = POMP.rprocess(object,x0=x0,params=params)
+    y = POMP.rmeasure(object,x=x,params=params)
+    timevar = object.timevar
+    t = stack(
+        fill(
+            NamedTuple{(timevar,)}.(POMP.times(object)),
+            length(params),
+            nsim
         )
-        x0 = POMP.rinit(object,params=params,nsim=nsim)
-        x = POMP.rprocess(object,x0=x0,params=params)
-        y = POMP.rmeasure(object,x=x,params=params)
-        timevar = object.timevar
-        t = stack(
-            fill(
-                NamedTuple{(timevar,)}.(POMP.times(object)),
-                length(params),
-                nsim
-            )
-        )
-        map(merge,t,y,x)
-    catch e
-        if hasproperty(e,:msg)
-            error("in `simulate_array`: $(e.msg)")
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
+    )
+    map(merge,t,y,x)
 end
 
 simulate(_...) = error("Incorrect call to `simulate`.")

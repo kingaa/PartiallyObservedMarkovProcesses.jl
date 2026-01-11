@@ -10,21 +10,13 @@ logdmeasure(
     x::Union{X,AbstractArray{X}} = states(object),
     params::Union{P,AbstractVector{P}} = coef(object),
 ) where {T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
-    try
-        times = val_array(times)
-        params = val_array(params)
-        x = val_array(x,length(times),length(params))
-        y = val_array(y,length(times),length(params))
-        ell = Array{LogLik}(undef,size(x)...,size(y,3))
-        logdmeasure!(object,ell;times=times,y=y,x=x,params=params)
-        ell
-    catch e
-        if hasproperty(e,:msg)
-            error("in `logdmeasure`: $(e.msg)")
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
+    times = val_array(times)
+    params = val_array(params)
+    x = val_array(x,length(times),length(params))
+    y = val_array(y,length(times),length(params))
+    ell = Array{LogLik}(undef,size(x)...,size(y,3))
+    logdmeasure!(object,ell;times=times,y=y,x=x,params=params)
+    ell
 end
 
 """
@@ -40,27 +32,15 @@ logdmeasure!(
     x::AbstractArray{X} = states(object),
     params::Union{P,AbstractVector{P}} = coef(object),
 ) where {W<:Real,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
-    try
-        params = val_array(params)
-        @assert length(times)==size(x,1)
-        @assert length(times)==size(y,1)
-        @assert length(params)==size(x,2)
-        @assert length(params)==size(y,2)
-        logdmeasure_internal!(ell,pomp(object).logdmeasure,times,y,x,params)
-    catch e
-        if isa(e,UndefKeywordError)
-            error("in `logdmeasure!`: parameter $(e.var) undefined.")
-        elseif isa(e,MethodError)
-            error("in `logdmeasure!`: no matching method for args $(e.args[1]).")
-        elseif hasproperty(e,:msg)
-            error("in `logdmeasure!`: $(e.msg)")
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
+    params = val_array(params)
+    @assert length(times)==size(x,1)
+    @assert length(times)==size(y,1)
+    @assert length(params)==size(x,2)
+    @assert length(params)==size(y,2)
+    logdmeasure_internal!(ell,pomp(object).logdmeasure,times,y,x,params)
 end
 
-logdmeasure_internal!(          # COV_EXCL_LINE
+logdmeasure_internal!(                # COV_EXCL_LINE
     ell::AbstractArray{W,4},
     f::Nothing,
     _...,

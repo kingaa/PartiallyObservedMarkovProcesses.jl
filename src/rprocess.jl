@@ -12,20 +12,12 @@ rprocess(
     times::Union{T,AbstractVector{T}} = times(object),
     params::Union{P,AbstractVector{P}} = coef(object),
 ) where {N,T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
-    try
-        times = val_array(times)
-        params = val_array(params)
-        x0 = val_array(x0,length(params))
-        x = similar(x0,length(times),size(x0)...)
-        rprocess!(object,x,x0=x0,t0=t0,times=times,params=params)
-        x
-    catch e
-        if hasproperty(e,:msg)
-            error("in `rprocess`: $(e.msg)")
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
+    times = val_array(times)
+    params = val_array(params)
+    x0 = val_array(x0,length(params))
+    x = similar(x0,length(times),size(x0)...)
+    rprocess!(object,x,x0=x0,t0=t0,times=times,params=params)
+    x
 end
 
 """
@@ -41,30 +33,18 @@ rprocess!(
     times::AbstractVector{T} = times(object),
     params::Union{P,AbstractVector{P}} = coef(object),
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
-    try
-        params = val_array(params)
-        @assert length(times)==size(x,1)
-        @assert length(params)==size(x,2)
-        @assert length(params)==size(x0,1)
-        @assert size(x0,2)==size(x,3)
-        rproc_internal!(
-            x,
-            pomp(object).rprocess,
-            x0,times,t0,
-            params,
-            pomp(object).accumvars
-        )
-    catch e
-        if isa(e,UndefKeywordError)
-            error("in `rprocess!`: parameter $(e.var) undefined.")
-        elseif isa(e,MethodError)
-            error("in `rprocess!`: no matching method for args $(e.args[1]).")
-        elseif hasproperty(e,:msg)
-            error("in `rprocess!`: $(e.msg)")
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
+    params = val_array(params)
+    @assert length(times)==size(x,1)
+    @assert length(params)==size(x,2)
+    @assert length(params)==size(x0,1)
+    @assert size(x0,2)==size(x,3)
+    rproc_internal!(
+        x,
+        pomp(object).rprocess,
+        x0,times,t0,
+        params,
+        pomp(object).accumvars
+    )
 end
 
 ## the default (persistence) rprocess

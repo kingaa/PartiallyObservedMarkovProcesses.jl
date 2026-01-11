@@ -35,54 +35,46 @@ pfilter(
     logdmeasure::Union{Function,Nothing,Missing} = missing,
     args...,
 ) where {P<:NamedTuple} = begin
-    try
-        object = pomp(
-            object;
-            params=params,
-            rinit=rinit,
-            rprocess=rprocess,
-            logdmeasure=logdmeasure,
-            args...,
-        )
-        t0 = timezero(object)
-        t = times(object)
-        y = obs(object)
-        x0 = POMP.rinit(object;t0=t0,nsim=Np)
-        @assert(size(x0)==(1,Np))
-        xf = similar(x0,length(t),Np)
-        xp = similar(x0,length(t),Np)
-        xt = similar(x0,length(t))
-        w = Array{LogLik}(undef,length(t),Np)
-        cond_logLik = similar(w,length(t))
-        eff_sample_size = similar(w,length(t))
-        perm = Array{Int64}(undef,length(t),Np)
-        pfilter_internal!(
-            object,
-            x0,
-            reshape(xf,length(t),1,Np),
-            reshape(xp,length(t),1,Np),
-            reshape(w,length(t),1,Np,1),
-            t0,t,
-            reshape(y,length(t),1,1),
-            eff_sample_size,
-            cond_logLik,
-            perm
-        )
-        trace_ancestry!(xt,xf,perm)
-        PfilterdPompObject(
-            object,Np,
-            vec(x0),xf,xp,xt,w,
-            eff_sample_size,
-            cond_logLik,
-            sum(cond_logLik)
-        )
-    catch e
-        if hasproperty(e,:msg)
-            error("in `pfilter`: $(e.msg)")
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
+    object = pomp(
+        object;
+        params=params,
+        rinit=rinit,
+        rprocess=rprocess,
+        logdmeasure=logdmeasure,
+        args...,
+    )
+    t0 = timezero(object)
+    t = times(object)
+    y = obs(object)
+    x0 = POMP.rinit(object;t0=t0,nsim=Np)
+    @assert(size(x0)==(1,Np))
+    xf = similar(x0,length(t),Np)
+    xp = similar(x0,length(t),Np)
+    xt = similar(x0,length(t))
+    w = Array{LogLik}(undef,length(t),Np)
+    cond_logLik = similar(w,length(t))
+    eff_sample_size = similar(w,length(t))
+    perm = Array{Int64}(undef,length(t),Np)
+    pfilter_internal!(
+        object,
+        x0,
+        reshape(xf,length(t),1,Np),
+        reshape(xp,length(t),1,Np),
+        reshape(w,length(t),1,Np,1),
+        t0,t,
+        reshape(y,length(t),1,1),
+        eff_sample_size,
+        cond_logLik,
+        perm
+    )
+    trace_ancestry!(xt,xf,perm)
+    PfilterdPompObject(
+        object,Np,
+        vec(x0),xf,xp,xt,w,
+        eff_sample_size,
+        cond_logLik,
+        sum(cond_logLik)
+    )
 end
 
 """

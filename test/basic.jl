@@ -40,8 +40,8 @@ using Test
     @test isa(x0,Array{<:NamedTuple,2})
     @test size(x0)==(2,7)
     @test keys(x0[8])==(:x,)
-    @test_throws r"parameter .* undefined" rinit(P,params=(a=1.0,k=7.0))
-    @test_throws r"parameter .* undefined" rinit!(P,x0,params=(a=1.0,k=7.0))
+    @test_throws r"keyword argument .* not assigned" rinit(P,params=(a=1.0,k=7.0))
+    @test_throws r"keyword argument .* not assigned" rinit!(P,x0,params=(a=1.0,k=7.0))
 
     x = rprocess(P,x0=x0,params=[p1;p2]);
     @test isa(x,Array{<:NamedTuple,3})
@@ -55,7 +55,7 @@ using Test
     @test x[1,:,:]==x0
     @test x[21,:,:]!=x0
     @test keys(x[17])==(:x,)
-    @test_throws r"parameter .* undefined" rprocess(P,x0=x0[1,:],params=(k=7.0,x₀=5.0))
+    @test_throws r"keyword argument .* not assigned" rprocess(P,x0=x0[1,:],params=(k=7.0,x₀=5.0))
 
     y = rmeasure(P,x=x,params=[p1;p2]);
     @test isa(y,Array{@NamedTuple{},3})
@@ -67,7 +67,7 @@ using Test
     @test isa(y,Array{<:NamedTuple,3})
     @test size(y)==(21,2,7)
     @test keys(y[17])==(:y,)
-    @test_throws r"parameter .* undefined" rmeasure(P,x=x[:,:,1],params=(a=1.0,))
+    @test_throws r"keyword argument .* not assigned" rmeasure(P,x=x[:,:,1],params=(a=1.0,))
 
     ell = logdmeasure(P,x=x,y=y,params=[p1;p2]);
     @test isa(ell,Array{POMP.LogLik,4})
@@ -79,7 +79,7 @@ using Test
     @test isa(ell,Array{POMP.LogLik,4})
     @test size(ell)==(size(x)...,size(y,3))
     @test all(ell.<=0)
-    @test_throws r"parameter .* undefined" logdmeasure(P,y=y,x=x,params=(a=1.0,))
+    @test_throws r"keyword argument .* not assigned" logdmeasure(P,y=y,x=x,params=(a=1.0,))
 
     ell = logdprior(P,params=[p1;p2]);
     @test isa(ell,Array{POMP.LogLik,1})
@@ -91,7 +91,7 @@ using Test
     @test isa(ell,Array{POMP.LogLik,1})
     @test size(ell)==(2,)
     @test all(ell.<=0)
-    @test_throws r"parameter .* undefined" logdprior(P,params=(a=1.0,))
+    @test_throws r"keyword argument .* not assigned" logdprior(P,params=(a=1.0,))
 
     ## merely for coverage purposes:
     ## do not try this at home!

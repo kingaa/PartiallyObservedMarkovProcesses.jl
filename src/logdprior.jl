@@ -7,18 +7,10 @@ logdprior(
     object::AbstractPompObject;
     params::Union{P,AbstractVector{P}} = coef(object),
 ) where {P<:NamedTuple} = begin
-    try
-        params = val_array(params)
-        ell = Array{LogLik}(undef,size(params))
-        logdprior!(object,ell;params=params)
-        ell
-    catch e
-        if hasproperty(e,:msg)
-            error("in `logdprior`: $(e.msg)")
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
+    params = val_array(params)
+    ell = Array{LogLik}(undef,size(params))
+    logdprior!(object,ell;params=params)
+    ell
 end
 
 """
@@ -31,20 +23,8 @@ logdprior!(
     ell::AbstractArray{W,1};
     params::Union{P,AbstractVector{P}} = coef(object),
 ) where {W<:Real,P<:NamedTuple} = begin
-    try
-        params = val_array(params)
-        logdprior_internal!(ell,pomp(object).logdprior,params)
-    catch e
-        if isa(e,UndefKeywordError)
-            error("in `logdprior!`: parameter $(e.var) undefined.")
-        elseif isa(e,MethodError)
-            error("in `logdprior!`: no matching method for args $(e.args[1]).")
-        elseif hasproperty(e,:msg)
-            error("in `logdprior!`: $(e.msg)")
-        else
-            throw(e)            # COV_EXCL_LINE
-        end
-    end
+    params = val_array(params)
+    logdprior_internal!(ell,pomp(object).logdprior,params)
 end
 
 logdprior_internal!(

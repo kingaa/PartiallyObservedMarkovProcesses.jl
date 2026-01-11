@@ -27,18 +27,6 @@ using Test
     x = rprocess(P,x0=x0);
     y = rmeasure(P,x=x);
 
-    P = pomp(P,rinit=function(;_...) error("yikes!") end);
-    @test_throws "in `rinit`: yikes!" rinit(P,params=(x₀=3,))
-    @test_throws "in `rinit!`: yikes!" rinit!(P,x0,params=(x₀=3,))
-    P = pomp(P,rprocess=onestep(function(;_...) error("yikes!") end));
-    @test_throws "in `rprocess!`: yikes!" rprocess(P,params=(x₀=3,),x0=x0)
-    P = pomp(P,rmeasure=function(;_...) error("yikes!") end);
-    @test_throws "in `rmeasure`: yikes!" rmeasure(P,params=(a=1,),x=x)
-    P = pomp(P,logdmeasure=function(;_...) error("yikes!") end);
-    @test_throws "in `logdmeasure!`: yikes!" logdmeasure(P,params=(a=1,),x=x,y=y)
-    P = pomp(P,logdprior=function(;_...) error("yikes!") end);
-    @test_throws "in `logdprior!`: yikes!" logdprior(P,params=(a=1,))
-
     @test_throws "Incorrect call" simulate(P,rprocess=onestep("bob"))
     @test_throws "Incorrect call" simulate(P,rprocess=euler("bob"))
     @test_throws "Incorrect call" simulate(P,rprocess=vectorfield("bob"))
@@ -57,11 +45,11 @@ using Test
     );
     x0 = rinit(sir());
     x = rprocess(sir());
-    @test_throws "no matching method" rinit(P1)
-    @test_throws "no matching method" rinit!(P1,x0)
-    @test_throws "no matching method" rprocess(P1,x0=x0)
-    @test_throws "no matching method" rmeasure(P1,x=x)
-    @test_throws "no matching method" logdmeasure(P1,x=x)
-    @test_throws "no matching method" logdprior(P1)
+    @test_throws "no method matching" rinit(P1)
+    @test_throws "no method matching" rinit!(P1,x0)
+    @test_throws "no method matching" rprocess(P1,x0=x0)
+    @test_throws "no method matching" rmeasure(P1,x=x)
+    @test_throws "no method matching" logdmeasure(P1,x=x)
+    @test_throws "no method matching" logdprior(P1)
 
 end
