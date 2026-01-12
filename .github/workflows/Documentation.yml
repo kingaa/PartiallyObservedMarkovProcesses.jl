@@ -1,18 +1,17 @@
 name: Documentation
+
 on:
   push:
     branches:
       - master
     tags: '*'
-    paths:
-      - Project.toml
-      - src/**
-      - docs/**
-  workflow_dispatch:
   pull_request:
 
 jobs:
   build:
+    # These permissions are needed to:
+    # - Deploy the documentation: https://documenter.juliadocs.org/stable/man/hosting/#Permissions
+    # - Delete old caches: https://github.com/julia-actions/cache#usage
     permissions:
       actions: write
       contents: write
@@ -47,6 +46,7 @@ jobs:
           Pkg.develop(PackageSpec(path=pwd()))
           Pkg.instantiate()
       - name: Build and deploy
+        run: julia --color=yes --project=docs docs/make.jl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: julia --color=yes --project=docs docs/make.jl
+          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
