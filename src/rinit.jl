@@ -18,7 +18,7 @@ rinit(
     nsim::Integer = 1,
 ) where {T,P<:NamedTuple} = begin
     params = val_array(params)
-    rinit_internal(pomp(object).rinit,t0,params,nsim)
+    rinit_internal(pomp(object).rinit,t0,params,pomp(object).userdata,nsim)
 end
 
 """
@@ -33,24 +33,26 @@ rinit!(
     params::Union{P,AbstractVector{P}} = coef(object),
 ) where {T,X,P<:NamedTuple} = begin
     params = val_array(params)
-    rinit_internal!(x0,pomp(object).rinit,t0,params)
+    rinit_internal!(x0,pomp(object).rinit,t0,params,pomp(object).userdata)
 end
 
 rinit_internal(
     f::Nothing,
     t0::Any,
     params::AbstractVector{P},
-    nsim::Integer = 1
-) where {P<:NamedTuple} =
+    userdata::U,
+    nsim::Integer = 1,
+) where {P<:NamedTuple,U<:NamedTuple} =
     fill((;),length(params),nsim)
 
 rinit_internal(
     f::Function,
     t0::T,
     params::AbstractVector{P},
+    userdata::U,
     nsim::Integer = 1,
-) where {T<:Time,P<:NamedTuple} =
-    [f(;params[i]...,t0=t0) for i ∈ eachindex(params), _ ∈ 1:nsim]
+) where {T<:Time,P<:NamedTuple,U<:NamedTuple} =
+    [f(;params[i]...,userdata...,t0=t0) for i ∈ eachindex(params), _ ∈ 1:nsim]
 
 rinit_internal!(                # COV_EXCL_LINE
     x0::AbstractArray{X},
@@ -66,8 +68,9 @@ rinit_internal!(
     f::Function,
     t0::T,
     params::AbstractVector{P},
-) where {T<:Time,X,P<:NamedTuple} = begin
+    userdata::U,
+) where {T<:Time,X,P<:NamedTuple,U<:NamedTuple} = begin
     for i ∈ eachindex(params), j ∈ axes(x0,2)
-        x0[i,j] = f(;params[i]...,t0=t0)::X
+        x0[i,j] = f(;params[i]...,userdata...,t0=t0)::X
     end                         # COV_EXCL_LINE
 end

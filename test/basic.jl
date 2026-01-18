@@ -16,7 +16,7 @@ using Test
     @test_throws "same elementary type" pomp(times=0:20,t0=0.0)
 
     P = pomp(times=0:20,t0=0);
-    @test isa(P,POMP.PompObject)
+    @test isa(P,PompObject)
     @test timezero(P)==0
     @test isa(times(P),Vector{<:Real})
     @test length(times(P))==21
@@ -93,16 +93,19 @@ using Test
     @test all(ell.<=0)
     @test_throws r"keyword argument .* not assigned" logdprior(P,params=(a=1.0,))
 
+
+    P = pomp(P,userdata=(other=3,))
+    @test isa(P,PompObject)
+
     ## merely for coverage purposes:
     ## do not try this at home!
-    ## '_reconfigure' is strictly for internal use
     @test isa(
-        POMP._reconfigure(P,init_state=x0[1],states=x[:,1,1]),
-        POMP.PompObject
+        PompObject(P,init_state=x0[1],states=x[:,1,1]),
+        PompObject
     )
     @test isa(
-        POMP._reconfigure(P),
-        POMP.PompObject
+        PompObject(P),
+        PompObject
     )
 
 end

@@ -32,7 +32,7 @@ using Test
     @test size(states(Q[2]))==(21,)
     @test isa(states(Q),Array{<:NamedTuple,3})
     @test size(states(Q))==(21,2,3)
-    @test isa(coef(P),Nothing)
+    @test isempty(coef(P))
     @test isa(coef(Q[3]),NamedTuple)
     @test isa(coef(Q),Array{<:NamedTuple,2})
     @test size(coef(Q))==(2,3)

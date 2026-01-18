@@ -1,17 +1,18 @@
 using DataFrames: AbstractDataFrame, Not, select, eachrow
 
-abstract type AbstractPompObject{T,P,A,X0,X,Y,F} end
+abstract type AbstractPompObject{T,P,A,X0,X,Y,F,U} end
 abstract type PompPlugin end
 
 struct PompObject{
     T <: Time,
-    P <: Union{<:NamedTuple,Nothing},
+    P <: NamedTuple,
     A <: Union{<:NamedTuple,Nothing},
     X0 <: Union{<:NamedTuple,Nothing},
     X <: Union{Vector{<:NamedTuple},Nothing},
     Y <: Union{Vector{<:NamedTuple},Nothing},
     F <: Union{PompPlugin,Nothing},
-    } <: AbstractPompObject{T,P,A,X0,X,Y,F}
+    U <: NamedTuple,
+    } <: AbstractPompObject{T,P,A,X0,X,Y,F,U}
     t0::T
     times::Vector{T}
     timevar::Symbol
@@ -25,12 +26,13 @@ struct PompObject{
     rmeasure::Union{Function,Nothing}
     logdmeasure::Union{Function,Nothing}
     logdprior::Union{Function,Nothing}
+    userdata::U
     PompObject(
         ;t0,
         times,
         timevar=:time,
         accumvars=(;),
-        params=nothing,
+        params=(;),
         init_state=nothing,
         states=nothing,
         obs=nothing,
@@ -38,20 +40,104 @@ struct PompObject{
         rprocess=nothing,
         rmeasure=nothing,
         logdmeasure=nothing,
-        logdprior=nothing
+        logdprior=nothing,
+        userdata=(;),
     ) = begin
+        params = repair(params)
+        userdata = repair(userdata)
         new{
             typeof(t0),
             typeof(params),typeof(accumvars),
             typeof(init_state),typeof(states),typeof(obs),
-            typeof(rprocess)
+            typeof(rprocess),typeof(userdata),
         }(
             t0,times,timevar,accumvars,
             params,init_state,states,obs,
-            rinit,rprocess,rmeasure,logdmeasure,logdprior
+            rinit,rprocess,rmeasure,logdmeasure,logdprior,
+            userdata
+        )
+    end
+    ## The following constructor should only be used internally because
+    ## it is not guaranteed to return a valid `PompObject`.
+    PompObject(
+        object::AbstractPompObject;
+        t0 = missing,
+        times = missing,
+        timevar = missing,
+        accumvars = missing,
+        params = missing,
+        init_state = missing,
+        states = missing,
+        obs = missing,
+        rinit = missing,
+        rprocess = missing,
+        rmeasure = missing,
+        logdmeasure = missing,
+        logdprior = missing,
+        userdata = missing,
+    ) = begin
+        if ismissing(t0)
+            t0 = pomp(object).t0
+        end
+        if ismissing(times)
+            times = pomp(object).times
+        end
+        if ismissing(params)
+            params = pomp(object).params
+        end
+        if ismissing(timevar)
+            timevar = pomp(object).timevar
+        end
+        if ismissing(accumvars)
+            accumvars = pomp(object).accumvars
+        end
+        if ismissing(init_state)
+            init_state = pomp(object).init_state
+        end
+        if ismissing(states)
+            states = pomp(object).states
+        end
+        if ismissing(obs)
+            obs = pomp(object).obs
+        end
+        if ismissing(rinit)
+            rinit = pomp(object).rinit
+        end
+        if ismissing(rprocess)
+            rprocess = pomp(object).rprocess
+        end
+        if ismissing(rmeasure)
+            rmeasure = pomp(object).rmeasure
+        end
+        if ismissing(logdmeasure)
+            logdmeasure = pomp(object).logdmeasure
+        end
+        if ismissing(logdprior)
+            logdprior = pomp(object).logdprior
+        end
+        if ismissing(userdata)
+            userdata = pomp(object).userdata
+        end
+        params = repair(params)
+        userdata = repair(userdata)
+        new{
+            typeof(t0),
+            typeof(params),typeof(accumvars),
+            typeof(init_state),typeof(states),typeof(obs),
+            typeof(rprocess),typeof(userdata),
+        }(
+            t0,times,timevar,
+            accumvars,params,
+            init_state,states,obs,
+            rinit,rprocess,rmeasure,
+            logdmeasure,logdprior,
+            userdata
         )
     end
 end
+
+repair(x::NamedTuple) = x
+repair(x::Nothing) = (;)
 
 ## The following type is valid for the `object` in a call to most package functions.
 ValidPompData = Union{
@@ -71,7 +157,8 @@ ValidPompData = Union{
         accumvars,
         rinit, rprocess,
         rmeasure, logdmeasure,
-        logdprior
+        logdprior,
+        userdata
         )
 
 ## Arguments
@@ -94,6 +181,7 @@ ValidPompData = Union{
   This component should be a function that takes data, states, parameters, and, optionally, `t`, the current time.
 - `logdprior`: log pdf of the prior distribution on parameters.
   This component should be a function that takes parameters.
+- `userdata`: an optional NamedTuple that will be passed to each basic model component.
 """
 pomp(
     data::Union{Vector{Y},Nothing} = nothing;
@@ -107,6 +195,7 @@ pomp(
     rmeasure::Union{Function,Nothing} = nothing,
     logdmeasure::Union{Function,Nothing} = nothing,
     logdprior::Union{Function,Nothing} = nothing,
+    userdata::Union{<:NamedTuple,Nothing} = nothing,
 ) where {Y<:NamedTuple,T1<:Time,T<:Time,P<:NamedTuple} = begin
     if T != T1
         error("`t0` and time-vector must have the same elementary type.")
@@ -133,6 +222,7 @@ pomp(
         rmeasure=rmeasure,
         logdmeasure=logdmeasure,
         logdprior=logdprior,
+        userdata=userdata
     )
 end
 
@@ -164,16 +254,17 @@ The default is to leave them unchanged.
 """
 pomp(
     object::AbstractPompObject;
-    params::Union{NamedTuple,Nothing,Missing} = missing,
+    params::Union{<:NamedTuple,Nothing,Missing} = missing,
     timevar::Union{Symbol,Missing} = missing,
-    accumvars::Union{NamedTuple,Nothing,Missing} = missing,
+    accumvars::Union{<:NamedTuple,Nothing,Missing} = missing,
     rinit::Union{Function,Nothing,Missing} = missing,
     rprocess::Union{PompPlugin,Nothing,Missing} = missing,
     rmeasure::Union{Function,Nothing,Missing} = missing,
     logdmeasure::Union{Function,Nothing,Missing} = missing,
     logdprior::Union{Function,Nothing,Missing} = missing,
+    userdata::Union{<:NamedTuple,Nothing,Missing} = missing,
 ) = begin
-    _reconfigure(
+    PompObject(
         object,
         timevar=timevar,
         accumvars=accumvars,
@@ -183,84 +274,10 @@ pomp(
         rmeasure=rmeasure,
         logdmeasure=logdmeasure,
         logdprior=logdprior,
+        userdata=userdata,
         init_state=nothing,
         states=nothing
     )
 end
 
 pomp(_...) = error("Incorrect call to `pomp`.")
-
-## `_reconfigure` should only be used internally because it is
-## not guaranteed to return a valid `PompObject`.
-
-_reconfigure(
-    object::AbstractPompObject;
-    t0 = missing,
-    times = missing,
-    timevar = missing,
-    accumvars = missing,
-    params = missing,
-    init_state = missing,
-    states = missing,
-    obs = missing,
-    rinit = missing,
-    rprocess = missing,
-    rmeasure = missing,
-    logdmeasure = missing,
-    logdprior = missing,
-) = begin
-    if ismissing(t0)
-        t0 = pomp(object).t0
-    end
-    if ismissing(times)
-        times = pomp(object).times
-    end
-    if ismissing(params)
-        params = pomp(object).params
-    end
-    if ismissing(timevar)
-        timevar = pomp(object).timevar
-    end
-    if ismissing(accumvars)
-        accumvars = pomp(object).accumvars
-    end
-    if ismissing(init_state)
-        init_state = pomp(object).init_state
-    end
-    if ismissing(states)
-        states = pomp(object).states
-    end
-    if ismissing(obs)
-        obs = pomp(object).obs
-    end
-    if ismissing(rinit)
-        rinit = pomp(object).rinit
-    end
-    if ismissing(rprocess)
-        rprocess = pomp(object).rprocess
-    end
-    if ismissing(rmeasure)
-        rmeasure = pomp(object).rmeasure
-    end
-    if ismissing(logdmeasure)
-        logdmeasure = pomp(object).logdmeasure
-    end
-    if ismissing(logdprior)
-        logdprior = pomp(object).logdprior
-    end
-    PompObject(
-        t0=t0,
-        times=times,
-        timevar=timevar,
-        accumvars=accumvars,
-        params=params,
-        init_state=init_state,
-        states=states,
-        obs=obs,
-        rinit=rinit,
-        rprocess=rprocess,
-        rmeasure=rmeasure,
-        logdmeasure=logdmeasure,
-        logdprior=logdprior
-    )
-end

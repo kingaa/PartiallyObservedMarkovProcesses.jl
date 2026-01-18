@@ -24,7 +24,7 @@ logdprior!(
     params::Union{P,AbstractVector{P}} = coef(object),
 ) where {W<:Real,P<:NamedTuple} = begin
     params = val_array(params)
-    logdprior_internal!(ell,pomp(object).logdprior,params)
+    logdprior_internal!(ell,pomp(object).logdprior,params,pomp(object).userdata)
 end
 
 logdprior_internal!(
@@ -41,8 +41,9 @@ logdprior_internal!(
     ell::AbstractArray{W,1},
     f::Function,
     params::AbstractVector{P},
-) where {W<:Real,P<:NamedTuple} = begin
+    userdata::U,
+) where {W<:Real,P<:NamedTuple,U<:NamedTuple} = begin
     for j ∈ eachindex(params)
-        @inbounds ell[j] = f(;params[j]...)::W
+        @inbounds ell[j] = f(;params[j]...,userdata...)::W
     end
 end

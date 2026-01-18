@@ -31,11 +31,11 @@ vectorfield(
         nothing
     end
     integrator!(
-        x::AbstractVector,
-        t::AbstractVector,
-        x0::NamedTuple,
-        params::NamedTuple,
-    ) = begin
+        x::AbstractVector{X},
+        t::AbstractVector{<:RealTime},
+        x0::X,
+        params::P,
+    ) where {X<:NamedTuple,P<:NamedTuple} = begin
         tspan = extrema(t)
         ic = [x0[statenames]...]
         prob = ODEProblem{true,SciMLBase.NoSpecialize}(
@@ -60,9 +60,10 @@ rproc_internal!(
     times::AbstractVector{T},
     t0::T,
     params::AbstractVector{P},
-    accumvars::Nothing
-) where {T<:RealTime,X<:NamedTuple,P<:NamedTuple} = begin
+    accumvars::Nothing,
+    userdata::U,
+) where {T<:RealTime,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
     for j ∈ eachindex(params), k ∈ axes(x0,2)
-        @inbounds plugin.integrator(@view(x[:,j,k]),times,x0[j,k],params[j])
+        @inbounds plugin.integrator(@view(x[:,j,k]),times,x0[j,k],(;params[j]...,userdata...))
     end
 end

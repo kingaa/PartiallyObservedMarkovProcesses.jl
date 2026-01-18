@@ -12,7 +12,11 @@ rmeasure(
     times = val_array(times)
     params = val_array(params)
     x = val_array(x,length(times),length(params))
-    rmeas_internal(pomp(object).rmeasure,x,times,params)
+    rmeas_internal(
+        pomp(object).rmeasure,
+        x,times,params,
+        pomp(object).userdata
+    )
 end
 
 rmeas_internal(
@@ -28,11 +32,12 @@ rmeas_internal(
     x::AbstractArray{X,3},
     times::AbstractVector{T},
     params::AbstractVector{P},
-) where {T,X<:NamedTuple,P<:NamedTuple} = begin
+    userdata::U,
+) where {T,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
     @assert(size(x,1)==length(times))
     @assert(size(x,2)==length(params))
     @inbounds(
-        [f(;t=times[i],x[i,j,k]...,params[j]...)
+        [f(;t=times[i],x[i,j,k]...,params[j]...,userdata...)
          for i ∈ eachindex(times),
              j ∈ eachindex(params),
              k ∈ axes(x,3)]

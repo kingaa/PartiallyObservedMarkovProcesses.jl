@@ -37,7 +37,13 @@ logdmeasure!(
     @assert length(times)==size(y,1)
     @assert length(params)==size(x,2)
     @assert length(params)==size(y,2)
-    logdmeasure_internal!(ell,pomp(object).logdmeasure,times,y,x,params)
+    logdmeasure_internal!(
+        ell,
+        pomp(object).logdmeasure,
+        times,
+        y,x,params,
+        pomp(object).userdata
+    )
 end
 
 logdmeasure_internal!(                # COV_EXCL_LINE
@@ -57,8 +63,9 @@ logdmeasure_internal!(
     y::AbstractArray{Y,3},
     x::AbstractArray{X,3},
     params::AbstractVector{P},
-) where {W<:Real,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
+    userdata::U,
+) where {W<:Real,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
     for i ∈ eachindex(times), j ∈ eachindex(params), kx ∈ axes(x,3), ky ∈ axes(y,3)
-        @inbounds ell[i,j,kx,ky] = f(;t=times[i],y[i,j,ky]...,x[i,j,kx]...,params[j]...)::W
+        @inbounds ell[i,j,kx,ky] = f(;t=times[i],y[i,j,ky]...,x[i,j,kx]...,params[j]...,userdata...)::W
     end
 end

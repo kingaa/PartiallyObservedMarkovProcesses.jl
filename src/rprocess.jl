@@ -43,7 +43,8 @@ rprocess!(
         pomp(object).rprocess,
         x0,times,t0,
         params,
-        pomp(object).accumvars
+        pomp(object).accumvars,
+        pomp(object).userdata
     )
 end
 
@@ -70,12 +71,13 @@ rproc_internal!(
     t0::T,
     params::AbstractVector{P},
     accumvars::Nothing,
-) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
+    userdata::U
+) where {T<:Time,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
     for j ∈ eachindex(params), k ∈ axes(x0,2)
         t = t0
         @inbounds x1 = x0[j,k]
         for i ∈ eachindex(times)
-            @inbounds t,x1 = rprocess_step(plugin,t,times[i],x1,params[j])
+            @inbounds t,x1 = rprocess_step(plugin,t,times[i],x1,params[j],userdata)
             @inbounds x[i,j,k] = x1
         end
     end
@@ -90,14 +92,15 @@ rproc_internal!(
     times::AbstractVector{T},
     t0::T,
     params::AbstractVector{P},
-    accumvars::A
-) where {T<:Time,X<:NamedTuple,P<:NamedTuple,A<:NamedTuple} = begin
+    accumvars::A,
+    userdata::U,
+) where {T<:Time,X<:NamedTuple,P<:NamedTuple,A<:NamedTuple,U<:NamedTuple} = begin
     for j ∈ eachindex(params), k ∈ axes(x0,2)
         t = t0
         @inbounds x1 = x0[j,k]
         for i ∈ eachindex(times)
             x1 = merge(x1,accumvars)::X
-            @inbounds t,x1 = rprocess_step(plugin,t,times[i],x1,params[j])
+            @inbounds t,x1 = rprocess_step(plugin,t,times[i],x1,params[j],userdata)
             @inbounds x[i,j,k] = x1
         end
     end

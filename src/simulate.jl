@@ -34,7 +34,7 @@ simulate1(
     x0 = rinit(object,params=params,nsim=1)
     x = rprocess(object,x0=x0,params=params)
     y = rmeasure(object,x=x,params=params)
-    _reconfigure(
+    PompObject(
         object,
         params=params[1],
         init_state=x0[1],

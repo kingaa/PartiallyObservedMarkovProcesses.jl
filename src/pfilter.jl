@@ -1,9 +1,9 @@
 struct PfilterdPompObject{
-    T,P,A,X0,X,Y,F,
+    T,P,A,X0,X,Y,F,U,
     Z <: NamedTuple,
     W <: Real
-    } <: AbstractPompObject{T,P,A,X0,X,Y,F}
-    pompobj::PompObject{T,P,A,X0,X,Y,F}
+    } <: AbstractPompObject{T,P,A,X0,X,Y,F,U}
+    pompobj::PompObject{T,P,A,X0,X,Y,F,U}
     Np::Integer
     x0::Array{Z,1}
     filt::Array{Z,2}
