@@ -25,6 +25,11 @@ logdpri = function (;x₀,_...)
     logpdf(d,x₀)
 end
 
+rpri = function (;x₀,args...)
+    d = LogNormal(1,1)
+    (;x₀=rand(d),args...)
+end
+
 theta = (a=1.0,k=7.0,x₀=5.0);
 
 nothing

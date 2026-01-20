@@ -26,6 +26,7 @@ struct PompObject{
     rmeasure::Union{Function,Nothing}
     logdmeasure::Union{Function,Nothing}
     logdprior::Union{Function,Nothing}
+    rprior::Union{Function,Nothing}
     userdata::U
     PompObject(
         ;t0,
@@ -41,6 +42,7 @@ struct PompObject{
         rmeasure=nothing,
         logdmeasure=nothing,
         logdprior=nothing,
+        rprior=nothing,
         userdata=(;),
     ) = begin
         params = repair(params)
@@ -53,7 +55,8 @@ struct PompObject{
         }(
             t0,times,timevar,accumvars,
             params,init_state,states,obs,
-            rinit,rprocess,rmeasure,logdmeasure,logdprior,
+            rinit,rprocess,rmeasure,logdmeasure,
+            logdprior,rprior,
             userdata
         )
     end
@@ -74,6 +77,7 @@ struct PompObject{
         rmeasure = missing,
         logdmeasure = missing,
         logdprior = missing,
+        rprior = missing,
         userdata = missing,
     ) = begin
         if ismissing(t0)
@@ -115,6 +119,9 @@ struct PompObject{
         if ismissing(logdprior)
             logdprior = pomp(object).logdprior
         end
+        if ismissing(rprior)
+            rprior = pomp(object).rprior
+        end
         if ismissing(userdata)
             userdata = pomp(object).userdata
         end
@@ -129,8 +136,9 @@ struct PompObject{
             t0,times,timevar,
             accumvars,params,
             init_state,states,obs,
-            rinit,rprocess,rmeasure,
-            logdmeasure,logdprior,
+            rinit,rprocess,
+            rmeasure,logdmeasure,
+            logdprior,rprior,
             userdata
         )
     end
@@ -157,7 +165,7 @@ ValidPompData = Union{
         accumvars,
         rinit, rprocess,
         rmeasure, logdmeasure,
-        logdprior,
+        logdprior, rprior,
         userdata
         )
 
@@ -181,6 +189,8 @@ ValidPompData = Union{
   This component should be a function that takes data, states, parameters, and, optionally, `t`, the current time.
 - `logdprior`: log pdf of the prior distribution on parameters.
   This component should be a function that takes parameters.
+- `rprior`: simulator of the prior distribution on parameters.
+  This component should be a function that takes parameters and returns a NamedTuple of parameters.
 - `userdata`: an optional NamedTuple that will be passed to each basic model component.
 """
 pomp(
@@ -195,6 +205,7 @@ pomp(
     rmeasure::Union{Function,Nothing} = nothing,
     logdmeasure::Union{Function,Nothing} = nothing,
     logdprior::Union{Function,Nothing} = nothing,
+    rprior::Union{Function,Nothing} = nothing,
     userdata::Union{<:NamedTuple,Nothing} = nothing,
 ) where {Y<:NamedTuple,T1<:Time,T<:Time,P<:NamedTuple} = begin
     if T != T1
@@ -222,6 +233,7 @@ pomp(
         rmeasure=rmeasure,
         logdmeasure=logdmeasure,
         logdprior=logdprior,
+        rprior=rprior,
         userdata=userdata
     )
 end
@@ -240,8 +252,8 @@ end
 """
 Given an *AbstractPompObject*, `object`,
 `pomp(object)` returns the underlying concrete *PompObject*.
-Calling `pomp(object, args...)` returns a copy of `object`, modified
-according to `args...`.
+Calling `pomp(object; args...)` returns a copy of `object`, modified
+according to the keyword arguments `args...`.
 """
 pomp(object::PompObject) = object
 
@@ -262,6 +274,7 @@ pomp(
     rmeasure::Union{Function,Nothing,Missing} = missing,
     logdmeasure::Union{Function,Nothing,Missing} = missing,
     logdprior::Union{Function,Nothing,Missing} = missing,
+    rprior::Union{Function,Nothing,Missing} = missing,
     userdata::Union{<:NamedTuple,Nothing,Missing} = missing,
 ) = begin
     PompObject(
@@ -274,6 +287,7 @@ pomp(
         rmeasure=rmeasure,
         logdmeasure=logdmeasure,
         logdprior=logdprior,
+        rprior=rprior,
         userdata=userdata,
         init_state=nothing,
         states=nothing

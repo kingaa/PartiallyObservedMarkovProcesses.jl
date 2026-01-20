@@ -73,6 +73,10 @@ logdprior
 logdprior!
 ```
 
+```@docs
+rprior
+```
+
 ### Helper functions
 
 ```@docs

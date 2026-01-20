@@ -41,6 +41,9 @@ include("logdmeasure.jl")
 export logdprior, logdprior!
 include("logdprior.jl")
 
+export rprior
+include("rprior.jl")
+
 export simulate, simulate_array
 include("simulate.jl")
 

@@ -37,7 +37,7 @@ rmeas_internal(
     @assert(size(x,1)==length(times))
     @assert(size(x,2)==length(params))
     @inbounds(
-        [f(;t=times[i],x[i,j,k]...,params[j]...,userdata...)
+        [f(;t=times[i],x[i,j,k]...,params[j]...,userdata...)::NamedTuple
          for i ∈ eachindex(times),
              j ∈ eachindex(params),
              k ∈ axes(x,3)]
