@@ -1,7 +1,7 @@
 struct PfilterdPompObject{
     T,P,A,X0,X,Y,F,U,
     Z <: NamedTuple,
-    W <: Real
+    W <: AbstractFloat
     } <: AbstractPompObject{T,P,A,X0,X,Y,F,U}
     pompobj::PompObject{T,P,A,X0,X,Y,F,U}
     Np::Integer
@@ -141,7 +141,7 @@ pfilt_step_comps!(
     xp::AbstractVector{X},
     xf::AbstractVector{X},
     n::Int64 = length(w),
-) where {W<:Real,I<:Integer,X<:NamedTuple} = begin
+) where {W<:AbstractFloat,I<:Integer,X<:NamedTuple} = begin
     wmax::W = -Inf
     s::W = 0
     ss::W = 0

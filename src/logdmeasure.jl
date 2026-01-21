@@ -1,5 +1,6 @@
 """
-    logdmeasure(object; times=times(object), y=obs(object), x=states(object), params=coef(object))
+    logdmeasure(object; times=times(object), y=obs(object),
+                x=states(object), params=coef(object))
 
 `logdmeasure` is the workhorse for the evaluator of the log measurement density.
 """
@@ -23,6 +24,7 @@ end
     logdmeasure!(object, ell; times=times(object), y=obs(object), x=states(object), params=coef(object))
 
 `logdmeasure!` is the in-place version of the `logdmeasure` workhorse.
+If no `logdmeasure` component has been specified, this returns 0 for all inputs.
 """
 logdmeasure!(
     object::AbstractPompObject,
@@ -31,26 +33,27 @@ logdmeasure!(
     y::AbstractArray{Y} = obs(object),
     x::AbstractArray{X} = states(object),
     params::Union{P,AbstractVector{P}} = coef(object),
-) where {W<:Real,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
-    params = val_array(params)
-    @assert length(times)==size(x,1)
-    @assert length(times)==size(y,1)
-    @assert length(params)==size(x,2)
-    @assert length(params)==size(y,2)
-    logdmeasure_internal!(
-        ell,
-        pomp(object).logdmeasure,
-        times,
-        y,x,params,
-        pomp(object).userdata
-    )
-end
+) where {W<:AbstractFloat,T<:Time,Y<:NamedTuple,
+         X<:NamedTuple,P<:NamedTuple} = begin
+             params = val_array(params)
+             @assert length(times)==size(x,1)
+             @assert length(times)==size(y,1)
+             @assert length(params)==size(x,2)
+             @assert length(params)==size(y,2)
+             logdmeasure_internal!(
+                 ell,
+                 pomp(object).logdmeasure,
+                 times,
+                 y,x,params,
+                 pomp(object).userdata
+             )
+         end
 
 logdmeasure_internal!(                # COV_EXCL_LINE
     ell::AbstractArray{W,4},
     f::Nothing,
     _...,
-) where {W<:Real} = begin
+) where {W<:AbstractFloat} = begin
     for i ∈ eachindex(ell)
         @inbounds ell[i] = W(0)
     end
@@ -64,8 +67,9 @@ logdmeasure_internal!(
     x::AbstractArray{X,3},
     params::AbstractVector{P},
     userdata::U,
-) where {W<:Real,T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
-    for i ∈ eachindex(times), j ∈ eachindex(params), kx ∈ axes(x,3), ky ∈ axes(y,3)
-        @inbounds ell[i,j,kx,ky] = f(;t=times[i],y[i,j,ky]...,x[i,j,kx]...,params[j]...,userdata...)::W
-    end
-end
+) where {W<:AbstractFloat,T<:Time,Y<:NamedTuple,X<:NamedTuple,
+         P<:NamedTuple,U<:NamedTuple} = begin
+             for i ∈ eachindex(times), j ∈ eachindex(params), kx ∈ axes(x,3), ky ∈ axes(y,3)
+                 @inbounds ell[i,j,kx,ky] = f(;t=times[i],y[i,j,ky]...,x[i,j,kx]...,params[j]...,userdata...)::W
+             end
+         end
