@@ -1,7 +1,5 @@
 ## To-do List
 
-- add in `rprior`
-- add in userdata facility
 - remove all need for **RCall**
 - iterated filtering
 - weighted particle filter

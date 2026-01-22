@@ -21,8 +21,8 @@ The magnitude of the time unit is `dt`.
 """
 discrete_time(
     stepfun::Function;
-    dt::Time = 1,
-) = DiscreteTimePlugin(stepfun,dt)
+    dt::Time=1,
+) = DiscreteTimePlugin(stepfun, dt)
 
 discrete_time(_...) = error("Incorrect call to `discrete_time`.")
 
@@ -35,7 +35,7 @@ The time-increment will be chosen so that equal-sized steps of duration at most 
 euler(
     stepfun::Function;
     dt::Time,
-) = EulerPlugin(stepfun,RealTime(dt))
+) = EulerPlugin(stepfun, RealTime(dt))
 
 euler(_...) = error("Incorrect call to `euler`.")
 
@@ -60,10 +60,10 @@ rprocess_step(
 ) where {F<:Function,T<:Time,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
     t = t0
     while t < tf
-        @inline x = p.stepfun(;t=t,dt=p.stepsize,x...,params...,userdata...)::X
+        @inline x = X(p.stepfun(; t=t, dt=p.stepsize, x..., params..., userdata...))
         t += p.stepsize
     end
-    t,x
+    t, x
 end
 
 rprocess_step(
@@ -74,16 +74,16 @@ rprocess_step(
     params::P,
     userdata::U,
 ) where {F<:Function,T<:Time,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
-    n = ceil(Int64,(tf-t0)/p.stepsize)
+    n = ceil(Int64, (tf - t0) / p.stepsize)
     if n > 0
-        tstep = (tf-t0)/n
+        tstep = (tf - t0) / n
         t = t0
         for _ in 1:n
-            @inline x = p.stepfun(;t=t,dt=tstep,x...,params...,userdata...)::X
+            @inline x = X(p.stepfun(; t=t, dt=tstep, x..., params..., userdata...))
             t += tstep
         end
     end
-    tf,x
+    tf, x
 end
 
 rprocess_step(
@@ -94,6 +94,6 @@ rprocess_step(
     params::P,
     userdata::U,
 ) where {F<:Function,T<:Time,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
-    @inline x = p.stepfun(;t=t0,dt=tf-t0,x...,params...,userdata...)::X
-    tf,x
+    @inline x = X(p.stepfun(; t=t0, dt=tf - t0, x..., params..., userdata...))
+    tf, x
 end

@@ -6,11 +6,11 @@ If `nsim > 1`, then a matrix is returned.
 """
 rprior(
     object::AbstractPompObject;
-    params::Union{P,AbstractVector{P}} = coef(object),
-    nsim::Integer = 1,
+    params::Union{P,AbstractVector{P}}=coef(object),
+    nsim::Integer=1,
 ) where {P<:NamedTuple} = begin
     params = val_array(params)
-    rprior_internal(pomp(object).rprior,params,nsim,pomp(object).userdata)
+    rprior_internal(pomp(object).rprior, params, nsim, pomp(object).userdata)
 end
 
 rprior_internal(
@@ -20,7 +20,7 @@ rprior_internal(
     _...,
 ) where {P<:NamedTuple} = begin
     @assert nsim > 0
-    repeat(params,1,nsim)
+    repeat(params, 1, nsim)
 end
 
 rprior_internal(
@@ -30,7 +30,6 @@ rprior_internal(
     userdata::U,
 ) where {P<:NamedTuple,U<:NamedTuple} = begin
     @inbounds(
-        [f(;params[j]...,userdata...)::NamedTuple
-         for j ∈ eachindex(params), _ ∈ 1:nsim]
+        [P(f(;params[j]...,userdata...)) for j ∈ eachindex(params), _ ∈ 1:nsim]
     )
 end

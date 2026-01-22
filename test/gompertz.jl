@@ -35,7 +35,8 @@ using Test
     ell = logdmeasure(P,x=x,y=y,params=p1);
     @test size(ell)==(27,1,5,5)
 
-    p = [p1; p1];
+    p2 = (σₚ=0.7,σₘ=0.1,K=210.0,X₀=150.0,r=4.5);
+    p = [p1; p2];
     x0 = rinit(P,params=p,nsim=3);
     x = rprocess(P,x0=x0,params=p);
     y = rmeasure(P,x=x[3:4,:,:],params=p,times=times(P)[3:4]);

@@ -13,12 +13,12 @@
 """
 rinit(
     object::AbstractPompObject;
-    t0::T = timezero(object),
-    params::Union{P,AbstractVector{P}} = coef(object),
-    nsim::Integer = 1,
+    t0::T=timezero(object),
+    params::Union{P,AbstractVector{P}}=coef(object),
+    nsim::Integer=1,
 ) where {T,P<:NamedTuple} = begin
     params = val_array(params)
-    rinit_internal(pomp(object).rinit,t0,params,pomp(object).userdata,nsim)
+    rinit_internal(pomp(object).rinit, t0, params, pomp(object).userdata, nsim)
 end
 
 """
@@ -29,11 +29,11 @@ end
 rinit!(
     object::AbstractPompObject,
     x0::AbstractArray{X,2};
-    t0::T = timezero(object),
-    params::Union{P,AbstractVector{P}} = coef(object),
+    t0::T=timezero(object),
+    params::Union{P,AbstractVector{P}}=coef(object),
 ) where {T,X,P<:NamedTuple} = begin
     params = val_array(params)
-    rinit_internal!(x0,pomp(object).rinit,t0,params,pomp(object).userdata)
+    rinit_internal!(x0, pomp(object).rinit, t0, params, pomp(object).userdata)
 end
 
 rinit_internal(
@@ -41,25 +41,25 @@ rinit_internal(
     t0::Any,
     params::AbstractVector{P},
     userdata::U,
-    nsim::Integer = 1,
+    nsim::Integer=1,
 ) where {P<:NamedTuple,U<:NamedTuple} =
-    fill((;),length(params),nsim)
+    fill((;), length(params), nsim)
 
 rinit_internal(
     f::Function,
     t0::T,
     params::AbstractVector{P},
     userdata::U,
-    nsim::Integer = 1,
+    nsim::Integer=1,
 ) where {T<:Time,P<:NamedTuple,U<:NamedTuple} =
-    [f(;params[i]...,userdata...,t0=t0) for i ∈ eachindex(params), _ ∈ 1:nsim]
+    [f(; params[i]..., userdata..., t0=t0) for i ∈ eachindex(params), _ ∈ 1:nsim]
 
 rinit_internal!(                # COV_EXCL_LINE
     x0::AbstractArray{X},
     f::Nothing,
     _...,
 ) where {X} = begin
-    fill!(x0,(;))
+    fill!(x0, (;))
     nothing
 end
 
@@ -70,7 +70,7 @@ rinit_internal!(
     params::AbstractVector{P},
     userdata::U,
 ) where {T<:Time,X,P<:NamedTuple,U<:NamedTuple} = begin
-    for i ∈ eachindex(params), j ∈ axes(x0,2)
-        x0[i,j] = f(;params[i]...,userdata...,t0=t0)::X
+    for i ∈ eachindex(params), j ∈ axes(x0, 2)
+        x0[i, j] = X(f(; params[i]..., userdata..., t0=t0))
     end                         # COV_EXCL_LINE
 end

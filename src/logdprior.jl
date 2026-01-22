@@ -6,11 +6,11 @@ If no prior is specified, the `logdprior` returns 0 for all inputs.
 """
 logdprior(
     object::AbstractPompObject;
-    params::Union{P,AbstractVector{P}} = coef(object),
+    params::Union{P,AbstractVector{P}}=coef(object),
 ) where {P<:NamedTuple} = begin
     params = val_array(params)
-    ell = Array{LogLik}(undef,size(params))
-    logdprior!(object,ell;params=params)
+    ell = Array{LogLik}(undef, size(params))
+    logdprior!(object, ell; params=params)
     ell
 end
 
@@ -22,10 +22,10 @@ end
 logdprior!(
     object::AbstractPompObject,
     ell::AbstractArray{W,1};
-    params::Union{P,AbstractVector{P}} = coef(object),
+    params::Union{P,AbstractVector{P}}=coef(object),
 ) where {W<:AbstractFloat,P<:NamedTuple} = begin
     params = val_array(params)
-    logdprior_internal!(ell,pomp(object).logdprior,params,pomp(object).userdata)
+    logdprior_internal!(ell, pomp(object).logdprior, params, pomp(object).userdata)
 end
 
 logdprior_internal!(
@@ -45,6 +45,6 @@ logdprior_internal!(
     userdata::U,
 ) where {W<:AbstractFloat,P<:NamedTuple,U<:NamedTuple} = begin
     for j ∈ eachindex(params)
-        @inbounds ell[j] = f(;params[j]...,userdata...)::W
+        @inbounds ell[j] = W(f(; params[j]..., userdata...))
     end
 end
