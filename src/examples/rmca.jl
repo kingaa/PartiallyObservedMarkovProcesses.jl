@@ -1,5 +1,4 @@
-import Distributions: LogNormal, logpdf
-import DifferentialEquations: AutoTsit5, Rosenbrock23
+using Distributions: LogNormal, logpdf
 
 """
     rmca(

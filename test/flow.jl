@@ -2,8 +2,7 @@ using PartiallyObservedMarkovProcesses
 import PartiallyObservedMarkovProcesses as POMP
 using Test
 using Random: seed!
-
-import DifferentialEquations: AutoTsit5, Rosenbrock23
+using OrdinaryDiffEq: AutoTsit5, Rosenbrock23
 
 @info "vectorfield integration tests"
 

@@ -12,12 +12,12 @@ clean:
 	$(RM) profile.pb.gz
 
 build:
-	julia --project -e 'import Pkg; Pkg.build(); Pkg.precompile()'
+	julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.build(); Pkg.precompile()'
 
 update:
-	julia --project -e 'import Pkg; Pkg.update(); Pkg.gc()'
-	cd test; julia --project -e 'import Pkg; Pkg.update(); Pkg.gc()'
-	cd docs; julia --project -e 'import Pkg; Pkg.update(); Pkg.gc()'
+	julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.update(); Pkg.gc()'
+	cd test; julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.update(); Pkg.gc()'
+	cd docs; julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.update(); Pkg.gc()'
 
 docs: build
 	make -C docs

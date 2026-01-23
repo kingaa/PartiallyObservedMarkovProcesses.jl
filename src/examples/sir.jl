@@ -1,4 +1,4 @@
-import Distributions: Binomial, NegativeBinomial, logpdf
+using Distributions: Binomial, NegativeBinomial, logpdf
 
 """
     sir(

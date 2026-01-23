@@ -1,5 +1,5 @@
 import SciMLBase
-import DifferentialEquations: ODEProblem, solve
+import OrdinaryDiffEq: ODEProblem, solve
 
 struct VectorfieldPlugin{F<:Function, G<:Function} <: PompPlugin
     integrator::F
@@ -16,7 +16,7 @@ The function `vf` should return a vector containing the
 components of the vectorfield *in the same order* in which they are passed
 to `vf`.
 
-The `integration_alg` argument specifies the integration algorithm to be used.  See **DifferentialEquations.jl** for more on the choices.  The keyword arguments in `integrate_args...` are passed to the `DifferentialEquations.solve()` function.
+The `integration_alg` argument specifies the integration algorithm to be used.  See **OrdinaryDiffEq.jl** for more on the choices.  The keyword arguments in `integrate_args...` are passed to the `OrdinaryDiffEq.solve()` function.
 """
 vectorfield(
     vf::Function,

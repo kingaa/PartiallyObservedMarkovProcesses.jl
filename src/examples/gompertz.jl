@@ -1,4 +1,4 @@
-import Distributions: LogNormal, logpdf
+using Distributions: LogNormal, logpdf
 
 @doc raw"""
     gompertz()
