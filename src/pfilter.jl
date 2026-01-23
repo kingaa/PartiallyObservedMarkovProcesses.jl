@@ -104,7 +104,7 @@ pfilter_internal!(
     eff_sample_size::AbstractVector{LogLik},
     cond_logLik::AbstractVector{LogLik},
     perm::AbstractArray{Int64,2}
-) where {T,X,Y} = begin
+) where {T<:Time,X<:NamedTuple,Y<:NamedTuple} = begin
     for k ∈ eachindex(t)
         rprocess!(
             object,

@@ -8,7 +8,7 @@ rmeasure(
     x::Union{X,AbstractArray{X}} = states(object),
     times::Union{T,AbstractVector{T}} = times(object),
     params::Union{P,AbstractVector{P}} = coef(object),
-) where {T,X<:NamedTuple,P<:NamedTuple} = begin
+) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
     times = val_array(times)
     params = val_array(params)
     x = val_array(x,length(times),length(params))
@@ -33,7 +33,7 @@ rmeas_internal(
     times::AbstractVector{T},
     params::AbstractVector{P},
     userdata::U,
-) where {T,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
+) where {T<:Time,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
     @assert(size(x,1)==length(times))
     @assert(size(x,2)==length(params))
     @inbounds(

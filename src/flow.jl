@@ -32,10 +32,10 @@ vectorfield(
     end
     integrator!(
         x::AbstractVector{X},
-        t::AbstractVector{<:RealTime},
+        t::AbstractVector{T},
         x0::X,
         params::P,
-    ) where {X<:NamedTuple,P<:NamedTuple} = begin
+    ) where {T<:RealTime,X<:NamedTuple,P<:NamedTuple} = begin
         tspan = extrema(t)
         ic = [x0[statenames]...]
         prob = ODEProblem{true,SciMLBase.NoSpecialize}(
