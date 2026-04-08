@@ -9,7 +9,7 @@ logdprior(
     params::Union{P,AbstractVector{P}}=coef(object),
 ) where {P<:NamedTuple} = begin
     params = val_array(params)
-    ell = Array{LogLik}(undef, size(params))
+    ell = similar(Array{LogLik}, size(params))
     logdprior!(object, ell; params=params)
     ell
 end

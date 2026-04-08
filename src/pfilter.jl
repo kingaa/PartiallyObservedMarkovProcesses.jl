@@ -51,10 +51,10 @@ pfilter(
     xf = similar(x0,length(t),Np)
     xp = similar(x0,length(t),Np)
     xt = similar(x0,length(t))
-    w = Array{LogLik}(undef,length(t),Np)
+    w = similar(Array{LogLik},length(t),Np)
     cond_logLik = similar(w,length(t))
     eff_sample_size = similar(w,length(t))
-    perm = Array{Int64}(undef,length(t),Np)
+    perm = similar(Array{Int64},length(t),Np)
     pfilter_internal!(
         object,
         x0,
