@@ -13,7 +13,7 @@ using Test
 
     P = gompertz();
     @test isa(P,POMP.PompObject)
-    @info "- printing the PompObject gives $P"
+    @test occursin(r"<PompObject>",sprint(show,P))
 
     p1 = (r=4.5,K=210.0,σₚ=0.7,σₘ=0.1,X₀=150.0);
 

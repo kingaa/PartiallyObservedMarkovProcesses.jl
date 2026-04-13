@@ -102,7 +102,7 @@ cat("    pomp likelihood estimate (SIR): ",round(ll,digits=2),"\n")
 
     P = sir();
     @test isa(P,POMP.PompObject)
-    @info "- printing the PompObject gives $P"
+    @test occursin(r"<PompObject>",sprint(show,P))
 
     theta = (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S₀=0.9,I₀=0.01,R₀=0.1);
     @info "- POMP.jl SIR parameters: $theta"

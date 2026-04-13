@@ -64,7 +64,7 @@ using Test
 
     Q = pfilter(P,Np=1000,params=p1);
     @test isa(Q,POMP.PfilterdPompObject)
-    @info "- printing the PfilterdPompObject gives $Q"
+    @test occursin(r"<PfilterdPompObject>",sprint(show,Q))
     @time pfilter(Q,params=(a=1.5,k=7.0,x₀=5.0));
     @time pfilter(Q,params=(a=1.5,k=7.0,x₀=5.0));
     @time pfilter(Q,params=(k=7.0,a=1.5,x₀=5.0));

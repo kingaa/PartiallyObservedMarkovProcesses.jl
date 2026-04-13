@@ -16,7 +16,7 @@ using Test
     @test_throws "same elementary type" pomp(times=0:20,t0=0.0)
 
     P = pomp(times=0:20,t0=0);
-    @test isa(P,PompObject)
+    @test isa(P,POMP.PompObject)
     @test timezero(P)==0
     @test isa(times(P),Vector{<:Real})
     @test length(times(P))==21
@@ -107,17 +107,17 @@ using Test
     @test isa(map(y -> y.x₀, theta),Matrix{Float64})
 
     P = pomp(P,userdata=(other=3,))
-    @test isa(P,PompObject)
+    @test isa(P,POMP.PompObject)
 
     ## merely for coverage purposes:
     ## do not try this at home!
     @test isa(
-        PompObject(P,init_state=x0[1],states=x[:,1,1]),
-        PompObject
+        POMP.PompObject(P,init_state=x0[1],states=x[:,1,1]),
+        POMP.PompObject
     )
     @test isa(
-        PompObject(P),
-        PompObject
+        POMP.PompObject(P),
+        POMP.PompObject
     )
 
 end

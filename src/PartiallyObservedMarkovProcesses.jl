@@ -14,7 +14,7 @@ const LogLikGPU = Float32
 
 include("reshape.jl")
 
-export pomp, PompObject, AbstractPompObject
+export pomp, AbstractPompObject
 include("pomp.jl")
 
 export times, timezero, obs, init_state, states, coef

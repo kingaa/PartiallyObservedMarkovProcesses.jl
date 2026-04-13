@@ -4,7 +4,7 @@ test: build
 coverage: build
 	julia --project -e 'using LocalCoverage; report_coverage_and_exit(target_coverage=90)'
 
-xcov: build
+vcov: build
 	julia --project -e 'using LocalCoverage; html_coverage(open=true,dir="coverage")'
 
 clean:

@@ -1,4 +1,3 @@
-
 struct EulerPlugin{F<:Function} <: PompPlugin
     stepfun::F
     stepsize::RealTime

@@ -14,3 +14,4 @@ Related packages:
 
 - [**pomp**](https://github.com/kingaa/pomp/)
 - [**phylopomp**](https://github.com/kingaa/phylopomp/)
+- [**PhyloPOMP.jl**](https://github.com/kingaa/PhyloPOMP.jl/)
