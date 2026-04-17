@@ -1,6 +1,6 @@
 using DataFrames: AbstractDataFrame, Not, select, eachrow
 
-abstract type AbstractPompObject{T,P,A,X0,X,Y,F,U} end
+abstract type AbstractPompObject end
 abstract type PompPlugin end
 
 struct PompObject{
@@ -12,7 +12,7 @@ struct PompObject{
     Y <: Union{Vector{<:NamedTuple},Nothing},
     F <: Union{PompPlugin,Nothing},
     U <: NamedTuple,
-    } <: AbstractPompObject{T,P,A,X0,X,Y,F,U}
+    } <: AbstractPompObject
     t0::T
     times::Vector{T}
     timevar::Symbol
