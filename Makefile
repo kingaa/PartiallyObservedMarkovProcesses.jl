@@ -1,3 +1,5 @@
+default: build
+
 test: build
 	julia --project -e 'import Pkg; Pkg.test()'
 

@@ -300,3 +300,12 @@ pomp(
 end
 
 pomp(_...) = error("Incorrect call to `pomp`.")
+
+pretty_string(object::PompObject) = begin
+    time_interval = extrema(
+        times(object),
+        init=(timezero(object),timezero(object))
+    )
+    " with $(length(obs(object))) observations" *
+        " over $(object.timevar) ∈ $time_interval"
+end

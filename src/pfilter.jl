@@ -192,3 +192,9 @@ trace_ancestry!(
         @inbounds j = perm[i,j]
     end
 end
+
+pretty_string(object::PfilterdPompObject) = begin
+    pretty_string(pomp(object)) *
+        ", Np=$(object.Np)" *
+        ", logLik=$(round(object.logLik,digits=2))"
+end
