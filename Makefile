@@ -15,6 +15,8 @@ clean:
 
 build:
 	julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.build(); Pkg.precompile()'
+	cd test; julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
+	cd docs; julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
 
 update:
 	julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.update(); Pkg.gc()'
@@ -23,6 +25,9 @@ update:
 
 docs: build
 	make -C docs
+
+serve: build
+	julia --project -e 'import LiveServer; LiveServer.servedocs()'
 
 session: build
 	julia --project

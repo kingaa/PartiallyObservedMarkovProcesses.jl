@@ -259,3 +259,10 @@ nothing #hide
 ```@docs
 brownian_motion
 ```
+
+## Reference
+
+```@autodocs
+Modules = [PartiallyObservedMarkovProcesses]
+Order   = [:function, :macro, :type]
+```

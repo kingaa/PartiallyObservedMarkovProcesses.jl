@@ -54,11 +54,13 @@ rinit_internal(
 ) where {T<:Time,P<:NamedTuple,U<:NamedTuple} =
     [f(; params[i]..., userdata..., t0=t0)::NamedTuple for i ∈ eachindex(params), _ ∈ 1:nsim]
 
-rinit_internal!(                # COV_EXCL_LINE
+# COV_EXCL_START  (to bypass bug in LocalCoverage.jl)
+rinit_internal!(
     x0::AbstractArray{X},
     f::Nothing,
     _...,
 ) where {X<:NamedTuple} = begin
+    # COV_EXCL_STOP
     fill!(x0, (;))
     nothing
 end

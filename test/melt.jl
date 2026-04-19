@@ -20,4 +20,8 @@ using Test
     @test isa(d,DataFrame)
     @test size(d)==(10,5)
     @test names(d)==["i","j","a","b","c"]
+    d = melt(rand(5,3,2),:i,:j,:k);
+    @test isa(d,DataFrame)
+    @test size(d)==(30,4)
+    @test names(d)==["i","j","k","value"]
 end

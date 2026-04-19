@@ -58,7 +58,7 @@ coef(
     names::Symbol...,
 ) = map(x -> coef(x,names...), object)
 
-pretty_string(object::Any) = ""
+pretty_string(object::Any) = "" # COV_EXCL_LINE
 
 Base.show(io::IO, object::AbstractPompObject) =
     print(io,"<$(typeof(object).name.name)"*pretty_string(object)*">")
