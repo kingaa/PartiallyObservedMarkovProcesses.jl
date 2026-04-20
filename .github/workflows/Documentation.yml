@@ -23,7 +23,7 @@ jobs:
       - run: |
           sudo apt-get update
           sudo apt-get -y install texlive-latex-base texlive-binaries texlive-pictures context
-      - uses: julia-actions/setup-julia@v2
+      - uses: julia-actions/setup-julia@v3
         with:
           version: '1'
       - uses: r-lib/actions/setup-r@v2
