@@ -1,4 +1,4 @@
-using Distributions: logpdf, MvNormal
+import Distributions: logpdf, MvNormal
 
 """
     brownian_motion(;times, t₀ = 0, x₀, σ, τ)

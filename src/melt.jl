@@ -1,4 +1,4 @@
-using DataFrames: DataFrame
+import DataFrames: DataFrame
 
 melt(x::Nothing) = DataFrame()
 

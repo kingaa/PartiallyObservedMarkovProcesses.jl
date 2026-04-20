@@ -1,5 +1,5 @@
-using Distributions: LogNormal, logpdf
-using OrdinaryDiffEq: AutoTsit5, Rosenbrock23
+import Distributions: LogNormal, logpdf
+import OrdinaryDiffEq: AutoTsit5, Rosenbrock23
 
 """
     drmca(

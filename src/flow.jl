@@ -1,5 +1,5 @@
 using SciMLBase
-using OrdinaryDiffEq: ODEProblem, solve
+import OrdinaryDiffEq: ODEProblem, solve
 
 struct VectorfieldPlugin{F<:Function, G<:Function} <: PompPlugin
     integrator::F

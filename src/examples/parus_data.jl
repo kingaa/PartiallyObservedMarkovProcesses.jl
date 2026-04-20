@@ -1,5 +1,5 @@
-using DataFrames: DataFrame
-using CSV: File
+import DataFrames: DataFrame
+import CSV: File
 
 const parus_data = DataFrame(
     File(
