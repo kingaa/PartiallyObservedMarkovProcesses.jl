@@ -86,6 +86,7 @@ states
 init_state
 times
 timezero
+melt
 ```
 
 ## Examples
@@ -101,7 +102,8 @@ library(tidyverse)
 
 ### The Gompertz model
 
-```@docs
+```@docs; canonical = false
+parus_data
 gompertz
 ```
 
@@ -157,7 +159,7 @@ nothing #hide
 
 ### A simple SIR model
 
-```@docs
+```@docs; canonical = false
 sir
 ```
 
@@ -203,7 +205,7 @@ savesvg("assets/figures/sir_diagram.svg",sv,web_display=true)
 
 ### The Rosenzweig-MacArthur model
 
-```@docs
+```@docs; canonical = false
 rmca
 drmca
 ```
@@ -256,13 +258,21 @@ nothing #hide
 
 ### Multivariate Brownian motion
 
-```@docs
+```@docs; canonical = false
 brownian_motion
 ```
 
 ## Reference
 
 ```@autodocs
-Modules = [PartiallyObservedMarkovProcesses]
-Order   = [:function, :macro, :type]
+Modules = [
+	PartiallyObservedMarkovProcesses,
+	PartiallyObservedMarkovProcesses.Examples,
+]
+Order   = [:module, :type, :function, :macro, :constant]
+```
+
+## Index
+
+```@index
 ```

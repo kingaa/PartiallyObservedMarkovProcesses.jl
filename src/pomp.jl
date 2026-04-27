@@ -1,8 +1,21 @@
 using DataFrames: AbstractDataFrame, Not, select, eachrow
 
+"""
+    AbstractPompObject
+
+An `AbstractPompObject` must, at a minimum, have a method for `pomp()` defined.
+This should return a proper [`PompObject`](@ref).
+"""
 abstract type AbstractPompObject end
+
 abstract type PompPlugin end
 
+"""
+    PompObject
+
+This is the basic data structure for the package.
+It contains data and model components.
+"""
 struct PompObject{
     T <: Time,
     P <: NamedTuple,

@@ -1,38 +1,45 @@
+JULIA = julia -t auto --project
+
 default: build
 
 test: build
-	julia --project -e 'import Pkg; Pkg.test()'
+	$(JULIA) -e 'import Pkg; Pkg.test()'
 
 coverage: build
-	julia --project -e 'using LocalCoverage; report_coverage_and_exit(target_coverage=90)'
+	$(JULIA) -e 'using LocalCoverage; report_coverage_and_exit(target_coverage=90)'
 
 vcov: build
-	julia --project -e 'using LocalCoverage; html_coverage(open=true,dir="coverage")'
+	$(JULIA) -e 'using LocalCoverage; html_coverage(open=true,dir="coverage")'
 
 clean:
-	julia --project -e 'using LocalCoverage; clean_coverage()'
+	$(JULIA) -e 'using LocalCoverage; clean_coverage()'
 	$(RM) profile.pb.gz
 
 build:
-	julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.build(); Pkg.precompile()'
-	cd test; julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
-	cd docs; julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
+	$(JULIA) -e 'import Pkg; Pkg.instantiate(); Pkg.build(); Pkg.precompile()'
+	cd test; $(JULIA) -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
+	cd docs; $(JULIA) -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
+
+resolve:
+	$(JULIA) -e 'import Pkg; Pkg.resolve()'
+	cd test; $(JULIA) -e 'import Pkg; Pkg.resolve()'
+	cd docs; $(JULIA) -e 'import Pkg; Pkg.resolve()'
 
 update:
-	julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.update(); Pkg.gc()'
-	cd test; julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.update(); Pkg.gc()'
-	cd docs; julia --project -e 'import Pkg; Pkg.instantiate(); Pkg.update(); Pkg.gc()'
+	$(JULIA) -e 'import Pkg; Pkg.instantiate(); Pkg.update(); Pkg.gc()'
+	cd test; $(JULIA) -e 'import Pkg; Pkg.instantiate(); Pkg.update(); Pkg.gc()'
+	cd docs; $(JULIA) -e 'import Pkg; Pkg.instantiate(); Pkg.update(); Pkg.gc()'
 
 docs: build
 	make -C docs
 
 serve: build
-	julia --project -e 'import LiveServer; LiveServer.servedocs()'
+	$(JULIA) -e 'import LiveServer; LiveServer.servedocs()'
 
 session: build
-	julia --project
+	$(JULIA)
 
 opto: build
-	julia --project -O3
+	$(JULIA) -O3
 
 .PHONY: test coverage clean build session docs update
