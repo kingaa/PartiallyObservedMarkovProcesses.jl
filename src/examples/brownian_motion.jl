@@ -1,17 +1,17 @@
 import Distributions: logpdf, MvNormal
 
 """
-    brownian_motion(;times, t₀ = 0, x₀, σ, τ)
+    brownian_motion(;times, t0 = 0, x0, σ, τ)
 
 returns a *PompObject* for a multivariate Brownian motion process with observations at `times`.
-The zero-time is `t₀` and the starting state at that time is `x₀`.
+The zero-time is `t0` and the starting state at that time is `x0`.
 The intensity of the Brownian motion is given by the matrix `σ`.
 The measurement error is multivariate normal with variance `τ^⊤ τ`.
 """
 brownian_motion = function(
     ;times::AbstractVector{<:Real},
-    t₀::Real = 0,
-    x₀::AbstractVector{<:Real},
+    t0::Real = 0,
+    x0::AbstractVector{<:Real},
     σ::AbstractMatrix{<:Real},
     τ::AbstractMatrix{<:Real},
     )
@@ -21,19 +21,19 @@ brownian_motion = function(
     if size(σ,1)!=size(σ,2)
         error("in `brownian_motion`: matrices σ and τ should be square.")
     end
-    if size(σ,1)!=length(x₀)
+    if size(σ,1)!=length(x0)
         error("in `brownian_motion`: size mismatch between σ and x₀.")
     end
     simulate(
-        t0=Float64(t₀),
+        t0=Float64(t0),
         times=collect(Float64,times),
         params=(
             σ=collect(Float64,σ),
             τ=collect(Float64,τ),
-            x₀=collect(Float64,x₀),
+            x0=collect(Float64,x0),
         ),
-        rinit=function(;x₀,_...)
-            (x=x₀,)
+        rinit=function(;x0,_...)
+            (x=x0,)
         end,
         rprocess=onestep(
             function(;dt,x,σ,_...)

@@ -12,10 +12,10 @@ using BenchmarkTools
 
     Random.seed!(1558102772)
 
-    @info h2("tests with R pomp")
-
     theta = (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S0=0.9,I0=0.01,R0=0.1);
-    @info h2("SIR parameters: $theta")
+    @info "SIR parameters: $theta"
+
+    @info h2("tests with R pomp")
 
     R"""
 library(tidyverse,warn.conflicts=FALSE)
@@ -124,6 +124,8 @@ P |>
     @test size(d)==(90,2,5)
     @test keys(d[1])==(:time,:reports,:S,:I,:R,:C)
     @test_throws "invalid Array dimensions" simulate_array(P,nsim=-1)
+
+    @info h2("POMP.jl simulate_array times (SIR)")
     @btime simulate_array(
         $P,nsim=5,
         params=[

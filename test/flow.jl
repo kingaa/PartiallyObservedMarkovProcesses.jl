@@ -14,14 +14,14 @@ using OrdinaryDiffEq: AutoTsit5, Rosenbrock23
         params=(
             ;r = 1, K = 1e4, A = 1e3,
             b = 1e-3, c = 1, m = 0.8,
-            N₀ = 3000, P₀ = 4, t₀ = 0.0,
+            N0 = 3000, P0 = 4, t0 = 0.0,
         ),
         t0=0.0,
         times=Float64.(0:10),
-        rinit = function (;N₀,P₀,_...)
+        rinit = function (;N0,P0,_...)
             (
-                X=log(N₀),
-                Y=log(P₀),
+                X=log(N0),
+                Y=log(P0),
             )
         end,
         rmeasure = nothing,

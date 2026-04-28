@@ -19,7 +19,7 @@ In particular,
 ## Parameters
 - r: the growth rate
 - K: the equilibrium population density
-- X₀: the initial population density
+- X0: the initial population density
 - σₚ: process noise s.d.
 - σₘ: measurement noise s.d.
 """
@@ -28,8 +28,8 @@ gompertz = function()
         parus_data,
         t0=1960,
         times=:year,
-        rinit = function (;X₀,_...)
-            (;X=X₀,)
+        rinit = function (;X0,_...)
+            (;X=X0,)
         end,
         rprocess = discrete_time(
             function (;t,X,σₚ,r,K,_...)

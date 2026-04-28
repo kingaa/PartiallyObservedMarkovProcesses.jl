@@ -23,8 +23,8 @@ using Test
     @test isnothing(obs(P))
     @test isnothing(states(P))
 
-    p1 = (a=1.0,k=7.0,x₀=5.0);
-    p2 = (a=1.1,k=2.0,x₀=3.0);
+    p1 = (a=1.0,k=7.0,x0=5.0);
+    p2 = (a=1.1,k=2.0,x0=3.0);
 
     x0 = rinit(P,params=p1,nsim=3);
     @test x0 isa Array{@NamedTuple{},2}
@@ -55,7 +55,7 @@ using Test
     @test x[1,:,:]==x0
     @test x[21,:,:]!=x0
     @test keys(x[17])==(:x,)
-    @test_throws r"keyword argument .* not assigned" rprocess(P,x0=x0[1,:],params=(k=7.0,x₀=5.0))
+    @test_throws r"keyword argument .* not assigned" rprocess(P,x0=x0[1,:],params=(k=7.0,x0=5.0))
 
     y = rmeasure(P,x=x,params=[p1;p2]);
     @test y isa Array{@NamedTuple{},3}
@@ -104,7 +104,7 @@ using Test
     theta = rprior(P,params=[p1;p2],nsim=4);
     @test theta isa Matrix{<:NamedTuple}
     @test size(theta)==(2,4)
-    @test map(y -> y.x₀, theta) isa Matrix{Float64}
+    @test map(y -> y.x0, theta) isa Matrix{Float64}
 
     P = pomp(P,userdata=(other=3,))
     @test P isa POMP.PompObject

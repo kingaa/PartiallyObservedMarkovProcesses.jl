@@ -137,7 +137,7 @@ View a few representative simulations:
 using PartiallyObservedMarkovProcesses, RCall
 using PartiallyObservedMarkovProcesses.Examples
 P = gompertz()
-Q = simulate(P;params=(r=4.5,K=210.0,σₚ=0.7,σₘ=0.1,X₀=150.0),nsim=5)
+Q = simulate(P;params=(r=4.5,K=210.0,σₚ=0.7,σₘ=0.1,X0=150.0),nsim=5)
 d = melt(Q,:parset,:rep)
 R"""
 svg("assets/figures/gompertz2.svg",width=7,height=5) #hide

@@ -1,7 +1,7 @@
 using Distributions
 
-rin = function(;x₀,_...)
-    d = Poisson(x₀)
+rin = function(;x0,_...)
+    d = Poisson(x0)
     (x=rand(d),)
 end
 
@@ -20,16 +20,16 @@ logdmeas = function (;x,y,k,_...)
     logpdf(d,y)
 end
 
-logdpri = function (;x₀,_...)
+logdpri = function (;x0,_...)
     d = LogNormal(1,1)
-    logpdf(d,x₀)
+    logpdf(d,x0)
 end
 
-rpri = function (;x₀,args...)
+rpri = function (;x0,args...)
     d = LogNormal(1,1)
-    (;x₀=rand(d),args...)
+    (;x0=rand(d),args...)
 end
 
-theta = (a=1.0,k=7.0,x₀=5.0);
+theta = (a=1.0,k=7.0,x0=5.0);
 
 nothing

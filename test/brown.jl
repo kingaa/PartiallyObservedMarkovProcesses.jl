@@ -15,7 +15,7 @@ import PartiallyObservedMarkovProcesses as POMP
 
     P = brownian_motion(
         times=[0:1:1000;5000:1:6000],
-        x₀=[0,0],
+        x0=[0,0],
         σ=[1.0 0.0;1.0 2.0],
         τ=[5.0 0; 1.0 1.0],
     );
@@ -63,25 +63,25 @@ theme_bw()
 
     @test_throws "different sizes" brownian_motion(
         times=[0:1:1000;5000:1:6000],
-        x₀=[0,0],
+        x0=[0,0],
         σ=[1.0 0.0;1.0 2.0],
         τ=[5.0 0 0; 1.0 1.0 0],
     )
     @test_throws "should be square" brownian_motion(
         times=[0:1:1000;5000:1:6000],
-        x₀=[0,0],
+        x0=[0,0],
         σ=[1.0 0.0 0;1.0 2.0 0],
         τ=[5.0 0 0; 1.0 1.0 0],
     )
     @test_throws "size mismatch" brownian_motion(
         times=[0:1:1000;5000:1:6000],
-        x₀=[0,0,0],
+        x0=[0,0,0],
         σ=[1.0 0.0;1.0 2.0],
         τ=[5.0 0; 1.0 1.0],
     )
     @test_throws "should be square" brownian_motion(
         times=[0:1:1000;5000:1:6000],
-        x₀=[0,0,0,0],
+        x0=[0,0,0,0],
         σ=[1.0 0.0 0;1.0 2.0 0],
         τ=[5.0 0 0; 1.0 1.0 0],
     )

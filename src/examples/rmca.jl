@@ -5,7 +5,7 @@ import Distributions: LogNormal, logpdf
          r = 1, K = 1e4, A = 1e3,
          b = 1e-3, c = 1, m = 0.8,
          V = 100, σ = 0.01,
-         N₀ = 3000, P₀ = 4, t₀ = 0.0,
+         N0 = 3000, P0 = 4, t0 = 0.0,
          δt = 0.01,
          times=range(start=0,stop=500,step=0.2)
        )
@@ -21,8 +21,8 @@ import Distributions: LogNormal, logpdf
 - m: predator death rate
 - V: system size
 - σ: measurement noise magnitude
-- N₀, P₀: initial densities
-- t₀: zero-time
+- N0, P0: initial densities
+- t0: zero-time
 - δt: Euler stepsize
 - times: vector of observation times
 
@@ -81,22 +81,22 @@ rmca = function(
     ;r = 1, K = 1e4, A = 1e3,
     b = 1e-3, c = 1, m = 0.8,
     V = 100, σ = 0.01,
-    N₀ = 3000, P₀ = 4, t₀ = 0.0,
+    N0 = 3000, P0 = 4, t0 = 0.0,
     δt = 0.01, times=range(start=0,stop=500,step=0.2)
     )
     simulate(
         params=(
             ;r = r, K = K, A = A,
             b = b, c = c, m = m,
-            N₀ = N₀, P₀ = P₀,
+            N0 = N0, P0 = P0,
             V = V, σ = σ
         ),
-        t0=t₀,
+        t0=t0,
         times=times,
-        rinit = function (;N₀,P₀,_...)
+        rinit = function (;N0,P0,_...)
             (
-                X=log(N₀),
-                Y=log(P₀),
+                X=log(N0),
+                Y=log(P0),
             )
         end,
         rprocess = euler(
