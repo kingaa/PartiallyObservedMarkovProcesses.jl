@@ -4,7 +4,7 @@ import Distributions: Binomial, NegativeBinomial, logpdf
     sir(
         β = 0.5, γ = 0.25, N = 10000,
         ρ = 0.3, k = 10,
-        S₀ = 0.9, I₀ = 0.01, R₀ = 0.1,
+        S0 = 0.9, I0 = 0.01, R0 = 0.1,
         δt = 0.1, t₀ = 0.0,
         times = range(start=1.0,stop=90,step=1.0)
        )
@@ -18,7 +18,7 @@ import Distributions: Binomial, NegativeBinomial, logpdf
 - N: population size
 - ρ: reporting rate
 - k: overdispersion coefficient (negative binomial size parameter)
-- S₀, I₀, R₀: relative proportions of susceptible, infected, recovered (respectively) in the population at t=t₀.
+- S0, I0, R0: relative proportions of susceptible, infected, recovered (respectively) in the population at t=t₀.
 - δt: Euler stepsize
 - t₀: zero-time
 - times: vector of observation times
@@ -26,7 +26,7 @@ import Distributions: Binomial, NegativeBinomial, logpdf
 sir = function(
     ;β = 0.5, γ = 0.25, N = 10000,
     ρ = 0.3, k = 10,
-    S₀ = 0.9, I₀ = 0.01, R₀ = 0.1,
+    S0 = 0.9, I0 = 0.01, R0 = 0.1,
     δt = 0.1, t₀ = 0.0,
     times = range(start=1.0,stop=90,step=1.0)
     )
@@ -34,17 +34,17 @@ sir = function(
         params = (
             β=β,γ=γ,N=N,
             ρ=ρ,k=k,
-            S₀=S₀,I₀=I₀,R₀=R₀,
+            S0=S0,I0=I0,R0=R0,
         ),
         t0 = t₀,
         times = times,
         accumvars = (C=0,),
-        rinit = function (;S₀,I₀,R₀,N,_...)
-            m = Float64(N)/(Float64(S₀)+Float64(I₀)+Float64(R₀))
+        rinit = function (;S0,I0,R0,N,_...)
+            m = Float64(N)/(Float64(S0)+Float64(I0)+Float64(R0))
             (
-                S=round(Int64,m*Float64(S₀)),
-                I=round(Int64,m*Float64(I₀)),
-                R=round(Int64,m*Float64(R₀)),
+                S=round(Int64,m*Float64(S0)),
+                I=round(Int64,m*Float64(I0)),
+                R=round(Int64,m*Float64(R0)),
                 C=0,
             )
         end,

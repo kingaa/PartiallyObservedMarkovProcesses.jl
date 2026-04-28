@@ -3,20 +3,19 @@ using PartiallyObservedMarkovProcesses.Examples
 import PartiallyObservedMarkovProcesses as POMP
 using RCall
 using Test
+using BenchmarkTools
 using Random: seed!
 
-@info "deterministic Rosenzweig-MacArthur model tests"
+@info h1("deterministic Rosenzweig-MacArthur model tests")
 
 @testset "deterministic Rosenzweig-MacArthur model" begin
 
     seed!(875002133)
 
-    @info "- POMP.jl simulations (det Rosenzweig-MacArthur)"
+    @info h2("POMP.jl simulations (det Rosenzweig-MacArthur)")
     P = drmca()
-    @time P = drmca()
-    @time P = drmca()
-    @time P = drmca()
     @test P isa POMP.PompObject
+    @btime drmca()
 
     R"""
 library(tidyverse,warn.conflicts=FALSE)
@@ -40,12 +39,10 @@ $(melt(P)) |>
 """
     R"""ggsave(filename="drmca-02.png",width=7,height=4)"""
 
-    @info "- POMP.jl simulation scaling (det Rosenzweig-MacArthur)"
+    @info h2("POMP.jl simulation scaling (det Rosenzweig-MacArthur)")
     S = simulate(P,rmeasure=nothing,nsim=1)[1]
-    @time S1 = simulate(S,nsim=1)
-    @time S1 = simulate(S,nsim=1)
-    @time S1 = simulate(S,nsim=10)
-    @time S1 = simulate(S,nsim=100)
-    @time S1 = simulate(S,nsim=1000)
+    @btime simulate_array($S,nsim=1)
+    @btime simulate_array($S,nsim=10)
+    @btime simulate_array($S,nsim=100)
 
 end

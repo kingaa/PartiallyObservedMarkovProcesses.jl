@@ -2,7 +2,7 @@ using PartiallyObservedMarkovProcesses
 using DataFrames
 using Test
 
-@info "testing `melt` methods"
+@info h1("testing `melt` methods")
 
 @testset verbose=true "melt methods" begin
     d = melt(nothing);

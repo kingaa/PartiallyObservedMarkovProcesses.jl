@@ -2,7 +2,7 @@ using PartiallyObservedMarkovProcesses
 using PartiallyObservedMarkovProcesses.Examples
 using Test
 
-@info "testing error capture"
+@info h1("testing error capture")
 
 @testset verbose=true "error messages" begin
 

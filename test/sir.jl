@@ -4,35 +4,41 @@ import PartiallyObservedMarkovProcesses as POMP
 using Random
 using RCall
 using Test
+using BenchmarkTools
 
-@info "SIR model tests"
+@info h1("SIR model tests")
 
 @testset verbose=true "SIR model" begin
 
     Random.seed!(1558102772)
 
-    @info "- tests with R pomp"
-    
+    @info h2("tests with R pomp")
+
+    theta = (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S0=0.9,I0=0.01,R0=0.1);
+    @info h2("SIR parameters: $theta")
+
     R"""
 library(tidyverse,warn.conflicts=FALSE)
 library(pomp,warn.conflicts=FALSE)
 
 set.seed(1558102772)
 
+theta <- unlist($theta)
+
 simulate(
   t0=0,
   times=seq(1,90,by=1),
   rinit=Csnippet(r"{
-    double m = N/(S_0+I_0+R_0);
-    S = nearbyint(m*S_0);
-    I = nearbyint(m*I_0);
-    R = nearbyint(m*R_0);
+    double m = N/(S0+I0+R0);
+    S = nearbyint(m*S0);
+    I = nearbyint(m*I0);
+    R = nearbyint(m*R0);
     C = 0;}"
   ),
   rprocess=euler(
     Csnippet(r"{
-    double inf = rbinom(S,1-exp(-Beta*I/N*dt));
-    double rcv = rbinom(I,1-exp(-gamma*dt));
+    double inf = rbinom(S,1-exp(-β*I/N*dt));
+    double rcv = rbinom(I,1-exp(-γ*dt));
     S -= inf;
     I += inf - rcv;
     R += rcv;
@@ -41,33 +47,26 @@ simulate(
     delta.t=0.1
   ),
   rmeasure=Csnippet(
-    r"{reports = rnbinom(k,k/(k+rho*C));}"
+    r"{reports = rnbinom(k,k/(k+ρ*C));}"
   ),
   dmeasure=Csnippet(
     r"{
-      lik = dnbinom(reports,k,k/(k+rho*C),give_log);
+      lik = dnbinom(reports,k,k/(k+ρ*C),give_log);
     }"
   ),
   obsnames=c("reports"),
   statenames=c("S","I","R","C"),
   paramnames=c(
-    "gamma","Beta","k","rho","N",
-    "S_0","I_0","R_0"
+    "γ","β","k","ρ","N",
+    "S0","I0","R0"
   ),
   accumvars="C",
-  params = c(
-    gamma=0.25,rho=0.3,k=10,
-    Beta=0.5,N=10000,
-    S_0=0.9,I_0=0.01,R_0=0.1
-  )
+  params = theta
 ) -> P
 
 P |>
   as.data.frame() |>
   select(time,reports) -> dat
-
-cat("    pomp SIR parameters:\n")
-print(coef(P))
 
 cat("    pomp simulation times (SIR):\n")
 P |>
@@ -77,8 +76,8 @@ P |>
   replicate(n=3) |>
   print()
 
-pp <- parmat(c(gamma=0.25,rho=0.3,k=10,Beta=0.5,N=10000,S_0=0.9,I_0=0.01,R_0=0.1),2)
-pp[c("gamma","Beta"),2] <- c(0.5,0.25)
+pp <- parmat(theta,2)
+pp[c("γ","β"),2] <- c(0.5,0.25)
 P |>
   simulate(nsim=1000,format="a",params=pp) |>
   system.time() |>
@@ -97,23 +96,19 @@ P |>
 P |>
   pfilter(Np=1000) |>
   logLik() -> ll
-cat("    pomp likelihood estimate (SIR): ",round(ll,digits=2),"\n")
     """;
+
+    @rget ll
+    @info h2("pomp likelihood estimate (SIR): $(round(ll,digits=2))")
 
     P = sir();
     @test P isa POMP.PompObject
     @test occursin(r"PompObject with 90 observations",sprint(show,P))
 
-    theta = (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S₀=0.9,I₀=0.01,R₀=0.1);
-    @info "- POMP.jl SIR parameters: $theta"
-
-    @info "- POMP.jl simulation times (SIR)"
+    @info h2("POMP.jl simulation times (SIR)")
     Q = simulate(P,nsim=1000,params=theta);
     @test typeof(Q[1])!=typeof(P)
-    Q = simulate(Q[1],nsim=1000);
-    @time Q = simulate(Q[1],nsim=1000);
-    @time Q = simulate(Q[1],nsim=1000);
-    @time Q = simulate(Q[1],nsim=1000);
+    @btime simulate($(Q[1]),nsim=1000);
 
     Q = simulate(P,nsim=5);
     @test typeof(Q[1])==typeof(P)
@@ -122,29 +117,20 @@ cat("    pomp likelihood estimate (SIR): ",round(ll,digits=2),"\n")
         P,
         nsim=5,
         params=[
-            (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S₀=0.9,I₀=0.01,R₀=0.1);
-            (γ=0.5,ρ=0.3,k=10,β=0.25,N=10000,S₀=0.9,I₀=0.01,R₀=0.1);
+            (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S0=0.9,I0=0.01,R0=0.1);
+            (γ=0.5,ρ=0.3,k=10,β=0.25,N=10000,S0=0.9,I0=0.01,R0=0.1);
         ]
     );
-    @time d = simulate_array(
-        P,
-        nsim=1000,
-        params=[
-            (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S₀=0.9,I₀=0.01,R₀=0.1);
-            (γ=0.5,ρ=0.3,k=10,β=0.25,N=10000,S₀=0.9,I₀=0.01,R₀=0.1);
-        ]
-    );
-    @time d = simulate_array(
-        P,
-        nsim=1000,
-        params=[
-            (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S₀=0.9,I₀=0.01,R₀=0.1);
-            (γ=0.5,ρ=0.3,k=10,β=0.25,N=10000,S₀=0.9,I₀=0.01,R₀=0.1);
-        ]
-    );
-    @test size(d)==(90,2,1000)
+    @test size(d)==(90,2,5)
     @test keys(d[1])==(:time,:reports,:S,:I,:R,:C)
     @test_throws "invalid Array dimensions" simulate_array(P,nsim=-1)
+    @btime simulate_array(
+        $P,nsim=5,
+        params=[
+            (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S0=0.9,I0=0.01,R0=0.1);
+            (γ=0.5,ρ=0.3,k=10,β=0.25,N=10000,S0=0.9,I0=0.01,R0=0.1);
+        ]
+    );
 
     d1 = melt(Q,:parset,:rep);
 
@@ -175,14 +161,13 @@ $d1 |>
         accumvars=(C=0,)
     )
 
-    @info "- POMP.jl pfilter times (SIR)"
+    @info h2("POMP.jl pfilter times (SIR)")
     Pf = pfilter(P,Np=1000,params=theta);
-    @time Pf = pfilter(P,Np=1000,params=theta);
-    @time Pf = pfilter(P,Np=1000,params=theta);
-    @time Pf = pfilter(P,Np=1000,params=theta);
+    @btime pfilter($P,Np=1000,params=$theta);
 
     Pf = pfilter(Pf,Np=1000);
-    @info "- POMP.jl likelihood estimate (SIR): $(round(Pf.logLik,digits=2))"
+    @info h2("POMP.jl likelihood estimate (SIR): $(round(Pf.logLik,digits=2))")
+    @test abs(Pf.logLik-ll) < 1.0
 
     d2 = melt(Pf)
 

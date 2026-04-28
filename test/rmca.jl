@@ -3,20 +3,19 @@ using PartiallyObservedMarkovProcesses.Examples
 import PartiallyObservedMarkovProcesses as POMP
 using RCall
 using Test
+using BenchmarkTools
 using Random: seed!
 
-@info "stochastic Rosenzweig-MacArthur model tests"
+@info h1("stochastic Rosenzweig-MacArthur model tests")
 
 @testset "stochastic Rosenzweig-MacArthur model" begin
 
     seed!(875002133)
 
-    @info "- POMP.jl simulations (stoch Rosenzweig-MacArthur)"
+    @info h2("POMP.jl simulations (stoch Rosenzweig-MacArthur)")
     P = rmca()
-    @time P = rmca()
-    @time P = rmca()
-    @time P = rmca()
     @test P isa POMP.PompObject
+    @btime rmca()
 
     R"""
 library(tidyverse,warn.conflicts=FALSE)
@@ -42,13 +41,11 @@ $(melt(P)) |>
 
     R"""ggsave(filename="rmca-02.png",width=7,height=4)"""
 
-    @info "- POMP.jl pfilter (stoch Rosenzweig-MacArthur)"
+    @info h2("POMP.jl pfilter (stoch Rosenzweig-MacArthur)")
     P = rmca(δt=0.1,σ=0.1,times=range(1.0,20.0,step=1.0))
     Pf = pfilter(P,Np=1000)
-    @time Pf = pfilter(P,Np=1000)
-    @time Pf = pfilter(P,Np=1000)
-    @time Pf = pfilter(P,Np=1000)
     @test Pf isa POMP.PfilterdPompObject
-    @info "- POMP.jl likelihood estimate (stoch Rosenzweig-MacArthur): $(round(Pf.logLik,digits=2))"
+    @btime pfilter($P,Np=1000)
+    @info h2("POMP.jl likelihood estimate (stoch Rosenzweig-MacArthur): $(round(Pf.logLik,digits=2))")
 
 end

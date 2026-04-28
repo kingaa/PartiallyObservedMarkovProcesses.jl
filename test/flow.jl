@@ -4,7 +4,7 @@ using Test
 using Random: seed!
 using OrdinaryDiffEq: AutoTsit5, Rosenbrock23
 
-@info "vectorfield integration tests"
+@info h1("vectorfield integration tests")
 
 @testset "vectorfield integration" begin
 

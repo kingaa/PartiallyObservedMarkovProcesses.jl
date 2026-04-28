@@ -3,8 +3,9 @@ import PartiallyObservedMarkovProcesses as POMP
 using Distributions
 using Random
 using Test
+using BenchmarkTools
 
-@info "pfilter tests"
+@info h1("pfilter tests")
 
 @testset verbose=true "pfilter" begin
 
@@ -65,12 +66,10 @@ using Test
     Q = pfilter(P,Np=1000,params=p1);
     @test Q isa POMP.PfilterdPompObject
     @test occursin(r"PfilterdPompObject .* Np=",sprint(show,Q))
-    @time pfilter(Q,params=(a=1.5,k=7.0,x₀=5.0));
-    @time pfilter(Q,params=(a=1.5,k=7.0,x₀=5.0));
-    @time pfilter(Q,params=(k=7.0,a=1.5,x₀=5.0));
-    @time pfilter(Q,params=(k=7.0,a=1.5,x₀=5.0));
     @test all(Q.x0.==Q.pred[1,:])
     @test_throws r"keyword argument .* not assigned" pfilter(Q,params=(a=1.5,k=7.0));
+    @btime pfilter($Q,params=(a=1.5,k=7.0,x₀=5.0));
+    @btime pfilter($Q,params=(k=7.0,a=1.5,x₀=5.0));
 
     d = melt(Q);
     @test size(d)==(21,4)

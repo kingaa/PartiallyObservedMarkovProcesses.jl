@@ -5,7 +5,7 @@ using Random
 using RCall
 using Test
 
-@info "Gompertz model tests"
+@info h1("Gompertz model tests")
 
 @testset verbose=true "Gompertz model" begin
 

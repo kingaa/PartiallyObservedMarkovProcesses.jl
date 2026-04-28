@@ -1,7 +1,7 @@
 using PartiallyObservedMarkovProcesses
 using Test
 
-@info "testing helper functions"
+@info h1("testing helper functions")
 
 @testset verbose=true "helpers" begin
 

@@ -7,7 +7,7 @@ using Random: seed!
 
 import PartiallyObservedMarkovProcesses as POMP
 
-@info "Brownian motion tests"
+@info h1("Brownian motion tests")
 
 @testset verbose=true "Brownian motion" begin
 
@@ -19,12 +19,11 @@ import PartiallyObservedMarkovProcesses as POMP
         σ=[1.0 0.0;1.0 2.0],
         τ=[5.0 0; 1.0 1.0],
     );
+
     @test P isa POMP.PompObject
-    @time simulate(P,nsim=1000);
-    @time simulate(P,nsim=1000);
-    simulate_array(P,nsim=1000);
-    @time simulate_array(P,nsim=1000);
-    @time simulate_array(P,nsim=1000);
+    @test simulate(P,nsim=1000) isa Array{<:POMP.PompObject,2}
+    @test simulate_array(P,nsim=1000) isa Array{<:NamedTuple,3}
+    @test pfilter(P,Np=1000) isa POMP.PfilterdPompObject
 
     d = transform(
         melt(P),
