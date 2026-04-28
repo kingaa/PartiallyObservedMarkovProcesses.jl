@@ -43,7 +43,7 @@ vectorfield(
             ic,tspan,params
         )
         sol = solve(prob,integration_alg;integrator_args...)
-        x[:] = map(v->(;zip(statenames,v)...),sol(t))
+        x[:] = mapslices(v->(;zip(statenames,v)...),sol(t),dims=1)
     end
     VectorfieldPlugin(integrator!,vf_eval!,statenames)
 end

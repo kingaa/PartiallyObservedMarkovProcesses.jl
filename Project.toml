@@ -1,6 +1,6 @@
 name = "PartiallyObservedMarkovProcesses"
 uuid = "32433216-4d85-4b2d-94ed-a614743ba12b"
-version = "0.5.3-2"
+version = "0.6.0-1"
 authors = ["Aaron A. King <kingaa@umich.edu>"]
 
 [deps]
@@ -13,7 +13,7 @@ SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 [compat]
 DataFrames = "1.7.0"
 Distributions = "0.25.113"
-OrdinaryDiffEq = "6.106.0"
+OrdinaryDiffEq = "7"
 Random = "1.11.0"
-SciMLBase = "2.127.0"
+SciMLBase = "3.6.0"
 julia = "1.11"

@@ -19,7 +19,7 @@ import PartiallyObservedMarkovProcesses as POMP
         σ=[1.0 0.0;1.0 2.0],
         τ=[5.0 0; 1.0 1.0],
     );
-    @test isa(P,POMP.PompObject)
+    @test P isa POMP.PompObject
     @time simulate(P,nsim=1000);
     @time simulate(P,nsim=1000);
     simulate_array(P,nsim=1000);

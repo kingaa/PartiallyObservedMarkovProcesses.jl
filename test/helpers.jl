@@ -16,27 +16,27 @@ using Test
         logdmeasure=logdmeas
     )
     Q = simulate(P,params=[theta;theta],nsim=3);
-    @test isa(times(P),Vector{<:Real})
+    @test times(P) isa Vector{<:Real}
     @test size(times(P))==(21,)
-    @test isa(init_state(P),Nothing)
-    @test isa(init_state(Q[1]),NamedTuple)
-    @test isa(init_state(Q),Array{<:NamedTuple,2})
+    @test init_state(P) isa Nothing
+    @test init_state(Q[1]) isa NamedTuple
+    @test init_state(Q) isa Array{<:NamedTuple,2}
     @test size(init_state(Q))==(2,3)
-    @test isa(obs(P),Nothing)
-    @test isa(obs(Q[1]),Array{<:NamedTuple,1})
+    @test obs(P) isa Nothing
+    @test obs(Q[1]) isa Array{<:NamedTuple,1}
     @test size(obs(Q[1]))==(21,)
-    @test isa(obs(Q),Array{<:NamedTuple,3})
+    @test obs(Q) isa Array{<:NamedTuple,3}
     @test size(obs(Q))==(21,2,3)
-    @test isa(states(P),Nothing)
-    @test isa(states(Q[2]),Array{<:NamedTuple,1})
+    @test states(P) isa Nothing
+    @test states(Q[2]) isa Array{<:NamedTuple,1}
     @test size(states(Q[2]))==(21,)
-    @test isa(states(Q),Array{<:NamedTuple,3})
+    @test states(Q) isa Array{<:NamedTuple,3}
     @test size(states(Q))==(21,2,3)
     @test isempty(coef(P))
-    @test isa(coef(Q[3]),NamedTuple)
-    @test isa(coef(Q),Array{<:NamedTuple,2})
+    @test coef(Q[3]) isa NamedTuple
+    @test coef(Q) isa Array{<:NamedTuple,2}
     @test size(coef(Q))==(2,3)
-    @test isa(coef(Q[3],:k,:a),NamedTuple)
-    @test isa(coef(Q,:k,:a),Array{<:NamedTuple,2})
+    @test coef(Q[3],:k,:a) isa NamedTuple
+    @test coef(Q,:k,:a) isa Array{<:NamedTuple,2}
 
 end

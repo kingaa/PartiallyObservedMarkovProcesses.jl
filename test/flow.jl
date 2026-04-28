@@ -35,14 +35,13 @@ using OrdinaryDiffEq: AutoTsit5, Rosenbrock23
                 [dN/N, dP/P]
             end,
             AutoTsit5(Rosenbrock23()),
-            verbose=true,
             force_dtmin=true,
             dtmax=1.0
         ),
     )[1];
 
-    @test isa(P,POMP.PompObject)
-    @test isa(states(P),Array{@NamedTuple{X::Float64,Y::Float64},1})
+    @test P isa POMP.PompObject
+    @test states(P) isa Array{@NamedTuple{X::Float64,Y::Float64},1}
     @test size(states(P))==(11,)
 
 end

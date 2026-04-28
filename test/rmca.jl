@@ -16,7 +16,7 @@ using Random: seed!
     @time P = rmca()
     @time P = rmca()
     @time P = rmca()
-    @test isa(P,POMP.PompObject)
+    @test P isa POMP.PompObject
 
     R"""
 library(tidyverse,warn.conflicts=FALSE)
@@ -48,7 +48,7 @@ $(melt(P)) |>
     @time Pf = pfilter(P,Np=1000)
     @time Pf = pfilter(P,Np=1000)
     @time Pf = pfilter(P,Np=1000)
-    @test isa(Pf,POMP.PfilterdPompObject)
+    @test Pf isa POMP.PfilterdPompObject
     @info "- POMP.jl likelihood estimate (stoch Rosenzweig-MacArthur): $(round(Pf.logLik,digits=2))"
 
 end

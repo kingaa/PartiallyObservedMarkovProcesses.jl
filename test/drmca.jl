@@ -16,7 +16,7 @@ using Random: seed!
     @time P = drmca()
     @time P = drmca()
     @time P = drmca()
-    @test isa(P,POMP.PompObject)
+    @test P isa POMP.PompObject
 
     R"""
 library(tidyverse,warn.conflicts=FALSE)
