@@ -10,7 +10,7 @@ const RealTime = Float64
 ## We may at some point need more precision....
 const LogLik = Float64
 
-export pomp, AbstractPompObject, PompPlugin
+export pomp, AbstractPompObject, PompPlugin, paramsymbs
 include("pomp.jl")
 
 export times, timezero, obs, init_state, states, coef

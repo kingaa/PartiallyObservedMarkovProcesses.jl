@@ -15,6 +15,7 @@ using Random: seed!
     @info h2("POMP.jl simulations (det Rosenzweig-MacArthur)")
     P = drmca()
     @test P isa POMP.PompObject
+    @test :x ∉ paramsymbs(P)
     @btime drmca()
 
     R"""

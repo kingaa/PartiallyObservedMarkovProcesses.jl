@@ -64,6 +64,7 @@ using BenchmarkTools
     @test x0==x[1,:,:]
 
     Q = pfilter(P,Np=1000,params=p1);
+    @test :x ∈ paramsymbs(Q)
     @test Q isa POMP.PfilterdPompObject
     @test occursin(r"PfilterdPompObject .* Np=",sprint(show,Q))
     @test all(Q.x0.==Q.pred[1,:])

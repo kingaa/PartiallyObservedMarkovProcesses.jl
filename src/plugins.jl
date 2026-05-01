@@ -1,11 +1,11 @@
-struct EulerPlugin{F<:Function} <: PompPlugin
-    stepfun::F
-    stepsize::RealTime
-end
-
 struct DiscreteTimePlugin{F<:Function,T<:Time} <: PompPlugin
     stepfun::F
     stepsize::T
+end
+
+struct EulerPlugin{F<:Function} <: PompPlugin
+    stepfun::F
+    stepsize::RealTime
 end
 
 struct OneStepPlugin{F<:Function} <: PompPlugin
@@ -20,10 +20,30 @@ The magnitude of the time unit is `dt`.
 """
 discrete_time(
     stepfun::Function;
-    dt::Time=1,
+    dt::Time=one(Int64),
 ) = DiscreteTimePlugin(stepfun, dt)
 
 discrete_time(_...) = error("Incorrect call to `discrete_time`.")
+
+paramsymbs(f::DiscreteTimePlugin) = begin
+    setdiff(paramsymbs(f.stepfun),[:t,:dt])
+end
+
+rprocess_step(
+    p::DiscreteTimePlugin{F,T},
+    t0::T,
+    tf::T,
+    x::X,
+    params::P,
+    userdata::U,
+) where {F<:Function,T<:Time,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
+    t = t0
+    while t < tf
+        @inline x = X(p.stepfun(;t=t, dt=p.stepsize, x..., params..., userdata...))
+        t += p.stepsize
+    end
+    t, x
+end
 
 """
     euler(stepfun; dt)
@@ -38,31 +58,8 @@ euler(
 
 euler(_...) = error("Incorrect call to `euler`.")
 
-"""
-    onestep(stepfun)
-
-The function `stepfun` will be called once to advance the latent-state process over an interval of arbitrary duration.
-"""
-onestep(
-    stepfun::Function,
-) = OneStepPlugin(stepfun)
-
-onestep(_...) = error("Incorrect call to `onestep`.")
-
-rprocess_step(
-    p::DiscreteTimePlugin{F,T},
-    t0::T,
-    tf::T,
-    x::X,
-    params::P,
-    userdata::U,
-) where {F<:Function,T<:Time,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
-    t = t0
-    while t < tf
-        @inline x = X(p.stepfun(; t=t, dt=p.stepsize, x..., params..., userdata...))
-        t += p.stepsize
-    end
-    t, x
+paramsymbs(f::EulerPlugin) = begin
+    setdiff(paramsymbs(f.stepfun),[:t,:dt])
 end
 
 rprocess_step(
@@ -78,11 +75,26 @@ rprocess_step(
         tstep = (tf - t0) / n
         t = t0
         for _ in 1:n
-            @inline x = X(p.stepfun(; t=t, dt=tstep, x..., params..., userdata...))
+            @inline x = X(p.stepfun(;t=t, dt=tstep, x..., params..., userdata...))
             t += tstep
         end
     end
     tf, x
+end
+
+"""
+    onestep(stepfun)
+
+The function `stepfun` will be called once to advance the latent-state process over an interval of arbitrary duration.
+"""
+onestep(
+    stepfun::Function,
+) = OneStepPlugin(stepfun)
+
+onestep(_...) = error("Incorrect call to `onestep`.")
+
+paramsymbs(f::OneStepPlugin) = begin
+    setdiff(paramsymbs(f.stepfun),[:t,:dt])
 end
 
 rprocess_step(
@@ -93,6 +105,6 @@ rprocess_step(
     params::P,
     userdata::U,
 ) where {F<:Function,T<:Time,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
-    @inline x = X(p.stepfun(; t=t0, dt=tf - t0, x..., params..., userdata...))
+    @inline x = X(p.stepfun(;t=t0, dt=tf-t0, x..., params..., userdata...))
     tf, x
 end

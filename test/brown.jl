@@ -21,6 +21,7 @@ import PartiallyObservedMarkovProcesses as POMP
     );
 
     @test P isa POMP.PompObject
+    @test :S ∉ paramsymbs(P)
     @test simulate(P,nsim=1000) isa Array{<:POMP.PompObject,2}
     @test simulate_array(P,nsim=1000) isa Array{<:NamedTuple,3}
     @test pfilter(P,Np=1000) isa POMP.PfilterdPompObject

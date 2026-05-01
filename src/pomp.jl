@@ -322,3 +322,43 @@ pretty_string(object::PompObject) = begin
     " with $(length(obs(object))) observations" *
         " over $(object.timevar) ∈ $time_interval"
 end
+
+argnames(m::Method) = Base.rest(Base.method_argnames(m),2)
+argnames(f::Function) = begin
+    m = methods(f)
+    @assert length(m)==1 "In specifying basic model components, do not use functions with more than one method!"
+    argnames(first(m))
+end
+
+"""
+    paramsymbs(object)
+
+Attempt to determine the names of parameters.
+Return the result as a `Vector{Symbol}`.
+If `object` is an `AbstractPompObject` without `states`, this function may mistakenly include state variables.
+"""
+paramsymbs(m::Method) = Base.kwarg_decl(m)
+paramsymbs(f::Function) = begin
+    m = methods(f)
+    @assert length(m)==1 "In specifying basic model components, do not use functions with more than one method!"
+    paramsymbs(first(m))
+end
+paramsymbs(f::NamedTuple) = Symbol[keys(f)...]
+paramsymbs(f::Vector{<:NamedTuple}) = union(paramsymbs.(f)...)
+paramsymbs(f::Nothing) = Symbol[]
+paramsymbs(object::AbstractPompObject) = paramsymbs(pomp(object))
+paramsymbs(object::PompObject) = begin
+    compons = [:rinit, :rprocess, :rmeasure, :logdmeasure, :rprior, :logdprior, :params]
+    symbs = map(compons) do c
+        paramsymbs(getfield(object,c))
+    end
+    excls = [
+        Symbol[object.timevar,],
+        paramsymbs(obs(object)),
+        paramsymbs(states(object)),
+        paramsymbs(init_state(object)),
+        keys(object.userdata),
+        Symbol[Symbol("_..."),],
+    ]
+    setdiff(union(symbs...),union(excls...))
+end

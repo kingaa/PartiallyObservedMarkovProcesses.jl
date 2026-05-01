@@ -99,11 +99,12 @@ P |>
     """;
 
     @rget ll
-    @info h2("pomp likelihood estimate (SIR): $(round(ll,digits=2))")
+    @info h2("R pomp likelihood estimate (SIR): $(round(ll,digits=2))")
 
     P = sir();
     @test P isa POMP.PompObject
     @test occursin(r"PompObject with 90 observations",sprint(show,P))
+    @test :S ∉ paramsymbs(P)
 
     @info h2("POMP.jl simulation times (SIR)")
     Q = simulate(P,nsim=1000,params=theta);

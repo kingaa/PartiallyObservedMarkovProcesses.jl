@@ -14,6 +14,7 @@ using Test
     P = gompertz();
     @test isa(P,POMP.PompObject)
     @test occursin(r"PompObject with 27 observations over year",sprint(show,P))
+    @test :X ∈ paramsymbs(P)
 
     p1 = (r=4.5,K=210.0,σₚ=0.7,σₘ=0.1,X0=150.0);
 

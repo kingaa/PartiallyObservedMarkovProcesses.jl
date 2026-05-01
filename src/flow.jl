@@ -3,11 +3,15 @@ import OrdinaryDiffEq: ODEProblem, solve
 
 struct VectorfieldPlugin{F<:Function, G<:Function} <: PompPlugin
     integrator::F
+    vf::Function
     vf_evaluator::G
     statenames::Vector{Symbol}
 end
 
-argnames(m::Method) = Base.rest(Base.method_argnames(m),2)
+paramsymbs(f::VectorfieldPlugin) = begin
+    setdiff(paramsymbs(f.vf),[:t,f.statenames...])
+end
+
 
 """
     vectorfield(vf, integration_alg; integrator_args...)
@@ -23,9 +27,7 @@ vectorfield(
     integration_alg;
     integrator_args...,
 ) = begin
-    m = methods(vf)
-    @assert length(m)==1
-    statenames = argnames(m[1])
+    statenames = argnames(vf)
     vf_eval!(du, u, p, t) = begin
         du[:] = vf(u...;p...,t=t)
         nothing
@@ -45,7 +47,7 @@ vectorfield(
         sol = solve(prob,integration_alg;integrator_args...)
         x[:] = mapslices(v->(;zip(statenames,v)...),sol(t),dims=1)
     end
-    VectorfieldPlugin(integrator!,vf_eval!,statenames)
+    VectorfieldPlugin(integrator!,vf,vf_eval!,statenames)
 end
 
 vectorfield(_...) = error("Incorrect call to `vectorfield`.")
