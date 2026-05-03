@@ -71,6 +71,10 @@ using BenchmarkTools
     @test_throws r"keyword argument .* not assigned" pfilter(Q,params=(a=1.5,k=7.0));
     @btime pfilter($Q,params=(a=1.5,k=7.0,x0=5.0));
     @btime pfilter($Q,params=(k=7.0,a=1.5,x0=5.0));
+    x0 = rinit(Q,nsim=5)
+    @test x0 isa Array{<:NamedTuple}
+    @test size(x0)==(1,5)
+    rinit!(Q,x0)
 
     d = melt(Q);
     @test size(d)==(21,4)

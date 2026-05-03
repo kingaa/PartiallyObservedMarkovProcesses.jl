@@ -94,7 +94,7 @@ using Test
     @test_throws r"keyword argument .* not assigned" logdprior(P,params=(a=1.0,))
 
     theta = rprior(P,params=[p1;p2],nsim=3);
-    @test isa(theta,Matrix{<:NamedTuple})
+    @test theta isa Matrix{<:NamedTuple}
     @test size(theta)==(2,3)
     @test theta[1,1]==p1
     @test theta[1,3]==p1

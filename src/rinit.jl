@@ -5,36 +5,47 @@
 
 ## Arguments
 
-- `object`: the PompObject
+- `object`: the AbstractPompObject
 - `params`: a NamedTuple of parameters or vector of NamedTuples
 - `t0`: the time at which `rinit` is to be simulated.
   This should be a single scalar.
 - `nsim`: the number of simulations desired.
 """
 rinit(
-    object::AbstractPompObject;
-    t0::T=timezero(object),
+    object::PompObject{T,X};
+    t0::T1=timezero(object),
     params::Union{P,AbstractVector{P}}=coef(object),
     nsim::Integer=1,
-) where {T<:Time,P<:NamedTuple} = begin
+) where {T,X,T1<:Time,P<:NamedTuple} = begin
     params = val_array(params)
-    rinit_internal(pomp(object).rinit, t0, params, pomp(object).userdata, nsim)
+    rinit_internal(object.rinit, T(t0), params, object.userdata, nsim)
 end
+
+rinit(
+    object::AbstractPompObject;
+    args...,
+) = rinit(pomp(object);args...)
 
 """
     rinit!(object, x0; t0=timezero(object), params = coef(object))
 
-`rinit!` is the in-place version of the `rinit` workhorse.
+`rinit!` is the in-place version of the [`rinit`](@ref) workhorse.
 """
+rinit!(
+    object::PompObject{T,X},
+    x0::AbstractArray{X1,2};
+    t0::T1=timezero(object),
+    params::Union{P,AbstractVector{P}}=coef(object),
+) where {T,X,T1<:Time,X1<:NamedTuple,P<:NamedTuple} = begin
+    params = val_array(params)
+    rinit_internal!(x0, object.rinit, T(t0), params, object.userdata)
+end
+
 rinit!(
     object::AbstractPompObject,
     x0::AbstractArray{X,2};
-    t0::T=timezero(object),
-    params::Union{P,AbstractVector{P}}=coef(object),
-) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
-    params = val_array(params)
-    rinit_internal!(x0, pomp(object).rinit, t0, params, pomp(object).userdata)
-end
+    args...,
+) where {X<:NamedTuple} = rinit!(pomp(object),x0;args...)
 
 rinit_internal(
     f::Nothing,

@@ -18,12 +18,11 @@ It contains data and model components.
 """
 struct PompObject{
     T <: Time,
-    P <: NamedTuple,
+    X <: NamedTuple,
     A <: Union{<:NamedTuple,Nothing},
-    X0 <: Union{<:NamedTuple,Nothing},
-    X <: Union{Vector{<:NamedTuple},Nothing},
     Y <: Union{Vector{<:NamedTuple},Nothing},
     F <: Union{PompPlugin,Nothing},
+    P <: NamedTuple,
     U <: NamedTuple,
     } <: AbstractPompObject
     t0::T
@@ -31,8 +30,8 @@ struct PompObject{
     timevar::Symbol
     accumvars::A
     params::P
-    init_state::X0
-    states::X
+    init_state::X
+    states::Union{Vector{X},Nothing}
     obs::Y
     rinit::Union{Function,Nothing}
     rprocess::F
@@ -58,13 +57,14 @@ struct PompObject{
         logdprior=nothing,
         userdata=(;),
     ) = begin
+        init_state = repair(init_state)
         params = repair(params)
         userdata = repair(userdata)
         new{
             typeof(t0),
-            typeof(params),typeof(accumvars),
-            typeof(init_state),typeof(states),typeof(obs),
-            typeof(rprocess),typeof(userdata),
+            typeof(init_state),
+            typeof(accumvars),typeof(obs),
+            typeof(rprocess),typeof(params),typeof(userdata),
         }(
             t0,times,timevar,accumvars,
             params,init_state,states,obs,
@@ -73,7 +73,7 @@ struct PompObject{
             userdata
         )
     end
-    ## The following constructor should only be used internally because
+    ## The following re-constructor should only be used internally because
     ## it is not guaranteed to return a valid `PompObject`.
     PompObject(
         object::AbstractPompObject;
@@ -93,58 +93,60 @@ struct PompObject{
         logdprior = missing,
         userdata = missing,
     ) = begin
+        obj = pomp(object)
         if ismissing(t0)
-            t0 = pomp(object).t0
+            t0 = obj.t0
         end
         if ismissing(times)
-            times = pomp(object).times
+            times = obj.times
         end
         if ismissing(params)
-            params = pomp(object).params
+            params = obj.params
         end
         if ismissing(timevar)
-            timevar = pomp(object).timevar
+            timevar = obj.timevar
         end
         if ismissing(accumvars)
-            accumvars = pomp(object).accumvars
+            accumvars = obj.accumvars
         end
         if ismissing(init_state)
-            init_state = pomp(object).init_state
+            init_state = obj.init_state
         end
         if ismissing(states)
-            states = pomp(object).states
+            states = obj.states
         end
         if ismissing(obs)
-            obs = pomp(object).obs
+            obs = obj.obs
         end
         if ismissing(rinit)
-            rinit = pomp(object).rinit
+            rinit = obj.rinit
         end
         if ismissing(rprocess)
-            rprocess = pomp(object).rprocess
+            rprocess = obj.rprocess
         end
         if ismissing(rmeasure)
-            rmeasure = pomp(object).rmeasure
+            rmeasure = obj.rmeasure
         end
         if ismissing(logdmeasure)
-            logdmeasure = pomp(object).logdmeasure
+            logdmeasure = obj.logdmeasure
         end
         if ismissing(rprior)
-            rprior = pomp(object).rprior
+            rprior = obj.rprior
         end
         if ismissing(logdprior)
-            logdprior = pomp(object).logdprior
+            logdprior = obj.logdprior
         end
         if ismissing(userdata)
-            userdata = pomp(object).userdata
+            userdata = obj.userdata
         end
+        init_state = repair(init_state)
         params = repair(params)
         userdata = repair(userdata)
         new{
             typeof(t0),
-            typeof(params),typeof(accumvars),
-            typeof(init_state),typeof(states),typeof(obs),
-            typeof(rprocess),typeof(userdata),
+            typeof(init_state),
+            typeof(accumvars),typeof(obs),
+            typeof(rprocess),typeof(params),typeof(userdata),
         }(
             t0,times,timevar,
             accumvars,params,
@@ -169,8 +171,6 @@ ValidPompData = Union{
 }
 
 """
-`pomp` is the constructor for the *PompObject* class.
-
     pomp(
         data;
         t0, times, timevar,
@@ -181,6 +181,8 @@ ValidPompData = Union{
         rprior, logdprior,
         userdata
         )
+
+`pomp` is the constructor for the *PompObject* class.
 
 ## Arguments
 
@@ -252,7 +254,7 @@ pomp(
         logdmeasure=logdmeasure,
         rprior=rprior,
         logdprior=logdprior,
-        userdata=userdata
+        userdata=userdata,
     )
 end
 
@@ -308,7 +310,7 @@ pomp(
         logdprior=logdprior,
         userdata=userdata,
         init_state=nothing,
-        states=nothing
+        states=nothing,
     )
 end
 
@@ -347,18 +349,17 @@ paramsymbs(f::NamedTuple) = Symbol[keys(f)...]
 paramsymbs(f::Vector{<:NamedTuple}) = union(paramsymbs.(f)...)
 paramsymbs(f::Nothing) = Symbol[]
 paramsymbs(object::AbstractPompObject) = paramsymbs(pomp(object))
-paramsymbs(object::PompObject) = begin
-    compons = [:rinit, :rprocess, :rmeasure, :logdmeasure, :rprior, :logdprior, :params]
-    symbs = map(compons) do c
+paramsymbs(
+    object::PompObject{T,X,A,Y,F,P,U},
+) where {T,X,A,Y,F,P,U} = begin
+    components = [:rinit, :rprocess, :rmeasure, :logdmeasure, :rprior, :logdprior, :params]
+    symbs = map(components) do c
         paramsymbs(getfield(object,c))
     end
     excls = [
-        Symbol[object.timevar,],
+        Symbol[object.timevar,Symbol("_...")],
         paramsymbs(obs(object)),
-        paramsymbs(states(object)),
-        paramsymbs(init_state(object)),
-        keys(object.userdata),
-        Symbol[Symbol("_..."),],
+        fieldnames(A),fieldnames(X),fieldnames(U)
     ]
     setdiff(union(symbs...),union(excls...))
 end

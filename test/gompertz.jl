@@ -11,8 +11,8 @@ using Test
 
     Random.seed!(1558102772)
 
-    P = gompertz();
-    @test isa(P,POMP.PompObject)
+    P = gompertz()
+    @test P isa POMP.PompObject
     @test occursin(r"PompObject with 27 observations over year",sprint(show,P))
     @test :X ∈ paramsymbs(P)
 

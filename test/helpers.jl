@@ -18,7 +18,7 @@ using Test
     Q = simulate(P,params=[theta;theta],nsim=3);
     @test times(P) isa Vector{<:Real}
     @test size(times(P))==(21,)
-    @test init_state(P) isa Nothing
+    @test init_state(P) isa NamedTuple
     @test init_state(Q[1]) isa NamedTuple
     @test init_state(Q) isa Array{<:NamedTuple,2}
     @test size(init_state(Q))==(2,3)
