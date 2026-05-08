@@ -135,22 +135,6 @@ P |>
         ]
     );
 
-    d1 = melt(Q,:parset,:rep);
-
-    R"""
-library(tidyverse,warn.conflicts=FALSE)
-$d1 |>
-  select(-parset) |>
-  pivot_longer(-c(rep,time)) |>
-  ggplot(aes(x=time,y=value,group=rep,color=factor(rep)))+
-  geom_line()+
-  guides(color="none")+
-  facet_wrap(~name,scales="free_y")+
-  theme_bw()
-"""
-
-    R"""ggsave(filename="sir-01.png",width=7,height=4)"""
-
     @rget dat
     P = pomp(
         dat,
@@ -171,20 +155,5 @@ $d1 |>
     Pf = pfilter(Pf,Np=1000);
     @info h2("POMP.jl likelihood estimate (SIR): $(round(Pf.logLik,digits=2))")
     @test abs(Pf.logLik-ll) < 1.0
-
-    d2 = melt(Pf)
-
-    R"""
-library(tidyverse,warn.conflicts=FALSE)
-$d2 |>
-  pivot_longer(-time) |>
-  ggplot(aes(x=time,y=value))+
-  geom_line()+
-  guides(color="none")+
-  facet_wrap(~name,scales="free_y",ncol=1)+
-  theme_bw()
-"""
-
-    R"""ggsave(filename="sir-02.png",width=7,height=4)"""
 
 end
