@@ -6,7 +6,7 @@ makedocs(
     sitename = "PartiallyObservedMarkovProcesses.jl",
     modules  = [
         PartiallyObservedMarkovProcesses,
-        PartiallyObservedMarkovProcesses.Examples
+        PartiallyObservedMarkovProcesses.Examples,
     ],
     repo = Remotes.GitHub("kingaa","PartiallyObservedMarkovProcesses.jl"),
     format = Documenter.HTML(
@@ -14,7 +14,7 @@ makedocs(
         size_threshold = 600 * 2^10,
         size_threshold_warn = 500 * 2^10, # 600 KiB
         canonical="https://github.com/kingaa/PartiallyObservedMarkovProcesses.jl/",
-        edit_link="master",
+        edit_link=nothing,
     ),
     pages=[
         "Home" => "index.md",
