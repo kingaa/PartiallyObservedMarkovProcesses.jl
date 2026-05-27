@@ -321,8 +321,13 @@ pretty_string(object::PompObject) = begin
         times(object),
         init=(timezero(object),timezero(object))
     )
-    " with $(length(obs(object))) observations" *
-        " over $(object.timevar) ∈ $time_interval"
+    if isnothing(obs(object))
+        " with zero observations" *
+            " over $(object.timevar) ∈ $time_interval"
+    else
+        " with $(length(obs(object))) observations" *
+            " over $(object.timevar) ∈ $time_interval"
+    end
 end
 
 argnames(m::Method) = Base.rest(Base.method_argnames(m),2)
