@@ -18,6 +18,10 @@ end
 
 pomp(object::PfilterdPompObject) = object.pompobj
 
+logLik(object::PfilterdPompObject) = object.logLik
+eff_sample_size(object::PfilterdPompObject) = object.eff_sample_size
+cond_logLik(object::PfilterdPompObject) = object.cond_logLik
+
 
 """
     pfilter(object; Np = 1, params, rinit, rprocess, logmeasure, args...)

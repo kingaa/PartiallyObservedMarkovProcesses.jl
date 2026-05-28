@@ -46,6 +46,6 @@ $(melt(P)) |>
     Pf = pfilter(P,Np=1000)
     @test Pf isa POMP.PfilterdPompObject
     @btime pfilter($P,Np=1000)
-    @info h2("POMP.jl likelihood estimate (stoch Rosenzweig-MacArthur): $(round(Pf.logLik,digits=2))")
+    @info h2("POMP.jl likelihood estimate (stoch Rosenzweig-MacArthur): $(round(logLik(Pf),digits=2))")
 
 end

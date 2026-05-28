@@ -43,7 +43,7 @@ include("logdprior.jl")
 export simulate, simulate_array
 include("simulate.jl")
 
-export pfilter
+export pfilter, logLik, eff_sample_size, cond_logLik
 include("pfilter.jl")
 
 export melt

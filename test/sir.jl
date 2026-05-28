@@ -153,7 +153,7 @@ P |>
     @btime pfilter($P,Np=1000,params=$theta);
 
     Pf = pfilter(Pf,Np=1000);
-    @info h2("POMP.jl likelihood estimate (SIR): $(round(Pf.logLik,digits=2))")
-    @test abs(Pf.logLik-ll) < 1.0
+    @info h2("POMP.jl likelihood estimate (SIR): $(round(logLik(Pf),digits=2))")
+    @test abs(logLik(Pf)-ll) < 1.0
 
 end

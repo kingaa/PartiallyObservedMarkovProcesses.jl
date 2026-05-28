@@ -82,10 +82,10 @@ using BenchmarkTools
 
     P = pomp(P;logdmeasure=function (;_...) -Inf end)
     Q = pfilter(P,Np=100,params=p1)
-    @test isinf(Q.logLik)
-    @test all(Q.eff_sample_size.==0)
-    @test all(Q.eff_sample_size.==0)
-    @test all(isinf.(Q.cond_logLik))
+    @test isinf(logLik(Q))
+    @test all(eff_sample_size(Q).==0)
+    @test all(eff_sample_size(Q).==0)
+    @test all(isinf.(cond_logLik(Q)))
     @test Q.filt==Q.pred
 
 end

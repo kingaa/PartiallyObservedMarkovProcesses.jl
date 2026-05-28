@@ -99,5 +99,5 @@ P = pomp(
 @btime pfilter($P,params=$theta,Np=10000)
 Pf = pfilter(P,params=theta,Np=10000)
 
-@info h2("POMP.jl likelihood estimate (Gompertz): $(round(Pf.logLik,digits=2))")
-@test abs(Pf.logLik-ll) < 1.0
+@info h2("POMP.jl likelihood estimate (Gompertz): $(round(logLik(Pf),digits=2))")
+@test abs(logLik(Pf)-ll) < 1.0
