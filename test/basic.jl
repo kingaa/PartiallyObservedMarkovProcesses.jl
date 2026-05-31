@@ -20,7 +20,8 @@ using Test
     @test timezero(P)==0
     @test times(P) isa Vector{<:Real}
     @test length(times(P))==21
-    @test isnothing(obs(P))
+    @test length(obs(P))==21
+    @test all(==((;)).(obs(P)))
     @test isnothing(states(P))
 
     p1 = (a=1.0,k=7.0,x0=5.0);

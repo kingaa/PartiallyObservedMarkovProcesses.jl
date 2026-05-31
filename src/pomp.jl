@@ -20,7 +20,7 @@ struct PompObject{
     T <: Time,
     X <: NamedTuple,
     A <: Union{<:NamedTuple,Nothing},
-    Y <: Union{Vector{<:NamedTuple},Nothing},
+    Y <: Union{Vector{<:NamedTuple}},
     F <: Union{PompPlugin,Nothing},
     P <: NamedTuple,
     U <: NamedTuple,
@@ -60,6 +60,9 @@ struct PompObject{
         init_state = repair(init_state)
         params = repair(params)
         userdata = repair(userdata)
+        if isnothing(obs)
+            obs = fill((;),length(times))
+        end
         new{
             typeof(t0),
             typeof(init_state),
@@ -321,13 +324,8 @@ pretty_string(object::PompObject) = begin
         times(object),
         init=(timezero(object),timezero(object))
     )
-    if isnothing(obs(object))
-        " with zero observations" *
-            " over $(object.timevar) ∈ $time_interval"
-    else
-        " with $(length(obs(object))) observations" *
-            " over $(object.timevar) ∈ $time_interval"
-    end
+    " with $(length(obs(object))) observations" *
+        " over $(object.timevar) ∈ $time_interval"
 end
 
 argnames(m::Method) = Base.rest(Base.method_argnames(m),2)

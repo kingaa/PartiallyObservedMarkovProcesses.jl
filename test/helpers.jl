@@ -22,7 +22,7 @@ using Test
     @test init_state(Q[1]) isa NamedTuple
     @test init_state(Q) isa Array{<:NamedTuple,2}
     @test size(init_state(Q))==(2,3)
-    @test obs(P) isa Nothing
+    @test obs(P) isa Vector{@NamedTuple{}}
     @test obs(Q[1]) isa Array{<:NamedTuple,1}
     @test size(obs(Q[1]))==(21,)
     @test obs(Q) isa Array{<:NamedTuple,3}
