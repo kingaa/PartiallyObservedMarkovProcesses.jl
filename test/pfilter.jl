@@ -80,12 +80,19 @@ using BenchmarkTools
     @test size(d)==(21,4)
     @test propertynames(d)==[:time; :y; :ess; :cond_logLik]
 
-    P = pomp(P;logdmeasure=function (;_...) -Inf end)
-    Q = pfilter(P,Np=100,params=p1)
-    @test isinf(logLik(Q))
-    @test all(eff_sample_size(Q).==0)
-    @test all(eff_sample_size(Q).==0)
-    @test all(isinf.(cond_logLik(Q)))
-    @test Q.filt==Q.pred
+    P1 = pomp(P;logdmeasure=function (;_...) -Inf end)
+    Q1 = pfilter(P1,Np=100,params=p1)
+    @test isinf(logLik(Q1))
+    @test all(eff_sample_size(Q1).==0)
+    @test all(eff_sample_size(Q1).==0)
+    @test all(isinf.(cond_logLik(Q1)))
+    @test Q1.filt==Q1.pred
+
+    Q2 = [pfilter(Q,Np=100) for _ ∈ 1:5]
+    @test logmeanexp(logLik.(Q2)) isa Float64
+    @test logmeanexp(logLik.(Q2),se=true) isa @NamedTuple{est::Float64,se::Float64}
+    @test logmeanexp(logLik.(Q2),ess=true) isa @NamedTuple{est::Float64,ess::Float64}
+    @test logmeanexp(logLik.(Q2),ess=true,se=true) isa @NamedTuple{est::Float64,se::Float64,ess::Float64}
+    @test logmeanexp(logLik.(Q2)) > mean(logLik.(Q2))
 
 end

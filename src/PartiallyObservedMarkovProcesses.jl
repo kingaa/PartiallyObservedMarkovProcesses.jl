@@ -49,6 +49,9 @@ include("pfilter.jl")
 export melt
 include("melt.jl")
 
+export logmeanexp
+include("logmeanexp.jl")
+
 include("reshape.jl")
 
 # submodule Examples

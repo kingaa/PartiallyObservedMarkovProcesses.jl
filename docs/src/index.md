@@ -87,6 +87,7 @@ init_state
 times
 timezero
 melt
+logmeanexp
 ```
 
 ## Examples
