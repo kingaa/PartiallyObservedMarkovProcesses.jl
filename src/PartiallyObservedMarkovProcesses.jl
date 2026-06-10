@@ -46,6 +46,9 @@ include("simulate.jl")
 export pfilter, logLik, eff_sample_size, cond_logLik
 include("pfilter.jl")
 
+export traj_match_objfun
+include("trajmatch.jl")
+
 export melt
 include("melt.jl")
 

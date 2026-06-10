@@ -62,10 +62,10 @@ drmca = function(
     )
     simulate(
         params=(
-            ;r = r, K = K, A = A,
-            b = b, c = c, m = m,
-            N0 = N0, P0 = P0,
-            σ = σ
+            ;r = Float64(r), K = Float64(K), A = Float64(A),
+            b = Float64(b), c = Float64(c), m = Float64(m),
+            N0 = Float64(N0), P0 = Float64(P0),
+            σ = Float64(σ)
         ),
         t0=t0,
         times=times,
