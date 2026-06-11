@@ -17,6 +17,7 @@ h2 = s -> crayon"!bold light_yellow"("- "*s)
     include("rmca.jl")
     include("drmca.jl")
     include("flow.jl")
+    include("trajmatch.jl")
     include("pfilter.jl")
     include("speed1.jl")
 end

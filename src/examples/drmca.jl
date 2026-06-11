@@ -84,7 +84,7 @@ drmca = function(
                 dP = b*mu[3]-mu[4]
                 [dN/N, dP/P]
             end,
-            integrator
+            integrator,
         ),
         rmeasure = function (;X,Y,σ,_...)
             (
