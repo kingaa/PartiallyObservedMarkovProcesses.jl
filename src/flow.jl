@@ -1,5 +1,12 @@
-using SciMLBase
+import SciMLBase: successful_retcode, NoSpecialize
 import OrdinaryDiffEq: ODEProblem, solve
+
+struct FailedIntegrationException <: Exception
+    retcode
+end
+
+Base.show(io::IO, e::FailedIntegrationException) =
+    print(io,"unsuccessful vectorfield integration: retcode = $(e.retcode)")
 
 struct VectorfieldPlugin{F<:Function, G<:Function} <: PompPlugin
     integrator::F
@@ -11,7 +18,6 @@ end
 paramsymbs(f::VectorfieldPlugin) = begin
     setdiff(paramsymbs(f.vf),[:t,f.statenames...])
 end
-
 
 """
     vectorfield(vf, integration_alg; integrator_args...)
@@ -40,12 +46,16 @@ vectorfield(
     ) where {T<:RealTime,X<:NamedTuple,P<:NamedTuple} = begin
         tspan = extrema(t)
         ic = [x0[statenames]...]
-        prob = ODEProblem{true,SciMLBase.NoSpecialize}(
+        prob = ODEProblem{true,NoSpecialize}(
             vf_eval!,
             ic,tspan,params
         )
         sol = solve(prob,integration_alg;integrator_args...)
-        x[:] = mapslices(v->(;zip(statenames,v)...),sol(t),dims=1)
+        if successful_retcode(sol)
+            x[:] = mapslices(v->(;zip(statenames,v)...),sol(t),dims=1)
+        else
+            throw(FailedIntegrationException(sol.retcode))
+        end
     end
     VectorfieldPlugin(integrator!,vf,vf_eval!,statenames)
 end

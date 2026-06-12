@@ -11,6 +11,9 @@ needed. `args...` can be used to modify or unset additional fields.
 
 The returned function takes as input a vector or tuple of length equal to that
 of `estimvars`. This vector is associated, element-for-element, with the symbols in `estimvars`. By default, `estimvars = keys(coef(object))`.
+
+Note that most errors that arise in the integration of the vectorfield will be
+trapped, with a warning. The objective function takes values Inf in this case.
 """
 traj_match_objfun(
     object::ValidPompData,
@@ -46,13 +49,22 @@ traj_match_internal(
 ) where N = begin
     @assert length(theta)==length(estimvars) "incorrect argument length: should be $(length(estimvars))"
     params = merge(coef(object),(;zip(estimvars,theta)...))
-    x = simulate_array(object,params=params,nsim=1)
-    ll = sum(logdmeasure(object,x=x,params=params))
-    reg = sum(logdprior(object,params=params))
-    retval = -ll-reg
-    if isfinite(retval)
-        retval
-    else
+    try
+        x = simulate_array(object,params=params,nsim=1)
+        ll = sum(logdmeasure(object,x=x,params=params))
+        reg = sum(logdprior(object,params=params))
+        retval = -ll-reg
+        if isfinite(retval)
+            retval
+        else
+            LogLik(Inf)
+        end
+    catch e
+        if e isa FailedIntegrationException
+            @warn("in `traj_match_objfun`: $e")
+        else
+            throw(e)
+        end
         LogLik(Inf)
     end
 end

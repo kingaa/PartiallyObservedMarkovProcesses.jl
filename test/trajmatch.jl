@@ -1,6 +1,7 @@
 using PartiallyObservedMarkovProcesses
 using PartiallyObservedMarkovProcesses.Examples
 import PartiallyObservedMarkovProcesses as POMP
+import OrdinaryDiffEqLowOrderRK: Euler
 using Test
 using Random: seed!
 
@@ -23,7 +24,7 @@ using Random: seed!
     )
     @test f1 isa Function
     @test round(f1(coef(P)),sigdigits=5)==4620.3
-    @test_throws "no method matching" f1()
+    @test_throws MethodError f1()
     @test_throws "incorrect argument length" f1([coef(P,:r,:K)...])
 
     f2 = traj_match_objfun(
@@ -54,5 +55,16 @@ using Random: seed!
         end
     )
     @test f4([1.0, 2.0])==Inf
+
+    f5 = traj_match_objfun(P,(:N0,:P0,:K,:A,:σ))
+    @test_throws DomainError f5([-100.0, 2.0, 100, 0.0, 1.0])
+    @test_throws MethodError f5(["a", 2.0, 100, 0.0, 1.0])
+    @test @test_logs (:warn,r"unsuccessful vectorfield") match_mode=:any f5([ 100.0, 2.0, 100, 0.0, -1.0])==Inf
+
+    f6 = traj_match_objfun(
+        P, (:r,:K),
+        rprocess=vectorfield(P.rprocess.vf,Euler(),dt=1)
+    )
+    @test @test_logs (:warn,r"instability") (:warn,r"unsuccessful vectorfield") f6([100.0,0.1])==Inf
 
 end
