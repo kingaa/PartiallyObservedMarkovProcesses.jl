@@ -22,6 +22,7 @@ traj_match_objfun(
     rprocess::Union{VectorfieldPlugin,Nothing,Missing} = missing,
     logdmeasure::Union{Function,Nothing,Missing} = missing,
     logdprior::Union{Function,Nothing,Missing} = missing,
+    blacklist::Type = Nothing,
     args...,
 ) where N = begin
     object = pomp(
@@ -36,17 +37,13 @@ traj_match_objfun(
         estimvars = keys(coef(object))
     end
     function(theta)
-        traj_match_internal(theta,estimvars,object)
+        traj_match_internal(theta,estimvars,object,blacklist)
     end
 end
 
 traj_match_objfun(_...) = error("Incorrect call to `traj_match_objfun`.")
 
-traj_match_internal(
-    theta,
-    estimvars::Union{NTuple{N,Symbol},Vector{Symbol}},
-    object::AbstractPompObject,
-) where N = begin
+traj_match_internal(theta, estimvars, object, blacklist,) = begin
     @assert length(theta)==length(estimvars) "incorrect argument length: should be $(length(estimvars))"
     params = merge(coef(object),(;zip(estimvars,theta)...))
     try
@@ -61,9 +58,13 @@ traj_match_internal(
         end
     catch e
         if e isa FailedIntegrationException
-            @warn("in `traj_match_objfun`: $e")
-        else
+            @warn("in trajectory matching: $e")
+        elseif typeof(e) isa blacklist
             throw(e)
+        elseif parentmodule(typeof(e)) ∈ (Base,Core)
+            throw(e)
+        else
+            @warn("in trajectory matching: caught exception $e")
         end
         LogLik(Inf)
     end

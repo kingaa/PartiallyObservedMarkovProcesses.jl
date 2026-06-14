@@ -46,7 +46,7 @@ using Random: seed!
             (n=exp(X),p=exp(Y),)
         end
     )
-    @test_throws r"keyword argument .* not assigned" f3([1.0, 10000.0])
+    @test_throws UndefKeywordError f3([1.0, 10000.0])
 
     f4 = traj_match_objfun(
         P,(:r,:σ),
