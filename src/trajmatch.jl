@@ -1,19 +1,29 @@
 """
     traj_match_objfun(object, estimvars; rinit, rprocess,
-        logdmeasure, logdprior, args...)
+        logdmeasure, logdprior, bigvalue = Inf, whitelist,
+        kwargs...)
 
 Returns a function that compares a model trajectory with the data,
 returning minus the sum of the log likelihood and log prior density.
-Trajectory matching consists of the minimization of such an objective function.
-At least the `rinit`, `rprocess`, and `logdmeasure` basic components are
-needed. `args...` can be used to modify or unset additional fields.
-`rprocess` must be a `VectorfieldPlugin` (i.e., constructed via a call to [`vectorfield`](@ref)).
+Trajectory matching consists of the minimization of such an objective
+function.  At least the `rinit`, `rprocess`, and `logdmeasure` basic
+components are needed. `kwargs...` can be used to modify or unset
+these fields.  `rprocess` must be a `VectorfieldPlugin` (i.e.,
+constructed via a call to [`vectorfield`](@ref)).
 
-The returned function takes as input a vector or tuple of length equal to that
-of `estimvars`. This vector is associated, element-for-element, with the symbols in `estimvars`. By default, `estimvars = keys(coef(object))`.
+The returned function takes as input a vector or tuple of length equal
+to that of `estimvars`. This vector is associated,
+element-for-element, with the symbols in `estimvars`. By default,
+`estimvars = keys(coef(object))`.
 
-Note that most errors that arise in the integration of the vectorfield will be
-trapped, with a warning. The objective function takes values Inf in this case.
+Note that failure of the integrator (signaled via an unsuccessful
+`retcode`) will result in an objective-function value of `bigvalue`
+and a warning message. Depending on the nature of the objective
+function, and on the integration algorithm, additional exceptions may
+arise. In some cases, one may wish to trap these and return an
+objective-function value of `bigvalue`. The `whitelist` argument
+specifies an exception type (or `Union` of exception types) that
+should be handled in this way.
 """
 traj_match_objfun(
     object::ValidPompData,
@@ -22,8 +32,9 @@ traj_match_objfun(
     rprocess::Union{VectorfieldPlugin,Nothing,Missing} = missing,
     logdmeasure::Union{Function,Nothing,Missing} = missing,
     logdprior::Union{Function,Nothing,Missing} = missing,
-    blacklist::Type = Nothing,
-    args...,
+    whitelist::Type = Nothing,
+    bigvalue::AbstractFloat = Inf,
+    kwargs...,
 ) where N = begin
     object = pomp(
         object;
@@ -31,19 +42,19 @@ traj_match_objfun(
         rprocess=rprocess,
         logdmeasure=logdmeasure,
         logdprior=logdprior,
-        args...,
+        kwargs...,
     )
     if ismissing(estimvars)
         estimvars = keys(coef(object))
     end
     function(theta)
-        traj_match_internal(theta,estimvars,object,blacklist)
+        traj_match_internal(theta,estimvars,object,LogLik(bigvalue),whitelist,)
     end
 end
 
 traj_match_objfun(_...) = error("Incorrect call to `traj_match_objfun`.")
 
-traj_match_internal(theta, estimvars, object, blacklist,) = begin
+traj_match_internal(theta, estimvars, object, bigvalue, whitelist,) = begin
     @assert length(theta)==length(estimvars) "incorrect argument length: should be $(length(estimvars))"
     params = merge(coef(object),(;zip(estimvars,theta)...))
     try
@@ -54,18 +65,16 @@ traj_match_internal(theta, estimvars, object, blacklist,) = begin
         if isfinite(retval)
             retval
         else
-            LogLik(Inf)
+            bigvalue
         end
     catch e
         if e isa FailedIntegrationException
             @warn("in trajectory matching: $e")
-        elseif typeof(e) isa blacklist
-            throw(e)
-        elseif parentmodule(typeof(e)) ∈ (Base,Core)
-            throw(e)
+        elseif e isa whitelist
+            @warn("in trajectory matching: whitelisted error: $e")
         else
-            @warn("in trajectory matching: caught exception $e")
+            throw(e)
         end
-        LogLik(Inf)
+        bigvalue
     end
 end

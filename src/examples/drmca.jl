@@ -46,6 +46,7 @@ Specifically, the model is the classical Rosenzweig-MacArthur model
 \\frac{dP}{dt} &= \\frac{b c N P}{1+N/A} - m P \\\\
 \\end{aligned}
 ```
+There is also a stochastic version of this model available as an example (see [`rmca`](@ref)).
 
 In this system, the predator is inviable unless ``R = \\frac{bcA}{m} > 1``.
 Even if the predator is viable, the environment is too impoverished to support predators unless ``R>1+\\frac{A}{K}``.

@@ -1,5 +1,6 @@
 """
-    rprocess(object; x0, t0 = timezero(object), times=times(object), params = coef(object))
+    rprocess(object; x0, t0 = timezero(object), times=times(object),
+             params = coef(object))
 
 `rprocess` is the workhorse for the simulator of the process
 
@@ -21,7 +22,9 @@ rprocess(
 end
 
 """
-    rprocess!(object, x; x0 = init_state(object), t0 = timezero(object), times=times(object), params = coef(object))
+    rprocess!(object, x; x0 = init_state(object),
+              t0 = timezero(object), times=times(object),
+              params = coef(object))
 
 `rprocess!` is the in-place version of the `rprocess` workhorse.
 """

@@ -24,11 +24,11 @@ cond_logLik(object::PfilterdPompObject) = object.cond_logLik
 
 
 """
-    pfilter(object; Np = 1, params, rinit, rprocess, logmeasure, args...)
+    pfilter(object; Np = 1, params, rinit, rprocess, logmeasure, kwargs...)
 
 `pfilter` runs a basic particle filter.
 At least the `rinit`, `rprocess`, and `logdmeasure` basic components are needed.
-`args...` can be used to modify or unset additional fields.
+`kwargs...` can be used to modify or unset additional fields.
 """
 pfilter(
     object::ValidPompData;
@@ -37,7 +37,7 @@ pfilter(
     rinit::Union{Function,Nothing,Missing} = missing,
     rprocess::Union{PompPlugin,Nothing,Missing} = missing,
     logdmeasure::Union{Function,Nothing,Missing} = missing,
-    args...,
+    kwargs...,
 ) where {P<:NamedTuple} = begin
     object = pomp(
         object;
@@ -45,7 +45,7 @@ pfilter(
         rinit=rinit,
         rprocess=rprocess,
         logdmeasure=logdmeasure,
-        args...,
+        kwargs...,
     )
     t0 = timezero(object)
     t = times(object)
@@ -82,7 +82,7 @@ pfilter(
 end
 
 """
-    pfilter(object; Np = object.Np, args...)
+    pfilter(object; Np = object.Np, kwargs...)
 
 Running `pfilter` on a `PfilterdPompObject` re-runs the particle filter.
 One can adjust the parameters, number of particles (`Np`), or pomp model components.
@@ -90,9 +90,9 @@ One can adjust the parameters, number of particles (`Np`), or pomp model compone
 pfilter(
     object::PfilterdPompObject;
     Np::Integer = object.Np,
-    args...,
+    kwargs...,
 ) =
-    pfilter(pomp(object;args...);Np=Np)
+    pfilter(pomp(object;kwargs...);Np=Np)
 
 pfilter(_...) = error("Incorrect call to `pfilter`.")
 

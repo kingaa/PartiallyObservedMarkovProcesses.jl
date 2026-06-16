@@ -2,7 +2,8 @@
     logdmeasure(object; times=times(object), y=obs(object),
                 x=states(object), params=coef(object))
 
-`logdmeasure` is the workhorse for the evaluator of the log measurement density.
+`logdmeasure` is the workhorse for the evaluator of the log
+measurement density.
 """
 logdmeasure(
     object::AbstractPompObject;
@@ -21,10 +22,12 @@ logdmeasure(
 end
 
 """
-    logdmeasure!(object, ell; times=times(object), y=obs(object), x=states(object), params=coef(object))
+    logdmeasure!(object, ell; times=times(object), y=obs(object),
+                 x=states(object), params=coef(object))
 
 `logdmeasure!` is the in-place version of the `logdmeasure` workhorse.
-If no `logdmeasure` component has been specified, this returns 0 for all inputs.
+If no `logdmeasure` component has been specified, this returns 0 for
+all inputs.
 """
 logdmeasure!(
     object::AbstractPompObject,

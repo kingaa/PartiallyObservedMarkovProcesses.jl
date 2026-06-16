@@ -67,4 +67,14 @@ using Random: seed!
     )
     @test @test_logs (:warn,r"instability") (:warn,r"unsuccessful vectorfield") f6([100.0,0.1])==Inf
 
+    f7 = traj_match_objfun(
+        P,(:r,:σ),
+        rmeasure=function(;X,Y,_...)
+            error("this is a test, this is only a test")
+            (n=0.0,p=exp(Y),)
+        end,
+        whitelist=Union{ErrorException}
+    )
+    @test @test_logs (:warn,r"whitelisted error") f7([100.0,0.1])==Inf
+
 end

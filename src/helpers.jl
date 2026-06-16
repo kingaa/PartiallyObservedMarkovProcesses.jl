@@ -37,7 +37,7 @@ states(object::AbstractPompObject) = pomp(object).states
 states(object::AbstractArray{<:AbstractPompObject}) = stack(states.(object))
 
 """
-    coef(object,names...)
+    coef(object, names...)
 
 `coef` extracts the parameters stored in an *AbstractPompObject* or array thereof.
 """

@@ -63,19 +63,13 @@ p &\\sim \\mathrm{LogNormal}(\\log{P},\\sigma) \\\\
 \\end{aligned}
 ```
 
-Note that, in the limit ``V\\to\\infty``, the Itô diffusion becomes the ordinary differential equation
+Note that, in the limit ``V\\to\\infty``, the Itô diffusion becomes the classical Rosenzweig-MacArthur ordinary differential equation model (see [`drmca`](@ref)):
 ```math
 \\begin{aligned}
 \\frac{dN}{dt} &= r N \\left(1-\\frac{N}{K}\\right) - \\frac{c N P}{1+N/A} \\\\
 \\frac{dP}{dt} &= \\frac{b c N P}{1+N/A} - m P \\\\
 \\end{aligned}
 ```
-which is the classical Rosenzweig-MacArthur model.
-
-In this system, the predator is inviable unless ``R = \\frac{bcA}{m} > 1``.
-Even if the predator is viable, the environment is too impoverished to support predators unless ``R>1+\\frac{A}{K}``.
-If the environment is rich enough, and if moreover ``R>\\frac{1+\\frac{A}{K}}{1-\\frac{A}{K}}``, then the nontrivial equilibrium of the system is unstable.
-For the default parameters, we have ``R = 1.25`` and ``\\frac{A}{K} = 0.1``, so the latter condition holds.
 """
 rmca = function(
     ;r = 1, K = 1e4, A = 1e3,

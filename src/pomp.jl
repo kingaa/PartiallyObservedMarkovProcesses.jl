@@ -3,8 +3,8 @@ using DataFrames: AbstractDataFrame, Not, select, eachrow
 """
     AbstractPompObject
 
-An `AbstractPompObject` must, at a minimum, have a method for `pomp()` defined.
-This should return a proper [`PompObject`](@ref).
+An `AbstractPompObject` must, at a minimum, have a method for `pomp()`
+defined.  This should return a proper [`PompObject`](@ref).
 """
 abstract type AbstractPompObject end
 
@@ -13,8 +13,8 @@ abstract type PompPlugin end
 """
     PompObject
 
-This is the basic data structure for the package.
-It contains data and model components.
+This is the basic data structure for the package.  It contains data
+and model components.
 """
 struct PompObject{
     T <: Time,
@@ -165,7 +165,8 @@ end
 repair(x::NamedTuple) = x
 repair(x::Nothing) = (;)
 
-## The following type is valid for the `object` in a call to most package functions.
+## The following type is valid for the `object` in a call to most
+## package functions.
 ValidPompData = Union{
     Nothing,
     Vector{<:NamedTuple},
@@ -193,28 +194,38 @@ ValidPompData = Union{
   The default constructor takes a vector of NamedTuples as data.
   One can also supply an AbstractDataFrame.
 - `t0`: zero time, t₀.
-- `times`: observation times. If `data` is supplied as a DataFrame (or AbstractDataFrame), `times` should be a Symbol which denotes the time variable in the DfataFrame. NB: the types of `times` and `t0` must match, or an error will be generated.
+- `times`: observation times. If `data` is supplied as a DataFrame
+  (or AbstractDataFrame), `times` should be a Symbol which denotes the
+  time variable in the DfataFrame. NB: the types of `times` and `t0` must
+  match, or an error will be generated.
 - `timevar`: optional symbol.  Name of the time variable.
 - `params`: parameters. A NamedTuple or vector of NamedTuples.
-- `accumvars`: a NamedTuple of state variables to be reset (usually to zero) immediately before each simulation stage.
-- `rinit`: simulator of the latent-state distribution at t₀.
-  This component should be a function that takes parameters and, optionally, `t0`, the initial time.
+- `accumvars`: a NamedTuple of state variables to be reset (usually to zero)
+  immediately before each simulation stage.
+- `rinit`: simulator of the latent-state distribution at `t0`.
+  This component should be a function that takes parameters and, optionally,
+  `t0`, the initial time.
   It should return a NamedTuple of state variables.
 - `rprocess`: simulator of the latent-state process.
-  This component should be a plugin (see [`euler`](@ref), [`onestep`](@ref), and [`discrete_time`](@ref)).
+  This component should be a plugin (see [`euler`](@ref), [`onestep`](@ref),
+  [`discrete_time`](@ref), and [`vectorfield`](@ref)).
 - `rmeasure`: simulator of the measurement process.
-  This component should be a function that takes states, parameters, and, optionally, `t`, the current time.
+  This component should be a function that takes states, parameters, and,
+  optionally, `t`, the current time.
   It should return a NamedTuple of observable variables.
 - `logdmeasure`: log pdf of the measurement process.
-  This component should be a function that takes data, states, parameters, and, optionally, `t`, the current time.
+  This component should be a function that takes data, states, parameters,
+  and, optionally, `t`, the current time.
   It should return a scalar.
 - `rprior`: simulator of the prior distribution on parameters.
-  This component should be a function that takes parameters and returns a NamedTuple of parameters.
+  This component should be a function that takes parameters and returns a
+  NamedTuple of parameters.
   It should return a NamedTuple of parameters.
 - `logdprior`: log pdf of the prior distribution on parameters.
   This component should be a function that takes parameters.
   It should return a scalar.
-- `userdata`: an optional NamedTuple containing elements that will be furnished to each of the basic model components.
+- `userdata`: an optional NamedTuple containing elements that will be
+  furnished to each of the basic model components.
 """
 pomp(
     data::Union{Vector{Y},Nothing} = nothing;
@@ -265,27 +276,23 @@ pomp(
     data::AbstractDataFrame;
     t0::T,
     times::Symbol,
-    args...,
+    kwargs...,
 ) where {T<:Time} = begin
     time = getproperty(data,times)::AbstractVector{T}
     data = NamedTuple.(eachrow(select(data,Not(times))))
-    pomp(data;t0=t0,times=time,timevar=times,args...)
+    pomp(data;t0=t0,times=time,timevar=times,kwargs...)
 end
 
-"""
-Given an *AbstractPompObject*, `object`,
-`pomp(object)` returns the underlying concrete *PompObject*.
-Calling `pomp(object; args...)` returns a copy of `object`, modified
-according to the keyword arguments `args...`.
-"""
 pomp(object::PompObject) = object
 
 """
-    pomp(object::AbstractPompObject; params=missing, accumvars=missing, rinit=missing, rprocess=missing, rmeasure=missing, logdmeasure=missing)
+    pomp(object::AbstractPompObject; params=missing, accumvars=missing,
+         rinit=missing, rprocess=missing, rmeasure=missing,
+         logdmeasure=missing)
 
-This form returns a modified version of `object`.
-Individual basic components can be modified or removed.
-The default is to leave them unchanged.
+This form returns a modified version of `object`.  Individual basic
+components can be modified or removed.  The default is to leave them
+unchanged.
 """
 pomp(
     object::AbstractPompObject;
@@ -338,9 +345,9 @@ end
 """
     paramsymbs(object)
 
-Attempt to determine the names of parameters.
-Return the result as a `Vector{Symbol}`.
-If `object` is an `AbstractPompObject` without `states`, this function may mistakenly include state variables.
+Attempt to determine the names of parameters.  Return the result as a
+`Vector{Symbol}`.  If `object` is an `AbstractPompObject` without
+`states`, this function may mistakenly include state variables.
 """
 paramsymbs(m::Method) = Base.kwarg_decl(m)
 paramsymbs(f::Function) = begin
