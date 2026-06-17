@@ -1,6 +1,7 @@
 module PartiallyObservedMarkovProcesses
 
 import PartiallyObservedMarkovProcesses as POMP
+using Reexport: @reexport
 
 ## Time is the (abstract) type for times.
 const Time = Union{Int64,Float64}
@@ -15,6 +16,11 @@ include("pomp.jl")
 
 export times, timezero, obs, init_state, states, coef
 include("helpers.jl")
+
+@reexport using Random
+@reexport using Serialization: serialize, deserialize
+export @bake, @freeze
+include("bake.jl")
 
 export rinit, rinit!
 include("rinit.jl")

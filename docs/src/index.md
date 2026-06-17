@@ -10,6 +10,7 @@ The package is a Julia implementation of the [pomp package for R](https://kingaa
 - [Trajectory matching](@ref)
 - [Workhorses](@ref) (low-level interface to basic model components)
 - [Helper functions](@ref)
+- [Reproducibility tools](@ref)
 
 ## Function Documentation
 
@@ -90,4 +91,11 @@ times
 timezero
 melt
 logmeanexp
+```
+
+### Reproducibility tools
+
+```@docs
+@freeze
+@bake
 ```
