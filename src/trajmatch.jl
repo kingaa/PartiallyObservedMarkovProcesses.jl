@@ -71,7 +71,7 @@ traj_match_internal(theta, estimvars, object, bigvalue, whitelist,) = begin
         if e isa FailedIntegrationException
             @warn("in trajectory matching: $e")
         elseif e isa whitelist
-            @warn("in trajectory matching: whitelisted error: $e")
+            @error("in trajectory matching: whitelisted error: $e")
         else
             throw(e)
         end

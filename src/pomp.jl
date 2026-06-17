@@ -234,6 +234,7 @@ pomp(
     timevar::Symbol = :time,
     params::Union{P,Nothing} = nothing,
     accumvars::Union{<:NamedTuple,Nothing} = nothing,
+    init_state::Union{<:NamedTuple,Nothing} = nothing,
     rinit::Union{Function,Nothing} = nothing,
     rprocess::Union{<:PompPlugin,Nothing} = nothing,
     rmeasure::Union{Function,Nothing} = nothing,
@@ -262,6 +263,7 @@ pomp(
         accumvars=accumvars,
         params=params,
         obs=data,
+        init_state=init_state,
         rinit=rinit,
         rprocess=rprocess,
         rmeasure=rmeasure,
@@ -299,6 +301,7 @@ pomp(
     params::Union{<:NamedTuple,Nothing,Missing} = missing,
     timevar::Union{Symbol,Missing} = missing,
     accumvars::Union{<:NamedTuple,Nothing,Missing} = missing,
+    init_state::Union{<:NamedTuple,Nothing,Missing} = missing,
     rinit::Union{Function,Nothing,Missing} = missing,
     rprocess::Union{PompPlugin,Nothing,Missing} = missing,
     rmeasure::Union{Function,Nothing,Missing} = missing,
@@ -319,7 +322,7 @@ pomp(
         rprior=rprior,
         logdprior=logdprior,
         userdata=userdata,
-        init_state=nothing,
+        init_state=init_state,
         states=nothing,
     )
 end

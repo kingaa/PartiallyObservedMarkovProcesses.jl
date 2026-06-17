@@ -2,7 +2,7 @@
     rprocess(object; x0, t0 = timezero(object), times=times(object),
              params = coef(object))
 
-`rprocess` is the workhorse for the simulator of the process
+`rprocess` is the workhorse for the simulator of the process.
 
 If there is no user-supplied *rprocess* component, the dynamics are trivial.
 """
@@ -26,7 +26,7 @@ end
               t0 = timezero(object), times=times(object),
               params = coef(object))
 
-`rprocess!` is the in-place version of the `rprocess` workhorse.
+`rprocess!` is the in-place version of the [`rprocess`](@ref) workhorse.
 """
 rprocess!(
     object::AbstractPompObject,

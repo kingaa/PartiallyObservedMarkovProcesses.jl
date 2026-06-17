@@ -75,6 +75,6 @@ using Random: seed!
         end,
         whitelist=Union{ErrorException}
     )
-    @test @test_logs (:warn,r"whitelisted error") f7([100.0,0.1])==Inf
+    @test @test_logs (:error,r"whitelisted error") f7([100.0,0.1])==Inf
 
 end

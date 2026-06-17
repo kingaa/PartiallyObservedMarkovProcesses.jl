@@ -28,6 +28,7 @@ gompertz = function()
         parus_data,
         t0=1960,
         times=:year,
+        init_state=(;X=zero(Float64)),
         rinit = function (;X0,_...)
             (;X=X0,)
         end,

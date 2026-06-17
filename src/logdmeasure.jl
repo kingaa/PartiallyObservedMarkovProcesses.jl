@@ -52,6 +52,7 @@ logdmeasure!(
         y, x, params,
         pomp(object).userdata
     )
+    nothing
 end
 
 # COV_EXCL_START  (to bypass bug in LocalCoverage.jl)
@@ -64,6 +65,7 @@ logdmeasure_internal!(
     for i ∈ eachindex(ell)
         @inbounds ell[i] = W(0)
     end
+    nothing
 end
 
 logdmeasure_internal!(
@@ -81,4 +83,5 @@ logdmeasure_internal!(
     for i ∈ eachindex(times), j ∈ eachindex(params), kx ∈ axes(x, 3), ky ∈ axes(y, 3)
         @inbounds ell[i, j, kx, ky] = W(f(; t=times[i], y[i, j, ky]..., x[i, j, kx]..., params[j]..., userdata...))
     end
+    nothing
 end
