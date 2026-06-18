@@ -22,20 +22,20 @@ and stores the result (and the digest) in `file`.
 macro bake(file, code)
     digest = hash(striplines(Meta.parse("$code")))
     expr = quote
-        reuse = false
+        local reuse = false
+        local result
         if isfile($file)
-            res = deserialize($file)
+            local res = deserialize($file)
             reuse = (res.digest == $digest)
             if !reuse
                 @warn "in `bake`: recomputing...."
             end
         end
         if reuse
-            result = res.result
+            result = res.result # COV_EXCL_LINE (false positive)
         else
             result = $code
-            res = (;result=result,digest=$digest)
-            serialize($file,res)
+            serialize($file,(;result=result,digest=$digest))
         end
         result
     end
@@ -51,9 +51,9 @@ state of `rng` to its original value.  By default `rng = Random.default_rng()`.
 """
 macro freeze(rng, seed, code)
     expr = quote
-        rng_state = copy($rng)
+        local rng_state = copy($rng)
         Random.seed!($rng,$seed)
-        result = $code
+        local result = $code
         copy!($rng,rng_state)
         result
     end
@@ -62,7 +62,7 @@ end
 
 macro freeze(seed, code)
     expr = quote
-        rng = Random.default_rng()
+        local rng = Random.default_rng()
         @freeze(rng,$seed,$code)
     end
     esc(expr)
