@@ -29,7 +29,7 @@ macro bake(dish, recipe)
             res = deserialize(file)
             reload = (res.digest == $digest)
             if !reload
-                @warn "in `bake`: recomputing $file."
+                @warn "in `bake`: recomputing '$file'."
             end
         end
         if reload
