@@ -1,11 +1,29 @@
 using PartiallyObservedMarkovProcesses
-import PartiallyObservedMarkovProcesses as POMP
 using Random: seed!, default_rng, Xoshiro
 using Test
 
 @info h1("testing reproducibility functions")
 
 @testset verbose=true "reproducibility" begin
+
+    tmpfile = tempname(suffix=".jlso")
+
+    @test_nowarn begin
+        x1 = nothing
+        x2 = nothing
+        result = nothing
+        res = nothing
+        y1 = @bake tmpfile x1 = rand(5)
+        @test x1==y1
+        @test isnothing(result)
+        @test isnothing(res)
+    end
+    y2 = @bake tmpfile x1 = rand(5)
+    @test x1==y2
+    @test y1==y2
+    y3 = @test_logs (:warn, r"recomputing") @bake tmpfile x2 = rand(5)
+    @test x2==y3
+    @test y1 != y3
 
     f(x) = x+11
     g(x) = 3*x*rand()
