@@ -1,3 +1,9 @@
+"""
+   val_array(x)
+
+Stop makin' a fool outta me!
+Why don'cha come on over...?
+"""
 val_array(x::Vector) = x
 
 val_array(x::Array{X,N}) where {X,N} = vec(x)
