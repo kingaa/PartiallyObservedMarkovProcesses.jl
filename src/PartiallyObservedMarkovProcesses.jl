@@ -63,6 +63,9 @@ include("logmeanexp.jl")
 
 include("reshape.jl")
 
+export EulerMultinomial, rand, rand!
+include("eulermultinomial.jl")
+
 # submodule Examples
 include("examples/Examples.jl")
 

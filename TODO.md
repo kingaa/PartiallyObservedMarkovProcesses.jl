@@ -1,8 +1,9 @@
 ## To-do List
 
-- remove all need for **RCall**
+- Euler multinomial
 - iterated filtering
 - weighted particle filter
+- remove all need for **RCall**
 - multiparameter particle filter? should be trivial from existing
 - potentially move `accumvars` to the rprocess plugin (closer to where it is used)
 - panel pfilter? may be trivial from existing (would need independent resampling)
