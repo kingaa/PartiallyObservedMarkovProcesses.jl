@@ -124,7 +124,8 @@ P |>
     );
     @test size(d)==(90,2,5)
     @test keys(d[1])==(:time,:reports,:S,:I,:R,:C)
-    @test_throws "invalid Array dimensions" simulate_array(P,nsim=-1)
+    @test_throws "should be positive" simulate_array(P,nsim=-1)
+    @test_throws "should be positive" simulate_array(P,nsim=0)
 
     @info h2("POMP.jl simulate_array times (SIR)")
     @btime simulate_array(

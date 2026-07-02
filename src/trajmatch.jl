@@ -73,7 +73,7 @@ traj_match_internal(theta, estimvars, object, bigvalue, whitelist,) = begin
         elseif e isa whitelist
             @error("in trajectory matching: whitelisted error: $e")
         else
-            throw(e)
+            rethrow(e)
         end
         bigvalue
     end

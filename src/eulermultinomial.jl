@@ -35,8 +35,8 @@ rand!(
     if p > zero(F) && d.size > zero(I)
         size::I = rand(Binomial(d.size,1-exp(-p * d.dt)))
         k::Int = 1
-        while k < length(trans)
-            trans[k] =  (size > zero(I) && p > zero(F)) ?
+        while k < N
+            trans[k] = (size > zero(I) && p > zero(F)) ?
                 rand(Binomial(size,d.rate[k]/p)) : zero(I)
             size -= trans[k]
             p -= d.rate[k]

@@ -60,6 +60,7 @@ simulate_array(
     rmeasure::Union{Function,Nothing,Missing} = missing,
     args...,
 ) where {P<:NamedTuple} = begin
+    @assert nsim > 0 "'nsim' should be positive"
     params = val_array(params)
     object = pomp(
         object;
