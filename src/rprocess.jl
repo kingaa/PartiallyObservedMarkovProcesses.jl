@@ -56,7 +56,7 @@ rproc_internal!(
     x::AbstractArray{X,3},
     plugin::Nothing,
     x0::AbstractArray{X,2},
-    times::AbstractVector{T},
+    times::AbstractArray{T,1},
     _...,
 ) where {T<:Time,X<:NamedTuple} = begin
     for k ∈ eachindex(times)
@@ -70,9 +70,9 @@ rproc_internal!(
     x::AbstractArray{X,3},
     plugin::PompPlugin,
     x0::AbstractArray{X,2},
-    times::AbstractVector{T},
+    times::AbstractArray{T,1},
     t0::T,
-    params::AbstractVector{P},
+    params::AbstractArray{P,1},
     accumvars::Nothing,
     userdata::U
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
@@ -84,6 +84,7 @@ rproc_internal!(
             @inbounds x[i,j,k] = x1
         end
     end
+    nothing
 end
 
 ## advance the state for each IC and parameter
@@ -92,9 +93,9 @@ rproc_internal!(
     x::AbstractArray{X,3},
     plugin::PompPlugin,
     x0::AbstractArray{X,2},
-    times::AbstractVector{T},
+    times::AbstractArray{T,1},
     t0::T,
-    params::AbstractVector{P},
+    params::AbstractArray{P,1},
     accumvars::A,
     userdata::U,
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple,A<:NamedTuple,U<:NamedTuple} = begin
@@ -107,4 +108,5 @@ rproc_internal!(
             @inbounds x[i,j,k] = x1
         end
     end
+    nothing
 end

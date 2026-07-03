@@ -23,7 +23,7 @@ simulate(
         args...,
     )
     [simulate1(object,params[i])
-     for i ∈ eachindex(params), j ∈ 1:nsim]
+     for i ∈ eachindex(params), _ ∈ 1:nsim]
 end
 
 simulate1(

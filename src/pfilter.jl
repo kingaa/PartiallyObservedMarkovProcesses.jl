@@ -4,11 +4,11 @@ struct PfilterdPompObject{
     W <: AbstractFloat
     } <: AbstractPompObject
     pompobj::P
-    Np::Integer
+    Np::Int
     x0::Array{Z,1}
     filt::Array{Z,2}
     pred::Array{Z,2}
-    traj::Vector{Z}
+    traj::Array{Z,1}
     weights::Array{W,2}
     eff_sample_size::Array{W,1}
     cond_logLik::Array{W,1}
@@ -91,8 +91,7 @@ pfilter(
     object::PfilterdPompObject;
     Np::Integer = object.Np,
     kwargs...,
-) =
-    pfilter(pomp(object;kwargs...);Np=Np)
+) = pfilter(pomp(object; kwargs...); Np=Np)
 
 pfilter(_...) = error("Incorrect call to `pfilter`.")
 
@@ -103,12 +102,12 @@ pfilter_internal!(
     xp::AbstractArray{X,3},
     w::AbstractArray{LogLik,4},
     t0::T,
-    t::AbstractVector{T},
+    t::AbstractArray{T,1},
     y::AbstractArray{Y,3},
-    eff_sample_size::AbstractVector{LogLik},
-    cond_logLik::AbstractVector{LogLik},
-    perm::AbstractArray{Int64,2}
-) where {T<:Time,X<:NamedTuple,Y<:NamedTuple} = begin
+    eff_sample_size::AbstractArray{W,1},
+    cond_logLik::AbstractArray{W,1},
+    perm::AbstractArray{Int,2}
+) where {W<:AbstractFloat,T<:Time,X<:NamedTuple,Y<:NamedTuple} = begin
     for k ∈ eachindex(t)
         rprocess!(
             object,
@@ -135,16 +134,17 @@ pfilter_internal!(
         t0 = t[k]
         x0 = view(xf,k,:,:)
     end
+    nothing
 end
 
 pfilt_step_comps!(
     logLik::AbstractArray{W,0},
     ess::AbstractArray{W,0},
-    w::AbstractVector{W},
-    p::AbstractVector{I},
-    xp::AbstractVector{X},
-    xf::AbstractVector{X},
-    n::Int64 = length(w),
+    w::AbstractArray{W,1},
+    p::AbstractArray{I,1},
+    xp::AbstractArray{X,1},
+    xf::AbstractArray{X,1},
+    n::Integer = length(w),
 ) where {W<:AbstractFloat,I<:Integer,X<:NamedTuple} = begin
     wmax::W = -Inf
     s::W = 0
@@ -177,14 +177,15 @@ pfilt_step_comps!(
         ss = 0
         wmax = 0
         ess[] = 0
-        logLik[] = -Inf
+        logLik[] = W(-Inf)
         p[:] = collect(eachindex(p))
         @inbounds xf[:] = xp[:]
     end
+    nothing
 end
 
 trace_ancestry!(
-    traj::AbstractVector{X},
+    traj::AbstractArray{X,1},
     filt::AbstractArray{X,2},
     perm::AbstractArray{I,2},
 ) where {X,I<:Integer} = begin
@@ -195,6 +196,7 @@ trace_ancestry!(
         @inbounds traj[i] = filt[i,j]
         @inbounds j = perm[i,j]
     end
+    nothing
 end
 
 pretty_string(object::PfilterdPompObject) = begin

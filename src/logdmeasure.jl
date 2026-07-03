@@ -71,10 +71,10 @@ end
 logdmeasure_internal!(
     ell::AbstractArray{W,4},
     f::Function,
-    times::AbstractVector{T},
+    times::AbstractArray{T,1},
     y::AbstractArray{Y,3},
     x::AbstractArray{X,3},
-    params::AbstractVector{P},
+    params::AbstractArray{P,1},
     userdata::U,
 ) where {
     W<:AbstractFloat,T<:Time,Y<:NamedTuple,X<:NamedTuple,
