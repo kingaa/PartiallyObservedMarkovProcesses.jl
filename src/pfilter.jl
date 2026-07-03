@@ -106,19 +106,13 @@ pfilter_internal!(
     perm::AbstractArray{Int,2}
 ) where {W<:AbstractFloat,T<:Time,X<:NamedTuple,Y<:NamedTuple} = begin
     for k ∈ eachindex(t)
-        rprocess!(
+        advance_particles!(
             object,
-            @view(xp[[k],:,:]);
-            x0=x0,
-            t0=t0,
-            times=@view(t[[k]])
-        )
-        logdmeasure!(
-            object,
-            @view(w[[k],:,:,:]);
-            times=@view(t[[k]]),
-            y=@view(y[[k],:,:]),
-            x=@view(xp[[k],:,:])
+            t0,x0,
+            @view(xp[[k],:,:]),
+            @view(w[[k],:,:,:]),
+            @view(t[[k]]),
+            @view(y[[k],:,:]),
         )
         pfilt_step_comps!(
             @view(cond_logLik[k]),
@@ -130,6 +124,22 @@ pfilter_internal!(
         )
         t0 = t[k]
         x0 = view(xf,k,:,:)
+    end
+    nothing
+end
+
+advance_particles!(
+    object::AbstractPompObject,
+    t0::T,
+    x0::AbstractArray{X,2},
+    xp::AbstractArray{X,3},
+    w::AbstractArray{W,4},
+    t::AbstractArray{T,1},
+    y::AbstractArray{Y,3},
+) where {W<:AbstractFloat,T<:Time,X<:NamedTuple,Y<:NamedTuple} = begin
+    flexmap!(axes(x0,2)) do j
+        rprocess!(object, @view(xp[:,:,[j]]); x0=@view(x0[:,[j]]), t0=t0, times=t)
+        logdmeasure!(object, @view(w[:,:,[j],:]); times=t, y=y, x=@view(xp[:,:,[j]]))
     end
     nothing
 end

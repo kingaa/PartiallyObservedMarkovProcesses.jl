@@ -76,7 +76,7 @@ rproc_internal!(
     accumvars::Nothing,
     userdata::U
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
-    flexmap!(Iterators.product(eachindex(params),axes(x0,2))) do (j,k)
+    for j ∈ eachindex(params), k ∈ axes(x0,2)
         t = t0
         @inbounds x1 = x0[j,k]
         for i ∈ eachindex(times)
@@ -99,7 +99,7 @@ rproc_internal!(
     accumvars::A,
     userdata::U,
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple,A<:NamedTuple,U<:NamedTuple} = begin
-    flexmap!(Iterators.product(eachindex(params),axes(x0,2))) do (j,k)
+    for j ∈ eachindex(params), k ∈ axes(x0,2)
         t = t0
         @inbounds x1 = x0[j,k]
         for i ∈ eachindex(times)

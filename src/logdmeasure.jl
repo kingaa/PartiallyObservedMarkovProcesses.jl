@@ -80,15 +80,8 @@ logdmeasure_internal!(
     W<:AbstractFloat,T<:Time,Y<:NamedTuple,X<:NamedTuple,
     P<:NamedTuple,U<:NamedTuple
 } = begin
-    flexmap!(
-        Iterators.product(
-            eachindex(times),
-            eachindex(params),
-        )
-    ) do (i,j)
-        for kx ∈ axes(x, 3), ky ∈ axes(y, 3)
-            @inbounds ell[i, j, kx, ky] = W(f(; t=times[i], y[i, j, ky]..., x[i, j, kx]..., params[j]..., userdata...))
-        end
+    for i ∈ eachindex(times), j ∈ eachindex(params), kx ∈ axes(x, 3), ky ∈ axes(y, 3)
+        @inbounds ell[i, j, kx, ky] = W(f(; t=times[i], y[i, j, ky]..., x[i, j, kx]..., params[j]..., userdata...))
     end
     nothing
 end
