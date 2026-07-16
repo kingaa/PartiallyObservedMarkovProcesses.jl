@@ -138,8 +138,8 @@ advance_particles!(
     y::AbstractArray{Y,3},
 ) where {W<:AbstractFloat,T<:Time,X<:NamedTuple,Y<:NamedTuple} = begin
     flexmap!(axes(x0,2)) do j
-        rprocess!(object, @view(xp[:,:,[j]]); x0=@view(x0[:,[j]]), t0=t0, times=t)
-        logdmeasure!(object, @view(w[:,:,[j],:]); times=t, y=y, x=@view(xp[:,:,[j]]))
+        rprocess!(object, @view(xp[:,:,[j]]); x0=@view(x0[:,[j]]), t0, times=t)
+        logdmeasure!(object, @view(w[:,:,[j],:]); times=t, y, x=@view(xp[:,:,[j]]))
     end
     nothing
 end
