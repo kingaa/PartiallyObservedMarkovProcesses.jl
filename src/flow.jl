@@ -35,7 +35,7 @@ vectorfield(
 ) = begin
     statenames = argnames(vf)
     vf_eval!(du, u, p, t) = begin
-        du[:] = vf(u...;p...,t=t)
+        du[:] = vf(u...;p...,t)
         nothing
     end
     integrator!(

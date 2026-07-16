@@ -39,7 +39,7 @@ rprocess_step(
 ) where {F<:Function,T<:Time,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
     t = t0
     while t < tf
-        @inline x = X(p.stepfun(;t=t, dt=p.stepsize, x..., params..., userdata...))
+        @inline x = X(p.stepfun(;t, dt=p.stepsize, x..., params..., userdata...))
         t += p.stepsize
     end
     t, x
@@ -75,7 +75,7 @@ rprocess_step(
         tstep = (tf - t0) / n
         t = t0
         for _ in 1:n
-            @inline x = X(p.stepfun(;t=t, dt=tstep, x..., params..., userdata...))
+            @inline x = X(p.stepfun(;t, dt=tstep, x..., params..., userdata...))
             t += tstep
         end
     end

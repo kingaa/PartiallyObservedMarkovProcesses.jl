@@ -38,10 +38,7 @@ traj_match_objfun(
 ) where N = begin
     object = pomp(
         object;
-        rinit=rinit,
-        rprocess=rprocess,
-        logdmeasure=logdmeasure,
-        logdprior=logdprior,
+        rinit,rprocess,logdmeasure,logdprior,
         kwargs...,
     )
     if ismissing(estimvars)
@@ -58,9 +55,9 @@ traj_match_internal(theta, estimvars, object, bigvalue, whitelist,) = begin
     @assert length(theta)==length(estimvars) "incorrect argument length: should be $(length(estimvars))"
     params = merge(coef(object),(;zip(estimvars,theta)...))
     try
-        x = simulate_array(object,params=params,nsim=1)
-        ll = sum(logdmeasure(object,x=x,params=params))
-        reg = sum(logdprior(object,params=params))
+        x = simulate_array(object;params,nsim=1)
+        ll = sum(logdmeasure(object;x,params))
+        reg = sum(logdprior(object;params))
         retval = -ll-reg
         if isfinite(retval)
             retval

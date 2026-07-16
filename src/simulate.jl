@@ -17,9 +17,7 @@ simulate(
     params = val_array(params)
     object = pomp(
         object;
-        rinit=rinit,
-        rprocess=rprocess,
-        rmeasure=rmeasure,
+        rinit,rprocess,rmeasure,
         args...,
     )
     [simulate1(object,params[i])
@@ -31,9 +29,9 @@ simulate1(
     params::P,
 ) where {P<:NamedTuple} = begin
     params = val_array(params)
-    x0 = rinit(object,params=params,nsim=1)
-    x = rprocess(object,x0=x0,params=params)
-    y = rmeasure(object,x=x,params=params)
+    x0 = rinit(object;params,nsim=1)
+    x = rprocess(object;x0,params)
+    y = rmeasure(object;x,params)
     PompObject(
         object,
         params=params[1],
@@ -64,14 +62,12 @@ simulate_array(
     params = val_array(params)
     object = pomp(
         object;
-        rinit=rinit,
-        rprocess=rprocess,
-        rmeasure=rmeasure,
+        rinit,rprocess,rmeasure,
         args...,
     )
-    x0 = POMP.rinit(object,params=params,nsim=nsim)
-    x = POMP.rprocess(object,x0=x0,params=params)
-    y = POMP.rmeasure(object,x=x,params=params)
+    x0 = POMP.rinit(object;params,nsim)
+    x = POMP.rprocess(object;x0,params)
+    y = POMP.rmeasure(object;x,params)
     timevar = object.timevar
     t = stack(
         fill(

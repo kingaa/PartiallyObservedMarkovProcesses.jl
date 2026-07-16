@@ -75,7 +75,7 @@ rinit_internal(
     userdata::U,
     nsim::Integer=1,
 ) where {T<:Time,P<:NamedTuple,U<:NamedTuple} =
-    [f(; params[i]..., userdata..., t0=t0)::NamedTuple for i ∈ eachindex(params), _ ∈ 1:nsim]
+    [f(; params[i]..., userdata..., t0)::NamedTuple for i ∈ eachindex(params), _ ∈ 1:nsim]
 
 rinit_internal(
     f::Function,
@@ -85,7 +85,7 @@ rinit_internal(
     userdata::U,
     nsim::Integer=1,
 ) where {T<:Time,P<:NamedTuple,U<:NamedTuple} =
-    [X(f(; params[i]..., userdata..., t0=t0)) for i ∈ eachindex(params), _ ∈ 1:nsim]
+    [X(f(; params[i]..., userdata..., t0)) for i ∈ eachindex(params), _ ∈ 1:nsim]
 
 rinit_internal!(
     x0::AbstractArray{@NamedTuple{}},
@@ -101,7 +101,7 @@ rinit_internal!(
     userdata::U,
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
     for i ∈ eachindex(params), j ∈ axes(x0, 2)
-        x0[i, j] = X(f(; params[i]..., userdata..., t0=t0))
+        x0[i, j] = X(f(; params[i]..., userdata..., t0))
     end
     nothing
 end

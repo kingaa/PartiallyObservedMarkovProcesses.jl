@@ -17,7 +17,7 @@ logdmeasure(
     x = val_array(x, length(times), length(params))
     y = val_array(y, length(times), length(params))
     ell = similar(Array{LogLik}, size(x)..., size(y, 3))
-    logdmeasure!(object, ell; times=times, y=y, x=x, params=params)
+    logdmeasure!(object, ell; times, y, x, params)
     ell
 end
 

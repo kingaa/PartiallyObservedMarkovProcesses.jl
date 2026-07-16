@@ -41,16 +41,13 @@ pfilter(
 ) where {P<:NamedTuple} = begin
     object = pomp(
         object;
-        params=params,
-        rinit=rinit,
-        rprocess=rprocess,
-        logdmeasure=logdmeasure,
+        params,rinit,rprocess,logdmeasure,
         kwargs...,
     )
     t0 = timezero(object)
     t = times(object)
     y = obs(object)
-    x0 = POMP.rinit(object;t0=t0,nsim=Np)
+    x0 = POMP.rinit(object;t0,nsim=Np)
     @assert(size(x0)==(1,Np))
     xf = similar(x0,length(t),Np)
     xp = similar(x0,length(t),Np)
@@ -91,7 +88,7 @@ pfilter(
     object::PfilterdPompObject;
     Np::Integer = object.Np,
     kwargs...,
-) = pfilter(pomp(object; kwargs...); Np=Np)
+) = pfilter(pomp(object; kwargs...); Np)
 
 pfilter(_...) = error("Incorrect call to `pfilter`.")
 

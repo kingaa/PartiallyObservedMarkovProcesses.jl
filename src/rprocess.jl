@@ -17,7 +17,7 @@ rprocess(
     params = val_array(params)
     x0 = val_array(x0,length(params))
     x = similar(x0,length(times),size(x0)...)
-    rprocess!(object,x,x0=x0,t0=t0,times=times,params=params)
+    rprocess!(object,x;x0,t0,times,params)
     x
 end
 

@@ -10,7 +10,7 @@ logdprior(
 ) where {P<:NamedTuple} = begin
     params = val_array(params)
     ell = similar(Array{LogLik}, size(params))
-    logdprior!(object, ell; params=params)
+    logdprior!(object, ell; params)
     ell
 end
 

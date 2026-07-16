@@ -257,20 +257,20 @@ pomp(
         error("data and times must be of the same length.")
     end
     PompObject(
-        t0=t0,
-        times=times,
-        timevar=timevar,
-        accumvars=accumvars,
-        params=params,
+        ;t0,
+        times,
+        timevar,
+        accumvars,
+        params,
         obs=data,
-        init_state=init_state,
-        rinit=rinit,
-        rprocess=rprocess,
-        rmeasure=rmeasure,
-        logdmeasure=logdmeasure,
-        rprior=rprior,
-        logdprior=logdprior,
-        userdata=userdata,
+        init_state,
+        rinit,
+        rprocess,
+        rmeasure,
+        logdmeasure,
+        rprior,
+        logdprior,
+        userdata,
     )
 end
 
@@ -282,7 +282,7 @@ pomp(
 ) where {T<:Time} = begin
     time = getproperty(data,times)::AbstractVector{T}
     data = NamedTuple.(eachrow(select(data,Not(times))))
-    pomp(data;t0=t0,times=time,timevar=times,kwargs...)
+    pomp(data;t0,times=time,timevar=times,kwargs...)
 end
 
 pomp(object::PompObject) = object
@@ -311,18 +311,18 @@ pomp(
     userdata::Union{<:NamedTuple,Nothing,Missing} = missing,
 ) = begin
     PompObject(
-        object,
-        timevar=timevar,
-        accumvars=accumvars,
-        params=params,
-        rinit=rinit,
-        rprocess=rprocess,
-        rmeasure=rmeasure,
-        logdmeasure=logdmeasure,
-        rprior=rprior,
-        logdprior=logdprior,
-        userdata=userdata,
-        init_state=init_state,
+        object;
+        timevar,
+        accumvars,
+        params,
+        rinit,
+        rprocess,
+        rmeasure,
+        logdmeasure,
+        rprior,
+        logdprior,
+        userdata,
+        init_state,
         states=nothing,
     )
 end

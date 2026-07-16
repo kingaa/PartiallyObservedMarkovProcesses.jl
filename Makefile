@@ -17,7 +17,7 @@ clean:
 
 build:
 	$(JULIA) -e 'import Pkg; Pkg.instantiate(); Pkg.build(); Pkg.precompile()'
-	cd test; $(JULIA) -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
+	cd test; $(JULIA) --check-bounds=yes -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
 	cd docs; $(JULIA) -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
 
 resolve:
