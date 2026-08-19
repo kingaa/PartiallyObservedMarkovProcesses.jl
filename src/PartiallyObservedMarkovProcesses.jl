@@ -6,6 +6,7 @@ using Reexport: @reexport
 ## Time is the (abstract) type for times.
 const Time = Union{Int64,Float64}
 const RealTime = Float64
+const Empty = @NamedTuple{}
 
 ## LogLik is the type for log likelihoods, etc.
 ## We may at some point need more precision....

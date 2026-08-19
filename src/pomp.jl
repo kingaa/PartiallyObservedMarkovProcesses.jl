@@ -20,19 +20,19 @@ struct PompObject{
     T <: Time,
     X <: NamedTuple,
     A <: Union{<:NamedTuple,Nothing},
-    Y <: Union{Vector{<:NamedTuple}},
+    Y <: NamedTuple,
     F <: Union{PompPlugin,Nothing},
-    P <: NamedTuple,
     U <: NamedTuple,
+    P <: NamedTuple,
     } <: AbstractPompObject
     t0::T
     times::Vector{T}
     timevar::Symbol
     accumvars::A
     params::P
+    obs::Vector{Y}
     init_state::X
     states::Union{Vector{X},Nothing}
-    obs::Y
     rinit::Union{Function,Nothing}
     rprocess::F
     rmeasure::Union{Function,Nothing}
@@ -66,11 +66,14 @@ struct PompObject{
         new{
             typeof(t0),
             typeof(init_state),
-            typeof(accumvars),typeof(obs),
-            typeof(rprocess),typeof(params),typeof(userdata),
+            typeof(accumvars),
+            eltype(obs),
+            typeof(rprocess),
+            typeof(userdata),
+            typeof(params),
         }(
             t0,times,timevar,accumvars,
-            params,init_state,states,obs,
+            params,obs,init_state,states,
             rinit,rprocess,rmeasure,logdmeasure,
             rprior,logdprior,
             userdata
@@ -148,12 +151,15 @@ struct PompObject{
         new{
             typeof(t0),
             typeof(init_state),
-            typeof(accumvars),typeof(obs),
-            typeof(rprocess),typeof(params),typeof(userdata),
+            typeof(accumvars),
+            eltype(obs),
+            typeof(rprocess),
+            typeof(userdata),
+            typeof(params),
         }(
             t0,times,timevar,
             accumvars,params,
-            init_state,states,obs,
+            obs,init_state,states,
             rinit,rprocess,
             rmeasure,logdmeasure,
             rprior,logdprior,
@@ -167,7 +173,7 @@ repair(x::Nothing) = (;)
 
 ## The following type is valid for the `object` in a call to most
 ## package functions.
-ValidPompData = Union{
+const ValidPompData = Union{
     Nothing,
     Vector{<:NamedTuple},
     AbstractDataFrame,
@@ -282,7 +288,7 @@ pomp(
 ) where {T<:Time} = begin
     time = getproperty(data,times)::AbstractVector{T}
     data = NamedTuple.(eachrow(select(data,Not(times))))
-    pomp(data;t0,times=time,timevar=times,kwargs...)
+    pomp(data; t0, times=time, timevar=times, kwargs...)
 end
 
 pomp(object::PompObject) = object
@@ -350,7 +356,8 @@ end
 
 Attempt to determine the names of parameters.  Return the result as a
 `Vector{Symbol}`.  If `object` is an `AbstractPompObject` without
-`states`, this function may mistakenly include state variables.
+`init_state` or `states`, this function may mistakenly include state
+variables.
 """
 paramsymbs(m::Method) = Base.kwarg_decl(m)
 paramsymbs(f::Function) = begin
@@ -358,21 +365,20 @@ paramsymbs(f::Function) = begin
     @assert length(m)==1 "In specifying basic model components, do not use functions with more than one method!"
     paramsymbs(first(m))
 end
-paramsymbs(f::NamedTuple) = Symbol[keys(f)...]
-paramsymbs(f::Vector{<:NamedTuple}) = union(paramsymbs.(f)...)
 paramsymbs(f::Nothing) = Symbol[]
+paramsymbs(f::NamedTuple) = keys(f)
+paramsymbs(f::Vector{X}) where {X <: NamedTuple} = fieldnames(X)
 paramsymbs(object::AbstractPompObject) = paramsymbs(pomp(object))
 paramsymbs(
-    object::PompObject{T,X,A,Y,F,P,U},
-) where {T,X,A,Y,F,P,U} = begin
+    object::PompObject{T,X,A,Y,F,U},
+) where {T,X,A,Y,F,U} = begin
     components = [:rinit, :rprocess, :rmeasure, :logdmeasure, :rprior, :logdprior, :params]
     symbs = map(components) do c
         paramsymbs(getfield(object,c))
     end
     excls = [
         Symbol[object.timevar,Symbol("_...")],
-        paramsymbs(obs(object)),
-        fieldnames(A),fieldnames(X),fieldnames(U)
+        fieldnames(A),fieldnames(X),fieldnames(U),fieldnames(Y)
     ]
     setdiff(union(symbs...),union(excls...))
 end

@@ -1,27 +1,24 @@
 struct PfilterdPompObject{
-    P <:PompObject,
-    Z <: NamedTuple,
+    T <: Time,
+    X <: NamedTuple,
+    P <: PompObject{T,X},
     W <: AbstractFloat
     } <: AbstractPompObject
     pompobj::P
     Np::Int
-    x0::Array{Z,1}
-    filt::Array{Z,2}
-    pred::Array{Z,2}
-    traj::Array{Z,1}
+    x0::Array{X,1}
+    filt::Array{X,2}
+    pred::Array{X,2}
     weights::Array{W,2}
     eff_sample_size::Array{W,1}
     cond_logLik::Array{W,1}
     logLik::W
 end
 
-
 pomp(object::PfilterdPompObject) = object.pompobj
-
 logLik(object::PfilterdPompObject) = object.logLik
 eff_sample_size(object::PfilterdPompObject) = object.eff_sample_size
 cond_logLik(object::PfilterdPompObject) = object.cond_logLik
-
 
 """
     pfilter(object; Np = 1, params, rinit, rprocess, logmeasure, kwargs...)
@@ -48,14 +45,13 @@ pfilter(
     t = times(object)
     y = obs(object)
     x0 = POMP.rinit(object;t0,nsim=Np)
-    @assert(size(x0)==(1,Np))
     xf = similar(x0,length(t),Np)
     xp = similar(x0,length(t),Np)
     xt = similar(x0,length(t))
     w = similar(Array{LogLik},length(t),Np)
     cond_logLik = similar(w,length(t))
     eff_sample_size = similar(w,length(t))
-    perm = similar(Array{Int64},length(t),Np)
+    perm = similar(Array{Int},length(t),Np)
     pfilter_internal!(
         object,
         x0,
@@ -68,10 +64,10 @@ pfilter(
         cond_logLik,
         perm
     )
-    trace_ancestry!(xt,xf,perm)
+    i = trace_ancestry!(xt,xf,perm)
     PfilterdPompObject(
-        object,Np,
-        vec(x0),xf,xp,xt,w,
+        PompObject(object,init_state=x0[i],states=xt),
+        Np,vec(x0),xf,xp,w,
         eff_sample_size,
         cond_logLik,
         sum(cond_logLik)
@@ -103,8 +99,8 @@ pfilter_internal!(
     y::AbstractArray{Y,3},
     eff_sample_size::AbstractArray{W,1},
     cond_logLik::AbstractArray{W,1},
-    perm::AbstractArray{Int,2}
-) where {W<:AbstractFloat,T<:Time,X<:NamedTuple,Y<:NamedTuple} = begin
+    perm::AbstractArray{I,2}
+) where {W<:AbstractFloat,T<:Time,X<:NamedTuple,Y<:NamedTuple,I<:Integer} = begin
     for k ∈ eachindex(t)
         rprocess!(
             object,
@@ -188,12 +184,12 @@ trace_ancestry!(
 ) where {X,I<:Integer} = begin
     @assert size(traj,1)==size(perm,1)
     @assert size(filt)==size(perm)
-    j = rand(axes(perm,2))
+    j::I = rand(axes(perm,2))
     for i ∈ Iterators.reverse(axes(perm,1))
         @inbounds traj[i] = filt[i,j]
         @inbounds j = perm[i,j]
     end
-    nothing
+    j
 end
 
 pretty_string(object::PfilterdPompObject) = begin

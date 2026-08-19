@@ -18,7 +18,19 @@ rinit(
     nsim::Integer=1,
 ) where {T,X,T1<:Time,P<:NamedTuple} = begin
     params = val_array(params)
-    rinit_internal(object.rinit, X, T(t0), params, object.userdata, nsim)
+    x0 = Array{X}(undef,length(params),nsim)
+    rinit_internal!(x0, object.rinit, T(t0), params, object.userdata)
+    x0
+end
+
+rinit(
+    object::PompObject{T,Empty};
+    t0::T1=timezero(object),
+    params::Union{P,AbstractVector{P}}=coef(object),
+    nsim::Integer=1,
+) where {T,T1<:Time,P<:NamedTuple} = begin
+    params = val_array(params)
+    rinit_internal(object.rinit, T(t0), params, object.userdata, nsim)
 end
 
 rinit(
@@ -42,34 +54,13 @@ rinit!(
 end
 
 rinit!(
-    object::PompObject{T,X},
-    x0::AbstractArray{@NamedTuple{},2};
-    t0::T1=timezero(object),
-    params::Union{P,AbstractVector{P}}=coef(object),
-) where {T,X,T1<:Time,P<:NamedTuple} = begin
-    params = val_array(params)
-    rinit_internal!(x0, object.rinit, T(t0), params, object.userdata)
-end
-
-rinit!(
     object::AbstractPompObject,
     x0::AbstractArray{X,2};
     kwargs...,
 ) where {X<:NamedTuple} = rinit!(pomp(object), x0; kwargs...)
 
 rinit_internal(
-    f::Nothing,
-    X::Type,
-    t0::Any,
-    params::AbstractVector{P},
-    userdata::U,
-    nsim::Integer=1,
-) where {P<:NamedTuple,U<:NamedTuple} =
-    fill((;), length(params), nsim)
-
-rinit_internal(
     f::Function,
-    X::Type{@NamedTuple{}},
     t0::T,
     params::AbstractVector{P},
     userdata::U,
@@ -78,17 +69,15 @@ rinit_internal(
     [f(; params[i]..., userdata..., t0)::NamedTuple for i ∈ eachindex(params), _ ∈ 1:nsim]
 
 rinit_internal(
-    f::Function,
-    X::Type,
-    t0::T,
-    params::AbstractVector{P},
-    userdata::U,
+    f::Nothing,
+    t0,
+    params::AbstractVector,
+    userdata,
     nsim::Integer=1,
-) where {T<:Time,P<:NamedTuple,U<:NamedTuple} =
-    [X(f(; params[i]..., userdata..., t0)) for i ∈ eachindex(params), _ ∈ 1:nsim]
+) = fill((;),length(params),nsim)
 
 rinit_internal!(
-    x0::AbstractArray{@NamedTuple{}},
+    x0::AbstractArray{Empty},
     f::Nothing,
     _...,
 ) = nothing
