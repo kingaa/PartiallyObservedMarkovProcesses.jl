@@ -87,6 +87,7 @@ rmca = function(
         ),
         t0=t0,
         times=times,
+        init_state=(X=zero(Float64),Y=zero(Float64),),
         rinit = function (;N0,P0,_...)
             (
                 X=log(N0),

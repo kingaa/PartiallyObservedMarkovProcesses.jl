@@ -38,14 +38,15 @@ sir = function(
         ),
         t0 = t0,
         times = times,
-        accumvars = (C=0,),
+        accumvars = (C=zero(Int64),),
+        init_state = (S=zero(Int64),I=zero(Int64),R=zero(Int64),C=zero(Int64)),
         rinit = function (;S0,I0,R0,N,_...)
             m = Float64(N)/(Float64(S0)+Float64(I0)+Float64(R0))
             (
                 S=round(Int64,m*Float64(S0)),
                 I=round(Int64,m*Float64(I0)),
                 R=round(Int64,m*Float64(R0)),
-                C=0,
+                C=zero(Int64),
             )
         end,
         rprocess = euler(

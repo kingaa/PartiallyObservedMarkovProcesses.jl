@@ -64,7 +64,7 @@ using BenchmarkTools
     @test x0==x[1,:,:]
 
     Q = pfilter(P,Np=1000,params=p1);
-    @test :x ∈ paramsymbs(Q)
+    @test :x ∉ paramsymbs(Q)
     @test Q isa POMP.PfilterdPompObject
     @test occursin(r"PfilterdPompObject .* Np=",sprint(show,Q))
     @test all(Q.x0.==Q.pred[1,:])
@@ -77,8 +77,8 @@ using BenchmarkTools
     rinit!(Q,x0)
 
     d = melt(Q);
-    @test size(d)==(21,4)
-    @test propertynames(d)==[:time; :y; :ess; :cond_logLik]
+    @test size(d)==(21,5)
+    @test propertynames(d)==[:time, :y, :x, :ess, :cond_logLik]
 
     P1 = pomp(P;logdmeasure=function (;_...) -Inf end)
     Q1 = pfilter(P1,Np=100,params=p1)

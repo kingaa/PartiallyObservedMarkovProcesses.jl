@@ -24,14 +24,16 @@ brownian_motion = function(
     if size(σ,1)!=length(x0)
         error("in `brownian_motion`: size mismatch between σ and x₀.")
     end
+    x0 = collect(Float64,x0)
     simulate(
         t0=Float64(t0),
         times=collect(Float64,times),
         params=(
             σ=collect(Float64,σ),
             τ=collect(Float64,τ),
-            x0=collect(Float64,x0),
+            x0=x0,
         ),
+        init_state=(x=x0,),
         rinit=function(;x0,_...)
             (x=x0,)
         end,
