@@ -366,8 +366,7 @@ paramsymbs(f::Function) = begin
     paramsymbs(first(m))
 end
 paramsymbs(f::Nothing) = Symbol[]
-paramsymbs(f::NamedTuple) = keys(f)
-paramsymbs(f::Vector{X}) where {X <: NamedTuple} = fieldnames(X)
+paramsymbs(f::NamedTuple) = Symbol[keys(f)...]
 paramsymbs(object::AbstractPompObject) = paramsymbs(pomp(object))
 paramsymbs(
     object::PompObject{T,X,A,Y,F,U},
