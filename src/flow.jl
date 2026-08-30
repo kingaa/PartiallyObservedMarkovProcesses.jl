@@ -15,10 +15,6 @@ struct VectorfieldPlugin{F<:Function, G<:Function} <: PompPlugin
     statenames::Vector{Symbol}
 end
 
-paramsymbs(f::VectorfieldPlugin) = begin
-    setdiff(paramsymbs(f.vf),[:t,f.statenames...])
-end
-
 """
     vectorfield(vf, integration_alg; integrator_args...)
 

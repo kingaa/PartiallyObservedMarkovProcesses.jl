@@ -1,6 +1,5 @@
 ## To-do List
 
-- Euler multinomial
 - iterated filtering
 - weighted particle filter
 - remove all need for **RCall**

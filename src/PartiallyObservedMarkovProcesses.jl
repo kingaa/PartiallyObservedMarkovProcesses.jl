@@ -62,6 +62,9 @@ include("melt.jl")
 export logmeanexp
 include("logmeanexp.jl")
 
+export paramsymbs
+include("paramsymbs.jl")
+
 include("reshape.jl")
 
 export EulerMultinomial, rand, rand!
