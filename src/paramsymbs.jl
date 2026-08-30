@@ -16,14 +16,12 @@ end
 
 paramsymbs(f::Nothing) = Symbol[]
 
-paramsymbs(f::NamedTuple) = Symbol[keys(f)...]
-
 paramsymbs(object::AbstractPompObject) = paramsymbs(pomp(object))
 
 paramsymbs(
     object::PompObject{T,X,A,Y,F,U},
 ) where {T,X,A,Y,F,U} = begin
-    components = [:rinit, :rprocess, :rmeasure, :logdmeasure, :rprior, :logdprior, :params]
+    components = [:rinit, :rprocess, :rmeasure, :logdmeasure, :rprior, :logdprior]
     symbs = map(components) do c
         paramsymbs(getfield(object,c))
     end
