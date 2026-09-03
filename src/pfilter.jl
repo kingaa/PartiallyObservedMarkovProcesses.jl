@@ -16,6 +16,7 @@ struct PfilterdPompObject{
     cond_logLik::Array{W,1}
     logLik::W
     trigger::Float64
+    target::Float64
 end
 
 pomp(object::PfilterdPompObject) = object.pompobj
@@ -45,7 +46,7 @@ pfilter(
     rinit::Union{Function,Nothing,Missing} = missing,
     rprocess::Union{PompPlugin,Nothing,Missing} = missing,
     logdmeasure::Union{Function,Nothing,Missing} = missing,
-    trigger = 1,
+    trigger = 1, target = 0,
     kwargs...,
 ) where {P<:NamedTuple} = begin
     object = pomp(
@@ -65,6 +66,7 @@ pfilter(
     eff_sample_size = similar(w,length(t))
     perm = Array{Int}(undef,length(t),Np)
     trigger = Float64(clamp(trigger,0,1))
+    target = Float64(clamp(target,0,1))
     pfilter_internal!(
         object,
         x0,
@@ -77,6 +79,7 @@ pfilter(
         cond_logLik,
         perm,
         trigger,
+        target,
     )
     i = trace_ancestry!(xt,xf,perm)
     ## FIXME: check that the first index in the ancestry is correct
@@ -86,12 +89,12 @@ pfilter(
         eff_sample_size,
         cond_logLik,
         sum(cond_logLik),
-        trigger,
+        trigger,target
     )
 end
 
 """
-    pfilter(object; Np = object.Np, kwargs...)
+    pfilter(object; Np, trigger, target, kwargs...)
 
 Running `pfilter` on a `PfilterdPompObject` re-runs the particle filter.
 One can adjust the parameters, number of particles (`Np`), or pomp model components.
@@ -100,8 +103,9 @@ pfilter(
     object::PfilterdPompObject;
     Np::Integer = object.Np,
     trigger = object.trigger,
+    target = object.target,
     kwargs...,
-) = pfilter(pomp(object; kwargs...); Np, trigger)
+) = pfilter(pomp(object; kwargs...); Np, trigger, target)
 
 pfilter(_...) = error("Incorrect call to `pfilter`.")
 
@@ -118,6 +122,7 @@ pfilter_internal!(
     cond_logLik::AbstractArray{W,1},
     perm::AbstractArray{I,2},
     trigger::Float64,
+    target::Float64,
 ) where {W<:AbstractFloat,T<:Time,X<:NamedTuple,Y<:NamedTuple,I<:Integer} = begin
     wprop = ones(W,size(x0,2))
     work = similar(wprop)
@@ -144,7 +149,7 @@ pfilter_internal!(
             @view(perm[k,:]),
             @view(xp[k,1,:]),
             @view(xf[k,1,:]),
-            trigger,
+            trigger, target,
         )
         t0 = t[k]
         x0 = view(xf,k,:,:)
@@ -162,11 +167,11 @@ pfilt_step_comps!(
     xp::AbstractArray{X,1},
     xf::AbstractArray{X,1},
     trigger::Float64,
-    n::Integer = length(w),
+    target::Float64,
+    n::Integer = length(logw),
 ) where {W<:AbstractFloat,I<:Integer,X<:NamedTuple} = begin
-    target = 0.0
     logwmax = compute_ess_logLik!(ess, logLik, logw, w)
-    if isfinite(logwmax) && ess[] < trigger*n
+    if isfinite(logwmax) && ess[] ≤ trigger*n
         systematic_resample!(p, w, work, target)
         @inbounds xf .= xp[p]
     else

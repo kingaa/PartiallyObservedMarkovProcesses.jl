@@ -157,7 +157,7 @@ P |>
     @info h2("POMP.jl likelihood estimate (SIR): $(round(logLik(Pf),digits=2))")
     @test abs(logLik(Pf)-ll) < 1.0
 
-    Pf = pfilter(Pf,trigger=0.2);
+    Pf = pfilter(Pf,trigger=0.2,target=0.1);
     @test abs(logLik(Pf)-ll) < 1.0
     
 end
