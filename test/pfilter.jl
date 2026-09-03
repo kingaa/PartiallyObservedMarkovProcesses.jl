@@ -76,6 +76,26 @@ using BenchmarkTools
     @test size(x0)==(1,5)
     rinit!(Q,x0)
 
+    dat = copy(obs(P))
+    dat[3] = (y=-33,)
+    P1 = pomp(
+        dat,
+        times=times(P),
+        t0=0,
+        rinit=rin,
+        rprocess=discrete_time(rlin),
+        rmeasure=rmeas,
+        logdmeasure=logdmeas,
+        params=(a=1.5,k=7.0,x0=5.0),
+    );
+    @test P1 isa POMP.PompObject
+    Q1 = pfilter(P1,Np=1000)
+    @test Q1 isa POMP.PfilterdPompObject
+    @test logLik(Q1)==-Inf
+    Q1 = pfilter(P1,Np=1000,trigger=0.5,target=0.5)
+    @test Q1 isa POMP.PfilterdPompObject
+    @test logLik(Q1)==-Inf
+
     d = melt(Q);
     @test size(d)==(21,5)
     @test propertynames(d)==[:time, :y, :x, :ess, :cond_logLik]
@@ -88,7 +108,7 @@ using BenchmarkTools
     @test all(isinf.(cond_logLik(Q1)))
     @test Q1.filt==Q1.pred
 
-    Q2 = [pfilter(Q,Np=100) for _ ∈ 1:5]
+    Q2 = [pfilter(Q,Np=100,trigger=0.5,target=0.5) for _ ∈ 1:5]
     @test logmeanexp(logLik.(Q2)) isa Float64
     @test logmeanexp(logLik.(Q2),se=true) isa @NamedTuple{est::Float64,se::Float64}
     @test logmeanexp(logLik.(Q2),ess=true) isa @NamedTuple{est::Float64,ess::Float64}

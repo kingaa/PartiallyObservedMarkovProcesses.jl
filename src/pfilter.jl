@@ -33,8 +33,8 @@ particle filter.  At least the `rinit`, `rprocess`, and `logdmeasure`
 basic components are needed.  Resampling is triggered whenever the
 effective sample size falls below `trigger*Np`.  The resampling is
 performed so that the weights are renormalized to the power `target`,
-i.e., if `target = α`, `w` is a weight on call and `W` is the
-corresponding renormalized weight, then `W ∝ wᵅ`.
+i.e., if `target = β`, `w` is a particle weight, and `W` is the
+corresponding renormalized weight, then `W ∝ wᵝ`.
 
 As in other POMP.jl functions, `kwargs...` can be used to modify or
 unset additional fields in the `AbstractPompObject` `object`.
@@ -60,27 +60,35 @@ pfilter(
     x0 = POMP.rinit(object;t0,nsim=Np)
     xf = similar(x0,length(t),Np)
     xp = similar(x0,length(t),Np)
-    xt = similar(x0,length(t))
     w = Array{LogLik}(undef,length(t),Np)
     cond_logLik = similar(w,length(t))
     eff_sample_size = similar(w,length(t))
     perm = Array{Int}(undef,length(t),Np)
-    trigger = Float64(clamp(trigger,0,1))
-    target = Float64(clamp(target,0,1))
-    pfilter_internal!(
-        object,
-        x0,
-        reshape(xf,length(t),1,Np),
-        reshape(xp,length(t),1,Np),
-        reshape(w,length(t),1,Np,1),
-        t0,t,
-        reshape(y,length(t),1,1),
-        eff_sample_size,
-        cond_logLik,
-        perm,
-        trigger,
-        target,
-    )
+    trigger::Float64 = clamp(trigger, 0.0, 1.0)
+    target::Float64 = clamp(target, 0.0, 1.0)
+    if trigger < 1.0 || target > 0.0
+        pfilter_internal!(
+            object,
+            x0,t0,t,
+            reshape(xf,length(t),1,Np),
+            reshape(xp,length(t),1,Np),
+            reshape(w,length(t),1,Np,1),
+            reshape(y,length(t),1,1),
+            eff_sample_size,cond_logLik,perm,
+            trigger,target,
+        )
+    else
+        pfilter_internal!(
+            object,
+            x0,t0,t,
+            reshape(xf,length(t),1,Np),
+            reshape(xp,length(t),1,Np),
+            reshape(w,length(t),1,Np,1),
+            reshape(y,length(t),1,1),
+            eff_sample_size,cond_logLik,perm,
+        )
+    end
+    xt = similar(x0,length(t))
     i = trace_ancestry!(xt,xf,perm)
     ## FIXME: check that the first index in the ancestry is correct
     PfilterdPompObject(
@@ -96,8 +104,9 @@ end
 """
     pfilter(object; Np, trigger, target, kwargs...)
 
-Running `pfilter` on a `PfilterdPompObject` re-runs the particle filter.
-One can adjust the parameters, number of particles (`Np`), or pomp model components.
+Running `pfilter` on a `PfilterdPompObject` re-runs the particle
+filter.  One can adjust the parameters, number of particles (`Np`), or
+pomp model components.
 """
 pfilter(
     object::PfilterdPompObject;
@@ -112,11 +121,11 @@ pfilter(_...) = error("Incorrect call to `pfilter`.")
 pfilter_internal!(
     object::AbstractPompObject,
     x0::AbstractArray{X,2},
+    t0::T,
+    t::AbstractArray{T,1},
     xf::AbstractArray{X,3},
     xp::AbstractArray{X,3},
     w::AbstractArray{W,4},
-    t0::T,
-    t::AbstractArray{T,1},
     y::AbstractArray{Y,3},
     eff_sample_size::AbstractArray{W,1},
     cond_logLik::AbstractArray{W,1},
@@ -145,11 +154,55 @@ pfilter_internal!(
             @view(cond_logLik[k]),
             @view(eff_sample_size[k]),
             @view(w[k,1,:,1]),
-            wprop, work,
             @view(perm[k,:]),
             @view(xp[k,1,:]),
             @view(xf[k,1,:]),
+            wprop, work,
             trigger, target,
+        )
+        t0 = t[k]
+        x0 = view(xf,k,:,:)
+    end
+    nothing
+end
+
+pfilter_internal!(
+    object::AbstractPompObject,
+    x0::AbstractArray{X,2},
+    t0::T,
+    t::AbstractArray{T,1},
+    xf::AbstractArray{X,3},
+    xp::AbstractArray{X,3},
+    w::AbstractArray{W,4},
+    y::AbstractArray{Y,3},
+    eff_sample_size::AbstractArray{W,1},
+    cond_logLik::AbstractArray{W,1},
+    perm::AbstractArray{I,2},
+) where {W<:AbstractFloat,T<:Time,X<:NamedTuple,Y<:NamedTuple,I<:Integer} = begin
+    work = Array{W}(undef,size(x0,2))
+    @inbounds for k ∈ eachindex(t)
+        rprocess!(
+            object,
+            @view(xp[[k],:,:]);
+            x0=x0,
+            t0=t0,
+            times=@view(t[[k]])
+        )
+        logdmeasure!(
+            object,
+            @view(w[[k],:,:,:]);
+            times=@view(t[[k]]),
+            y=@view(y[[k],:,:]),
+            x=@view(xp[[k],:,:])
+        )
+        pfilt_step_comps!(
+            @view(cond_logLik[k]),
+            @view(eff_sample_size[k]),
+            @view(w[k,1,:,1]),
+            @view(perm[k,:]),
+            @view(xp[k,1,:]),
+            @view(xf[k,1,:]),
+            work,
         )
         t0 = t[k]
         x0 = view(xf,k,:,:)
@@ -161,11 +214,11 @@ pfilt_step_comps!(
     logLik::AbstractArray{W,0},
     ess::AbstractArray{W,0},
     logw::AbstractArray{W,1},
-    w::AbstractArray{W,1},
-    work::AbstractArray{W,1},
     p::AbstractArray{I,1},
     xp::AbstractArray{X,1},
     xf::AbstractArray{X,1},
+    w::AbstractArray{W,1},
+    work::AbstractArray{W,1},
     trigger::Float64,
     target::Float64,
     n::Integer = length(logw),
@@ -173,6 +226,26 @@ pfilt_step_comps!(
     logwmax = compute_ess_logLik!(ess, logLik, logw, w)
     if isfinite(logwmax) && ess[] ≤ trigger*n
         systematic_resample!(p, w, work, target)
+        @inbounds xf .= xp[p]
+    else
+        p .= collect(eachindex(p))
+        xf .= xp
+    end
+    nothing
+end
+
+pfilt_step_comps!(
+    logLik::AbstractArray{W,0},
+    ess::AbstractArray{W,0},
+    logw::AbstractArray{W,1},
+    p::AbstractArray{I,1},
+    xp::AbstractArray{X,1},
+    xf::AbstractArray{X,1},
+    work::AbstractArray{W,1},
+) where {W<:AbstractFloat,I<:Integer,X<:NamedTuple} = begin
+    logwmax = compute_ess_logLik!(ess, logLik, logw)
+    if isfinite(logwmax)
+        systematic_resample!(p, logw, work)
         @inbounds xf .= xp[p]
     else
         p .= collect(eachindex(p))
@@ -214,12 +287,44 @@ compute_ess_logLik!(
         s = log(lik)
         logLik[] = logwmax+s
         logw .-= s
-        w ./= lik
+        w ./= lik               # enforces unit-mean on return
     else
         ess[] = 0
         logLik[] = W(-Inf)
         logw .= zero(W)
         w .= one(W)
+    end
+    logwmax
+end
+
+compute_ess_logLik!(
+    ess::AbstractArray{W,0},
+    logLik::AbstractArray{W,0},
+    logw::AbstractArray{W,1},
+) where {W <: AbstractFloat} = begin
+    logwmax::W = maximum(logw)
+    @assert(
+        !isnan(logwmax) && logwmax < Inf,
+        "invalid NaN or +∞ log likelihood in `pfilter`"
+    )
+    if isfinite(logwmax)
+        s::W = 0
+        ss::W = 0
+        @inbounds for k ∈ eachindex(logw)
+            logw[k] -= logwmax
+            v::W = exp(logw[k])
+            s += v
+            ss += v*v
+        end
+        lik = s/length(logw)
+        ess[] = s*s/ss
+        s = log(lik)
+        logLik[] = logwmax+s
+        logw .-= s
+    else
+        ess[] = 0
+        logLik[] = W(-Inf)
+        logw .= zero(W)
     end
     logwmax
 end
@@ -232,13 +337,13 @@ systematic_resample!(
     p::AbstractArray{I,1},
     w::AbstractArray{W,1},
     ucum::AbstractArray{W,1},
-    α::Float64,  # the power to which the weights will be renormalized
+    β::Float64,  # the power to which the weights will be renormalized
 ) where {I,W} = begin
     @assert length(ucum)==length(w)==length(p)
     s::W = 0
-    β = 1-α
+    α = 1-β
     @inbounds for j ∈ eachindex(w)
-        s += w[j]^β
+        s += w[j]^α
         ucum[j] = s
     end
     n::I = length(w)
@@ -252,8 +357,33 @@ systematic_resample!(
         end
         p[j] = i
     end
-    w .^= α
+    w .^= β
     w ./= mean(w) # Other functions rely on the weights having unit mean.
+    nothing
+end
+
+systematic_resample!(
+    p::AbstractArray{I,1},
+    logw::AbstractArray{W,1},
+    ucum::AbstractArray{W,1},
+) where {I,W} = begin
+    @assert length(ucum)==length(logw)==length(p)
+    s::W = 0
+    @inbounds for j ∈ eachindex(logw)
+        s += exp(logw[j])
+        ucum[j] = s
+    end
+    n::I = length(logw)
+    i::I = 1
+    du::W = s/n
+    u::W = -du*rand(W)
+    @inbounds for j ∈ eachindex(p)
+        u += du
+        while (u > ucum[i] && i < n)
+            i += 1
+        end
+        p[j] = i
+    end
     nothing
 end
 
