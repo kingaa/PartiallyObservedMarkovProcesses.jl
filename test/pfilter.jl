@@ -63,7 +63,7 @@ using BenchmarkTools
     rprocess!(P,x,x0=x0,times=t[1:1],params=[p1])
     @test x0==x[1,:,:]
 
-    Q = pfilter(P,Np=1000,params=p1);
+    Q = pfilter(P,Np=1000,params=p1,trigger=0.2);
     @test :x ∉ paramsymbs(Q)
     @test Q isa POMP.PfilterdPompObject
     @test occursin(r"PfilterdPompObject .* Np=",sprint(show,Q))
