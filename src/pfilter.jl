@@ -194,9 +194,19 @@ pfilter_internal!(
     nothing
 end
 
-advance_particles!(object, t0, times, x0, x, y, w) = begin
-    rprocess!(object,x;x0,t0,times)
-    logdmeasure!(object,w;times,y,x)
+advance_particles!(
+    object::AbstractPompObject,
+    t0::T,
+    times::AbstractArray{T,1},
+    x0::AbstractArray{X,2},
+    x::AbstractArray{X,3},
+    y::AbstractArray{Y,3},
+    w::AbstractArray{W,4},
+) where {W<:AbstractFloat,T<:Time,X<:NamedTuple,Y<:NamedTuple} = begin
+    flexmap!(axes(x0,2)) do j
+        @inbounds rprocess!(object, @view(x[:,:,[j]]); x0=@view(x0[:,[j]]), t0, times)
+        @inbounds logdmeasure!(object, @view(w[:,:,[j],:]); times, y, x=@view(x[:,:,[j]]))
+    end
     nothing
 end
 
