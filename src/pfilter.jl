@@ -231,10 +231,26 @@ pfilter_step!(
 end
 
 pfilter_advance_particles!(
-    object, t0, times, x0, x, y, w,
-) = begin
-    rprocess!(object, x; x0, t0, times)
-    logdmeasure!(object, w; times, y, x)
+    object::AbstractPompObject,
+    t0::T,
+    times::AbstractArray{T,1},
+    x0::AbstractArray{X,2},
+    x::AbstractArray{X,3},
+    y::AbstractArray{Y,1},
+    w::AbstractArray{W,3},
+) where {T,X,Y,W} = begin
+    flexmap!(axes(x0,2)) do j
+        rprocess!(
+            object, @view(x[:,:,[j]]);
+            t0, times,
+            x0=@view(x0[:,[j]]),
+        )
+        logdmeasure!(
+            object, @view(w[:,:,[j]]);
+            times, y,
+            x=@view(x[:,:,[j]]),
+        )
+    end
     nothing
 end
 

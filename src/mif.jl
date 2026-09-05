@@ -254,10 +254,29 @@ mif_pfilt_step!(
 end
 
 mif_advance_particles!(
-    object, t0, times, x0, x, y, w, params,
-) = begin
-    rprocess!(object, x; x0, t0, times, params)
-    logdmeasure!(object, w; times, y, x, params)
+    object::AbstractPompObject,
+    t0::T,
+    times::AbstractArray{T,1},
+    x0::AbstractArray{X,2},
+    x::AbstractArray{X,3},
+    y::AbstractArray{Y,1},
+    w::AbstractArray{W,3},
+    params::AbstractArray{P,1},
+) where {T,X,Y,W,P} = begin
+    flexmap!(eachindex(params)) do j
+        rprocess!(
+            object, @view(x[:,[j],:]);
+            t0, times,
+            params=@view(params[[j]]),
+            x0=@view(x0[[j],:]),
+        )
+        logdmeasure!(
+            object, @view(w[:,[j],:]);
+            times, y,
+            params=@view(params[[j]]),
+            x=@view(x[:,[j],:]),
+        )
+    end
     nothing
 end
 

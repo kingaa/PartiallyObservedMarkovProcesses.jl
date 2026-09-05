@@ -23,6 +23,8 @@ include("helpers.jl")
 export @bake, @freeze
 include("bake.jl")
 
+include("flexmap.jl")
+
 export rinit, rinit!
 include("rinit.jl")
 
