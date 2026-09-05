@@ -136,19 +136,11 @@ pfilter_internal!(
     wprop = ones(W,size(x0,2))
     work = similar(wprop)
     @inbounds for k ∈ eachindex(t)
-        rprocess!(
-            object,
-            @view(xp[[k],:,:]);
-            x0=x0,
-            t0=t0,
-            times=@view(t[[k]])
-        )
-        logdmeasure!(
-            object,
-            @view(w[[k],:,:,:]);
-            times=@view(t[[k]]),
-            y=@view(y[[k],:,:]),
-            x=@view(xp[[k],:,:])
+        advance_particles!(
+            object, t0, @view(t[[k]]),
+            x0, @view(xp[[k],:,:]),
+            @view(y[[k],:,:]),
+            @view(w[[k],:,:,:]),
         )
         pfilt_step_comps!(
             @view(cond_logLik[k]),
@@ -181,19 +173,11 @@ pfilter_internal!(
 ) where {W<:AbstractFloat,T<:Time,X<:NamedTuple,Y<:NamedTuple,I<:Integer} = begin
     work = Array{W}(undef,size(x0,2))
     @inbounds for k ∈ eachindex(t)
-        rprocess!(
-            object,
-            @view(xp[[k],:,:]);
-            x0=x0,
-            t0=t0,
-            times=@view(t[[k]])
-        )
-        logdmeasure!(
-            object,
-            @view(w[[k],:,:,:]);
-            times=@view(t[[k]]),
-            y=@view(y[[k],:,:]),
-            x=@view(xp[[k],:,:])
+        advance_particles!(
+            object, t0, @view(t[[k]]),
+            x0, @view(xp[[k],:,:]),
+            @view(y[[k],:,:]),
+            @view(w[[k],:,:,:]),
         )
         pfilt_step_comps!(
             @view(cond_logLik[k]),
@@ -207,6 +191,12 @@ pfilter_internal!(
         t0 = t[k]
         x0 = view(xf,k,:,:)
     end
+    nothing
+end
+
+advance_particles!(object, t0, times, x0, x, y, w) = begin
+    rprocess!(object,x;x0,t0,times)
+    logdmeasure!(object,w;times,y,x)
     nothing
 end
 
