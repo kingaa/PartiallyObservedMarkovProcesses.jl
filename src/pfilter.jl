@@ -15,6 +15,7 @@ struct PfilterdPompObject{
     eff_sample_size::Array{W,1}
     cond_logLik::Array{W,1}
     logLik::W
+    resample::Array{Bool,1}
     trigger::Float64
     target::Float64
 end
@@ -64,6 +65,7 @@ pfilter(
     cond_logLik = similar(w,length(t))
     eff_sample_size = similar(w,length(t))
     perm = Array{Int}(undef,length(t),Np)
+    resamp = Array{Bool}(undef,length(t))
     trigger::Float64 = clamp(trigger, 0.0, 1.0)
     target::Float64 = clamp(target, 0.0, 1.0)
     if trigger < 1.0 || target > 0.0
@@ -75,6 +77,7 @@ pfilter(
             reshape(w,length(t),1,Np,1),
             reshape(y,length(t),1,1),
             eff_sample_size,cond_logLik,perm,
+            resamp,
             trigger,target,
         )
     else
@@ -86,6 +89,7 @@ pfilter(
             reshape(w,length(t),1,Np,1),
             reshape(y,length(t),1,1),
             eff_sample_size,cond_logLik,perm,
+            resamp
         )
     end
     xt = similar(x0,length(t))
@@ -97,6 +101,7 @@ pfilter(
         eff_sample_size,
         cond_logLik,
         sum(cond_logLik),
+        resamp,
         trigger,target
     )
 end
@@ -130,6 +135,7 @@ pfilter_internal!(
     eff_sample_size::AbstractArray{W,1},
     cond_logLik::AbstractArray{W,1},
     perm::AbstractArray{I,2},
+    resample::AbstractArray{Bool,1},
     trigger::Float64,
     target::Float64,
 ) where {W<:AbstractFloat,T<:Time,X<:NamedTuple,Y<:NamedTuple,I<:Integer} = begin
@@ -149,6 +155,7 @@ pfilter_internal!(
             @view(perm[k,:]),
             @view(xp[k,1,:]),
             @view(xf[k,1,:]),
+            @view(resample[k]),
             wprop, work,
             trigger, target,
         )
@@ -170,6 +177,7 @@ pfilter_internal!(
     eff_sample_size::AbstractArray{W,1},
     cond_logLik::AbstractArray{W,1},
     perm::AbstractArray{I,2},
+    resample::AbstractArray{Bool,1},
 ) where {W<:AbstractFloat,T<:Time,X<:NamedTuple,Y<:NamedTuple,I<:Integer} = begin
     work = Array{W}(undef,size(x0,2))
     @inbounds for k ∈ eachindex(t)
@@ -186,6 +194,7 @@ pfilter_internal!(
             @view(perm[k,:]),
             @view(xp[k,1,:]),
             @view(xf[k,1,:]),
+            @view(resample[k]),
             work,
         )
         t0 = t[k]
@@ -207,6 +216,7 @@ pfilt_step_comps!(
     p::AbstractArray{I,1},
     xp::AbstractArray{X,1},
     xf::AbstractArray{X,1},
+    resample::AbstractArray{Bool,0},
     w::AbstractArray{W,1},
     work::AbstractArray{W,1},
     trigger::Float64,
@@ -216,9 +226,11 @@ pfilt_step_comps!(
     logwmax = compute_ess_logLik!(ess, logLik, logw, w)
     if isfinite(logwmax) && ess[] ≤ trigger*n
         systematic_resample!(p, w, work, target)
+        resample[] = true
         @inbounds xf .= xp[p]
     else
         p .= collect(eachindex(p))
+        resample[] = false
         xf .= xp
     end
     nothing
@@ -231,14 +243,17 @@ pfilt_step_comps!(
     p::AbstractArray{I,1},
     xp::AbstractArray{X,1},
     xf::AbstractArray{X,1},
+    resample::AbstractArray{Bool,0},
     work::AbstractArray{W,1},
 ) where {W<:AbstractFloat,I<:Integer,X<:NamedTuple} = begin
     logwmax = compute_ess_logLik!(ess, logLik, logw)
     if isfinite(logwmax)
         systematic_resample!(p, logw, work)
+        resample[] = true
         @inbounds xf .= xp[p]
     else
         p .= collect(eachindex(p))
+        resample[] = false
         xf .= xp
     end
     nothing
@@ -347,7 +362,13 @@ systematic_resample!(
         end
         p[j] = i
     end
-    w .^= β
+    @inbounds for j ∈ eachindex(p)
+        ucum[j] = w[p[j]]
+    end
+    ## FIXME: we do more exponentiation here than is stricly necessary
+    @inbounds for j ∈ eachindex(w)
+        w[j] = ucum[j]^β
+    end
     w ./= mean(w) # Other functions rely on the weights having unit mean.
     nothing
 end
