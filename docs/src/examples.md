@@ -1,10 +1,10 @@
 # Examples
 
-```@setup
+```@setup assets
 mkpath("assets/figures")
 ```
 
-```@setup
+```@setup packages
 using PartiallyObservedMarkovProcesses, RCall
 using PartiallyObservedMarkovProcesses.Examples
 R"""
@@ -76,7 +76,7 @@ nothing #hide
 sir
 ```
 
-```@setup
+```@setup tikz
 using LatexSVG
 
 texengine!(PDFLaTeX)
