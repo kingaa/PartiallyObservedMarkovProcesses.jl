@@ -20,6 +20,8 @@ struct PfilterdPompObject{
     resample::Array{Bool,1}
     "log particle weights (before resampling)"
     logweights::Array{W,2}
+    "final weights"
+    weights::Array{W,1}
     "effective sample size"
     eff_sample_size::Array{W,1}
     "conditional log likelihoods"
@@ -48,7 +50,7 @@ effective sample size falls below `trigger*Np`.  The resampling is
 performed so that the weights are renormalized to the power `target`,
 i.e., if `target = β`, `w` is a particle weight, and `W` is the
 corresponding renormalized weight, then `W ∝ wᵝ`.  One must have 0 ≤
-`trigger ≤ 1 and 0 ≤ `target` < 1.  `trigger = missing` is a synonym
+`trigger` ≤ 1 and 0 ≤ `target` < 1.  `trigger = missing` is a synonym
 for `trigger = 1` and `target = missing` is equivalent to `target =
 0`.
 
@@ -73,15 +75,15 @@ pfilter(
     )
     trigger, target = proc_trig_targ(trigger, target)
     x0 = POMP.rinit(object; nsim=Np)
-    xf, xp, logw, cll, ess, perm, resamp = pfilter_internal!(
+    xf, xp, logw, w, cll, ess, perm, resamp = pfilter_internal!(
         object, x0,
         trigger, target,
     )
     xt = similar(x0, length(times(object)))
-    i = trace_ancestry!(xt, xf, perm)
+    i = trace_ancestry!(xt, xf, perm, w)
     PfilterdPompObject(
         PompObject(object, init_state=x0[i], states=xt),
-        Np, vec(x0) ,xf, xp, resamp, logw,
+        Np, vec(x0) ,xf, xp, resamp, logw, w,
         ess, cll,
         trigger, target,
         sum(cll),
@@ -121,17 +123,18 @@ pfilter_internal!(
     ess = similar(logw,length(t)) # effective sample size
     perm = Array{Int}(undef,length(t),Np) # sampled indices
     resamp = Array{Bool}(undef,length(t)) # indicator of resampling
+    w = ones(LogLik,Np)
     pfilter_loop!(
         object,
         t0, t, x0,
         reshape(xf,length(t),1,Np),
         reshape(xp,length(t),1,Np),
-        reshape(logw,length(t),1,Np,1),
         reshape(y,length(t),1,1),
-        ess, cll, perm, resamp,
+        reshape(logw,length(t),1,Np,1),
+        w, ess, cll, perm, resamp,
         args...,
     )
-    xf, xp, logw, cll, ess, perm, resamp
+    xf, xp, logw, w, cll, ess, perm, resamp
 end
 
 ## main loop for weighted particle filter
@@ -142,8 +145,9 @@ pfilter_loop!(
     x0::AbstractArray{X,2},
     xf::AbstractArray{X,3},
     xp::AbstractArray{X,3},
-    logw::AbstractArray{W,4},
     y::AbstractArray{Y,3},
+    logw::AbstractArray{W,4},
+    wprop::AbstractArray{W,1},
     eff_sample_size::AbstractArray{W,1},
     cond_logLik::AbstractArray{W,1},
     perm::AbstractArray{I,2},
@@ -151,7 +155,6 @@ pfilter_loop!(
     trigger::Float64,
     target::Float64,
 ) where {T<:Time,X<:NamedTuple,W<:AbstractFloat,Y<:NamedTuple,I<:Integer} = begin
-    wprop = ones(W,size(x0,2))
     work = similar(wprop)
     @inbounds for k ∈ eachindex(t)
         pfilter_step!(
@@ -174,8 +177,9 @@ pfilter_loop!(
     x0::AbstractArray{X,2},
     xf::AbstractArray{X,3},
     xp::AbstractArray{X,3},
-    logw::AbstractArray{W,4},
     y::AbstractArray{Y,3},
+    logw::AbstractArray{W,4},
+    _::AbstractArray{W,1},
     eff_sample_size::AbstractArray{W,1},
     cond_logLik::AbstractArray{W,1},
     perm::AbstractArray{I,2},
@@ -433,10 +437,17 @@ trace_ancestry!(
     traj::AbstractArray{X,1},
     filt::AbstractArray{X,2},
     perm::AbstractArray{I,2},
-) where {X,I} = begin
+    weights::AbstractArray{W,1},
+) where {X,I,W} = begin
     @assert size(traj,1)==size(perm,1)
+    @assert size(weights,1)==size(perm,2)
     @assert size(filt)==size(perm)
-    j::I = rand(axes(perm,2))
+    r::W = length(weights)*rand(W) ## this relies on mean(weights)=1
+    j::I = 1                       ## choose a random particle
+    @inbounds while r > weights[j] && j < length(weights)
+        r -= weights[j]
+        j += 1
+    end
     @inbounds for i ∈ Iterators.reverse(axes(perm,1))
         traj[i] = filt[i,j]
         j = perm[i,j]
