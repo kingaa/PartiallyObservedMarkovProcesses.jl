@@ -108,6 +108,13 @@ using BenchmarkTools
     @test all(isinf.(cond_logLik(Q1)))
     @test Q1.filt==Q1.pred
 
+    Q = pfilter(P,params=p1,trigger=0.5,Np=100)
+    @test Q.target==0.0
+    Q = pfilter(P,params=p1,target=0.5,Np=100)
+    @test Q.trigger==1.0
+    @test_throws "should be in [0,1]" pfilter(P,params=p1,target=0.5,trigger=2)
+    @test_throws "should be in [0,1)" pfilter(P,params=p1,target=-1,Np=100)
+
     Q2 = [pfilter(Q,Np=100,trigger=0.5,target=0.5) for _ ∈ 1:5]
     @test logmeanexp(logLik.(Q2)) isa Float64
     @test logmeanexp(logLik.(Q2),se=true) isa @NamedTuple{est::Float64,se::Float64}
