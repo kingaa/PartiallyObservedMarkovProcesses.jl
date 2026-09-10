@@ -35,9 +35,9 @@ struct PfilterdPompObject{
     eff_sample_size::Array{W,1}
     "conditional log likelihoods"
     cond_logLik::Array{W,1}
-    "sample-size fraction that triggers resampling. Missing value is equivalent to 1.0."
+    "sample-size fraction that triggers resampling; missing value is equivalent to 1.0."
     trigger::Union{Float64,Missing}
-    "renormalization power"
+    "renormalization power; missing value is equivalent to 0.0"
     target::Union{Float64,Missing}
     "log likelihood estimate (=sum of `cond_logLik`)"
     logLik::W
@@ -165,7 +165,7 @@ pfilter_loop!(
     target::Float64,
 ) where {T<:Time,X<:NamedTuple,W<:AbstractFloat,Y<:NamedTuple,I<:Integer} = begin
     work = similar(wprop)
-    @inbounds for k ∈ eachindex(t)
+    for k ∈ eachindex(t)
         pfilter_step!(
             object, k, t0, t, x0, xp, xf, y,
             logw, cond_logLik, eff_sample_size,
@@ -197,7 +197,7 @@ pfilter_loop!(
     target::Missing,
 ) where {T<:Time,X<:NamedTuple,W<:AbstractFloat,Y<:NamedTuple,I<:Integer} = begin
     work = Array{W}(undef,size(x0,2))
-    @inbounds for k ∈ eachindex(t)
+    for k ∈ eachindex(t)
         pfilter_step!(
             object, k, t0, t, x0, xp, xf, y,
             logw, cond_logLik, eff_sample_size,
@@ -226,13 +226,13 @@ pfilter_step!(
     resample::AbstractArray{Bool,1},
     args...,
 ) where {W<:AbstractFloat,T<:Time,X<:NamedTuple,Y<:NamedTuple,I<:Integer} = begin
-    @inbounds advance_particles!(
+    advance_particles!(
         object, t0, @view(t[[k]]),
         x0, @view(xp[[k],:,:]),
         @view(y[[k],:,:]),
         @view(logw[[k],:,:,:]),
     )
-    @inbounds pfilt_step_comps!(
+    pfilt_step_comps!(
         @view(cond_logLik[k]),
         @view(eff_sample_size[k]),
         @view(logw[k,1,:,1]),
@@ -269,7 +269,7 @@ pfilt_step_comps!(
     if isfinite(logwmax) && ess[] ≤ trigger*n
         systematic_resample!(p, w, work, target)
         resample[] = true
-        @inbounds xf .= xp[p]
+        xf .= xp[p]
     else
         p .= collect(eachindex(p))
         resample[] = false
@@ -292,7 +292,7 @@ pfilt_step_comps!(
     if isfinite(logwmax)
         systematic_resample!(p, logw, work)
         resample[] = true
-        @inbounds xf .= xp[p]
+        xf .= xp[p]
     else
         p .= collect(eachindex(p))
         resample[] = false
@@ -322,7 +322,7 @@ compute_ess_logLik!(
     if isfinite(logwmax)
         s::W = 0
         ss::W = 0
-        @inbounds for k ∈ eachindex(logw)
+        for k ∈ eachindex(logw)
             logw[k] += log(w[k])-logwmax
             v::W = exp(logw[k])
             s += v
@@ -357,7 +357,7 @@ compute_ess_logLik!(
     if isfinite(logwmax)
         s::W = 0
         ss::W = 0
-        @inbounds for k ∈ eachindex(logw)
+        for k ∈ eachindex(logw)
             logw[k] -= logwmax
             v::W = exp(logw[k])
             s += v
@@ -389,7 +389,7 @@ systematic_resample!(
     @assert length(ucum)==length(w)==length(p)
     s::W = 0
     α = 1-β
-    @inbounds for j ∈ eachindex(w)
+    for j ∈ eachindex(w)
         s += w[j]^α
         ucum[j] = s
     end
@@ -397,7 +397,7 @@ systematic_resample!(
     i::I = 1
     du::W = s/n
     u::W = -du*rand(W)
-    @inbounds for j ∈ eachindex(p)
+    for j ∈ eachindex(p)
         u += du
         while (u > ucum[i] && i < n)
             i += 1
@@ -405,7 +405,7 @@ systematic_resample!(
         p[j] = i
     end
     n = 0
-    @inbounds for j ∈ eachindex(p)
+    for j ∈ eachindex(p)
         if n ≠ p[j]
             n = p[j]
             s = w[n]^β
@@ -424,7 +424,7 @@ systematic_resample!(
 ) where {I,W} = begin
     @assert length(ucum)==length(logw)==length(p)
     s::W = 0
-    @inbounds for j ∈ eachindex(logw)
+    for j ∈ eachindex(logw)
         s += exp(logw[j])
         ucum[j] = s
     end
@@ -432,7 +432,7 @@ systematic_resample!(
     i::I = 1
     du::W = s/n
     u::W = -du*rand(W)
-    @inbounds for j ∈ eachindex(p)
+    for j ∈ eachindex(p)
         u += du
         while (u > ucum[i] && i < n)
             i += 1
@@ -453,11 +453,11 @@ trace_ancestry!(
     @assert size(filt)==size(perm)
     r::W = length(weights)*rand(W) ## this relies on mean(weights)=1
     j::I = 1                       ## choose a random particle
-    @inbounds while r > weights[j] && j < length(weights)
+    while r > weights[j] && j < length(weights)
         r -= weights[j]
         j += 1
     end
-    @inbounds for i ∈ Iterators.reverse(axes(perm,1))
+    for i ∈ Iterators.reverse(axes(perm,1))
         traj[i] = filt[i,j]
         j = perm[i,j]
     end

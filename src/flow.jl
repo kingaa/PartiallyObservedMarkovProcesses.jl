@@ -72,6 +72,6 @@ rproc_internal!(
     userdata::U,
 ) where {T<:RealTime,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
     for j ∈ eachindex(params), k ∈ axes(x0,2)
-        @inbounds plugin.integrator(@view(x[:,j,k]),times,x0[j,k],(;params[j]...,userdata...))
+        plugin.integrator(@view(x[:,j,k]),times,x0[j,k],(;params[j]...,userdata...))
     end
 end

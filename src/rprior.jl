@@ -29,7 +29,5 @@ rprior_internal(
     nsim::Integer,
     userdata::U,
 ) where {P<:NamedTuple,U<:NamedTuple} = begin
-    @inbounds(
-        [P(f(;params[j]...,userdata...)) for j ∈ eachindex(params), _ ∈ 1:nsim]
-    )
+    [P(f(;params[j]...,userdata...)) for j ∈ eachindex(params), _ ∈ 1:nsim]
 end

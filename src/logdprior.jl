@@ -34,7 +34,7 @@ logdprior_internal!(
     _...,
 ) where {W<:AbstractFloat} = begin
     for i ∈ eachindex(ell)
-        @inbounds ell[i] = W(0)
+        ell[i] = W(0)
     end
 end
 
@@ -45,6 +45,6 @@ logdprior_internal!(
     userdata::U,
 ) where {W<:AbstractFloat,P<:NamedTuple,U<:NamedTuple} = begin
     for j ∈ eachindex(params)
-        @inbounds ell[j] = W(f(; params[j]..., userdata...))
+        ell[j] = W(f(; params[j]..., userdata...))
     end
 end

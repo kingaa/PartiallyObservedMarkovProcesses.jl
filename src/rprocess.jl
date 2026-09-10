@@ -60,7 +60,7 @@ rproc_internal!(
     _...,
 ) where {T<:Time,X<:NamedTuple} = begin
     for k ∈ eachindex(times)
-        @inbounds x[k,:,:] = x0
+        x[k,:,:] = x0
     end
 end
 
@@ -78,10 +78,10 @@ rproc_internal!(
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
     for j ∈ eachindex(params), k ∈ axes(x0,2)
         t = t0
-        @inbounds x1 = x0[j,k]
+        x1 = x0[j,k]
         for i ∈ eachindex(times)
-            @inbounds t,x1 = rprocess_step(plugin,t,times[i],x1,params[j],userdata)
-            @inbounds x[i,j,k] = x1
+            t,x1 = rprocess_step(plugin,t,times[i],x1,params[j],userdata)
+            x[i,j,k] = x1
         end
     end
     nothing
@@ -101,11 +101,11 @@ rproc_internal!(
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple,A<:NamedTuple,U<:NamedTuple} = begin
     for j ∈ eachindex(params), k ∈ axes(x0,2)
         t = t0
-        @inbounds x1 = x0[j,k]
+        x1 = x0[j,k]
         for i ∈ eachindex(times)
             x1 = merge(x1,accumvars)::X
-            @inbounds t,x1 = rprocess_step(plugin,t,times[i],x1,params[j],userdata)
-            @inbounds x[i,j,k] = x1
+            t,x1 = rprocess_step(plugin,t,times[i],x1,params[j],userdata)
+            x[i,j,k] = x1
         end
     end
     nothing

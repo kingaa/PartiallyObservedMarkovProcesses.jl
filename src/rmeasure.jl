@@ -36,10 +36,8 @@ rmeas_internal(
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple,U<:NamedTuple} = begin
     @assert(size(x,1)==length(times))
     @assert(size(x,2)==length(params))
-    @inbounds(
-        [f(;t=times[i],x[i,j,k]...,params[j]...,userdata...)::NamedTuple
-         for i ∈ eachindex(times),
-             j ∈ eachindex(params),
-             k ∈ axes(x,3)]
-    )
+    [f(;t=times[i],x[i,j,k]...,params[j]...,userdata...)::NamedTuple
+     for i ∈ eachindex(times),
+         j ∈ eachindex(params),
+         k ∈ axes(x,3)]
 end

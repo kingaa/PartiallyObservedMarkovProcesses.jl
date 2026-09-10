@@ -63,7 +63,7 @@ logdmeasure_internal!(
 ) where {W<:AbstractFloat} = begin
     # COV_EXCL_STOP
     for i ∈ eachindex(ell)
-        @inbounds ell[i] = W(0)
+        ell[i] = W(0)
     end
     nothing
 end
@@ -81,7 +81,7 @@ logdmeasure_internal!(
     P<:NamedTuple,U<:NamedTuple
 } = begin
     for i ∈ eachindex(times), j ∈ eachindex(params), kx ∈ axes(x, 3), ky ∈ axes(y, 3)
-        @inbounds ell[i, j, kx, ky] = W(f(; t=times[i], y[i, j, ky]..., x[i, j, kx]..., params[j]..., userdata...))
+        ell[i, j, kx, ky] = W(f(; t=times[i], y[i, j, ky]..., x[i, j, kx]..., params[j]..., userdata...))
     end
     nothing
 end
