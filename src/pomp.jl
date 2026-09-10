@@ -19,8 +19,8 @@ and model components.
 struct PompObject{
     T <: Time,
     X <: NamedTuple,
-    A <: Union{<:NamedTuple,Nothing},
     Y <: NamedTuple,
+    A <: Union{<:NamedTuple,Nothing},
     F <: Union{PompPlugin,Nothing},
     U <: NamedTuple,
     P <: NamedTuple,
@@ -81,8 +81,8 @@ struct PompObject{
         new{
             typeof(t0),
             typeof(init_state),
-            typeof(accumvars),
             eltype(obs),
+            typeof(accumvars),
             typeof(rprocess),
             typeof(userdata),
             typeof(params),
@@ -166,8 +166,8 @@ struct PompObject{
         new{
             typeof(t0),
             typeof(init_state),
-            typeof(accumvars),
             eltype(obs),
+            typeof(accumvars),
             typeof(rprocess),
             typeof(userdata),
             typeof(params),

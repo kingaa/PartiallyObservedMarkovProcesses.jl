@@ -19,8 +19,8 @@ paramsymbs(f::Nothing) = Symbol[]
 paramsymbs(object::AbstractPompObject) = paramsymbs(pomp(object))
 
 paramsymbs(
-    object::PompObject{T,X,A,Y,F,U},
-) where {T,X,A,Y,F,U} = begin
+    object::PompObject{T,X,Y,A,F,U},
+) where {T,X,Y,A,F,U} = begin
     components = [:rinit, :rprocess, :rmeasure, :logdmeasure, :rprior, :logdprior]
     symbs = map(components) do c
         paramsymbs(getfield(object,c))

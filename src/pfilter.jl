@@ -12,7 +12,8 @@ the model, the model parameters, or algorithm settings, by calling
 struct PfilterdPompObject{
     T <: Time,
     X <: NamedTuple,
-    P <: PompObject{T,X},
+    Y <: NamedTuple,
+    P <: PompObject{T,X,Y},
     W <: AbstractFloat
     } <: AbstractPompObject
     "pomp object"
@@ -35,7 +36,7 @@ struct PfilterdPompObject{
     eff_sample_size::Array{W,1}
     "conditional log likelihoods"
     cond_logLik::Array{W,1}
-    "sample-size fraction that triggers resampling; missing value is equivalent to 1.0."
+    "sample-size fraction that triggers resampling; missing value is equivalent to 1.0"
     trigger::Union{Float64,Missing}
     "renormalization power; missing value is equivalent to 0.0"
     target::Union{Float64,Missing}
