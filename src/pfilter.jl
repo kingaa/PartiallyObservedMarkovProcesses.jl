@@ -1,5 +1,14 @@
 import Statistics: mean
 
+"""
+    PfilterdPompObject
+
+Created by a call to [`pfilter`](@ref `pfilter`), this struct holds
+the results of the particle-filter computation.  In particular, one
+can re-run a `pfilter` computation, optionally with modifications to
+the model, the model parameters, or algorithm settings, by calling
+`pfilter` on a `PfilterdPompObject`.
+"""
 struct PfilterdPompObject{
     T <: Time,
     X <: NamedTuple,

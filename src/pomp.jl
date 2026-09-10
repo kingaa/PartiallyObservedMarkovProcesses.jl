@@ -25,20 +25,35 @@ struct PompObject{
     U <: NamedTuple,
     P <: NamedTuple,
     } <: AbstractPompObject
+    "initial time"
     t0::T
+    "vector of observation times"
     times::Vector{T}
+    "symbol for the time variable"
     timevar::Symbol
+    "named tuple of accumulator variables and their reset values"
     accumvars::A
+    "named tuple of model parameters"
     params::P
+    "vector of observations"
     obs::Vector{Y}
+    "initial state (at time `t0`)"
     init_state::X
+    "vector of latent states"
     states::Union{Vector{X},Nothing}
+    "draws from the initial-state distribution"
     rinit::Union{Function,Nothing}
+    "draws from the latent-state transition model"
     rprocess::F
+    "draws from the measurement model"
     rmeasure::Union{Function,Nothing}
+    "returns the log probability density of the measurement model"
     logdmeasure::Union{Function,Nothing}
+    "draws from the prior distribution"
     rprior::Union{Function,Nothing}
+    "returns the log probability density of the prior"
     logdprior::Union{Function,Nothing}
+    "a named tuple of data that are made available to all basic model components"
     userdata::U
     PompObject(
         ;t0,
