@@ -251,6 +251,10 @@ advance_particles!(object, t0, times, x0, x, y, w) = begin
     nothing
 end
 
+## weighted filter case:
+## - compute ess and conditional log likelihood
+## - perform resampling if indicated
+## - copy resampled particles from xp to xf
 pfilt_step_comps!(
     logLik::AbstractArray{W,0},
     ess::AbstractArray{W,0},
@@ -278,6 +282,10 @@ pfilt_step_comps!(
     nothing
 end
 
+## unweighted filter case:
+## - compute ess and conditional log likelihood
+## - perform resampling
+## - copy resampled particles from xp to xf
 pfilt_step_comps!(
     logLik::AbstractArray{W,0},
     ess::AbstractArray{W,0},
