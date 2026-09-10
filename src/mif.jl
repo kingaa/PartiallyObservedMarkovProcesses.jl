@@ -67,13 +67,13 @@ mif(
     trigger, target = proc_trig_targ(trigger, target)
     t0 = timezero(object)
     t = times(object)
-    y = val_array(obs(object),length(t),1)
+    y = obs(object)
     trace = Array{P}(undef,Nmif+1)
     params = fill(params,Np)
     trace[1] = param_mean(params)
-    ell = Array{LogLik}(undef,length(t),Np,1,1)
+    ell = Array{LogLik}(undef,1,Np,1)
     cll = similar(ell,length(t))
-    ess = similar(cll)
+    ess = Array{LogLik}(undef)
     ll = similar(ell,Nmif)
     work = similar(ell,Np)
     perm = Array{Int}(undef,Np)
@@ -89,18 +89,14 @@ mif(
             rinit!(object, x0; t0, params)
         end
         for j ∈ eachindex(t)
-            rprocess!(object, xp; params, x0, t0=t0, times=@view(t[[j]]))
-            logdmeasure!(object, @view(ell[[j],:,:,:]); times=@view(t[[j]]), y = @view(y[[j],:,:]), x=xp, params)
-            pfilt_step_comps!(
-                @view(cll[j]), @view(ess[j]),
-                @view(ell[j,:,1,1]),
-                perm,
-                @view(xp[1,:,1]),
-                @view(xf[1,:,1]),
-                resample,
-                work,
+            mif_pfilt_step!(
+                object,
+                ell, @view(cll[j]), ess,
+                xp, xf, params, x0,
+                t0, @view(t[[j]]),
+                @view(y[[j]]),
+                resample, perm, work,
             )
-            params .= params[perm]
             if j < length(t) || i < Nmif
                 perturbn!(params, perturbation_kernel, pscale, j)
             end
@@ -136,6 +132,40 @@ mif(
 )
 
 mif(_...) = error("Incorrect call to `mif`.")
+
+mif_pfilt_step!(
+    object::PompObject{T,X,Y},
+    ell::AbstractArray{W,3},
+    cll::AbstractArray{W,0},
+    ess::AbstractArray{W,0},
+    xp::AbstractArray{X,3},
+    xf::AbstractArray{X,3},
+    params::AbstractArray{P,1},
+    x0::AbstractArray{X,2},
+    t0::T,
+    times::AbstractArray{T,1},
+    y::AbstractArray{Y,1},
+    resample::AbstractArray{Bool,0},
+    perm::AbstractArray{I,1},
+    work::AbstractArray{W,1},
+    args...,
+) where {T,X,Y,W,P,I} = begin
+    rprocess!(object, xp; params, x0, t0, times)
+    logdmeasure!(object, ell; times, y, x=xp, params)
+    pfilt_step_comps!(
+        cll, ess,
+        @view(ell[1,:,1]),
+        perm,
+        @view(xp[1,:,1]),
+        @view(xf[1,:,1]),
+        resample,
+        work,
+        args...,
+    )
+    params .= params[perm]
+    nothing
+end
+
 
 ## apply the perturbation kernel
 perturbn!(
