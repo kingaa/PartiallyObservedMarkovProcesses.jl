@@ -26,12 +26,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        version: ["pre", "1.12"]
+        version: ["pre", "1.13", "1.12"]
         arch: [x64]
         R: [release]
         threads: ["1", "2"]
         exclude:
           - version: 1.12
+            threads: "1"
+          - version: 1.13
             threads: "1"
     steps:
       - uses: actions/checkout@v7
