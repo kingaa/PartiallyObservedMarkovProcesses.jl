@@ -5,7 +5,7 @@ import DataFrames: insertcols!
     MifdPompObject
 
 Created by a call to [`mif`](@ref `mif`), this struct holds the
-results of the particle-filter computation.  In particular, one can
+results of the iterated filtering computation.  In particular, one can
 re-run a `mif` computation, optionally with modifications to the
 model, the model parameters, or algorithm settings, by calling `mif`
 on a `MifdPompObject`.
@@ -37,12 +37,53 @@ logLik(object::MifdPompObject) = logLik(object.pfobj)
 eff_sample_size(object::MifdPompObject) = eff_sample_size(object.pfobj)
 cond_logLik(object::MifdPompObject) = cond_logLik(object.pfobj)
 
-pfilter(object::MifdPompObject; kwargs...,) = pfilter(object.pfobj; kwargs...)
+"""
+    traces(object)
 
+Returns a `DataFrame` containing the traces of an iterated filtering
+computation. Specifically, these are the iteration-by-iteration
+trajectory of the model parameters and the estimated mif likelihood.
+"""
 traces(object::MifdPompObject) = begin
     insertcols!(melt(object.trace, :iteration), :logLik => [object.logLik...,missing])
 end
 
+"""
+    pfilter(object; kwargs...)
+
+Calling `pfilter` on the result of a [`mif`](@ref `mif`) computation
+runs a particle filter.  By default, the parameters `Np`, `trigger`,
+and `target` used in the `mif` computation are re-used; one can
+optionally modify these.
+"""
+pfilter(object::MifdPompObject; kwargs...,) = pfilter(object.pfobj; kwargs...)
+
+"""
+    mif(object; Np = 1, Nmif = 1, perturbation_kernel, cooling_schedule,
+        trigger, target, params, rinit, rprocess, logdmeasure, kwargs...)
+
+Iterated filtering.  In addition to the components needed for a
+[`pfilter`](@ref `pfilter`) (i.e., `Np`, `trigger`, `target`), one
+must specify a perturbation kernel, cooling schedule, and number of iterations.
+
+## Arguments
+
+- `object`: A `DataFrame`, `PompObject`, or vector of data.
+- `Np`: number of particles to use in the filtering.
+- `Nmif`: number of MIF iterations to perform.
+- `perturbation_kernel`: a function that returns perturbed versions of
+  some or all of the model parameters. See below for details.
+- `cooling_schedule`: a function that specifies the MIF cooling
+  schedule. See below for details.
+- `trigger`, `target`: see [`pfilter`](@ref `pfilter`).
+- `params`: `NamedTuple` of model parameters.
+- `rinit`, `rprocess`, `logdmeasure`: necessary basic model components.
+- `kwargs...`: other arguments are passed to [`pomp`](@ref `pomp`).
+
+## Perturbation kernel
+
+## Cooling schedule
+"""
 mif(
     object::ValidPompData;
     Np::Integer = 1,
@@ -143,7 +184,7 @@ mif_calc!(
 mif_calc!(
     trigger::Float64, target::Float64, Np::Integer, args...,
 ) = begin
-    w = Array{LogLik}(undef,Np)
+    w = ones(LogLik,Np)
     mif_loop!(args...,w,trigger,target,Np)
 end
 
@@ -196,8 +237,7 @@ mif_pfilt_step!(
     perm::AbstractArray{I,1},
     args...,
 ) where {T,X,Y,W,P,I} = begin
-    rprocess!(object, xp; params, x0, t0, times)
-    logdmeasure!(object, ell; times, y, x=xp, params)
+    advance_particles!(object, t0, times, x0, xp, y, ell, params)
     pfilt_step_comps!(
         cll, ess,
         @view(ell[1,:,1]),
@@ -229,4 +269,11 @@ param_mean(
         mean(getfield.(params,n))
     end
     (;zip(names,means)...)
+end
+
+pretty_string(object::MifdPompObject) = begin
+    pretty_string(pomp(object)) *
+        ", Nmif=$(object.Nmif)" *
+        ", Np=$(object.pfobj.Np)" *
+        ", logLik=$(round(logLik(object),digits=2))"
 end

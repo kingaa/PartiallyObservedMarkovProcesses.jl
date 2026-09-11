@@ -230,9 +230,12 @@ pfilter_step!(
     nothing
 end
 
-advance_particles!(object, t0, times, x0, x, y, w) = begin
-    rprocess!(object, x; x0, t0, times)
-    logdmeasure!(object, w; times, y, x)
+advance_particles!(
+    object, t0, times, x0, x, y, w,
+    params = coef(object),
+) = begin
+    rprocess!(object, x; x0, t0, times, params)
+    logdmeasure!(object, w; times, y, x, params)
     nothing
 end
 
@@ -478,5 +481,5 @@ end
 pretty_string(object::PfilterdPompObject) = begin
     pretty_string(pomp(object)) *
         ", Np=$(object.Np)" *
-        ", logLik=$(round(object.logLik,digits=2))"
+        ", logLik=$(round(logLik(object),digits=2))"
 end

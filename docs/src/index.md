@@ -7,6 +7,7 @@ The package is a Julia implementation of the [pomp package for R](https://kingaa
 - [Implementation of POMP models](@ref)
 - [Simulation](@ref)
 - [Particle filter](@ref)
+- [Iterated filtering](@ref)
 - [Trajectory matching](@ref)
 - [Workhorses](@ref) (low-level interface to basic model components)
 - [Helper functions](@ref)
@@ -42,6 +43,12 @@ simulate_array
 
 ```@docs
 pfilter
+```
+
+### Iterated filtering
+
+```@docs
+mif
 ```
 
 ### Trajectory matching
@@ -91,6 +98,7 @@ times
 timezero
 melt
 logmeanexp
+traces
 ```
 
 ### Reproducibility tools

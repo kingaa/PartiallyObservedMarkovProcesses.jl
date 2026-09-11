@@ -5,7 +5,6 @@ using Random
 using DataFrames
 using Distributions: LogNormal
 using Test
-using BenchmarkTools
 
 @info h1("mif tests")
 
@@ -39,13 +38,14 @@ using BenchmarkTools
     Pf0 = pfilter(Pf,params=p1)
     
     M = mif(
-        P,params=p1,
-        Np=1000,Nmif=200,
+        P,params=p1,Np=10,Nmif=2,
         perturbation_kernel=pkern,
         cooling_schedule=cool,
     )
+    @time M = mif(M,Np=1000,Nmif=200,)
     @test M isa POMP.MifdPompObject
-    M2 = mif(M,Nmif=2)
+    mif(M,Nmif=1,trigger=0.3,target=0.5)
+    @time M2 = mif(M,Nmif=10,trigger=0.3,target=0.5)
     @test M2 isa POMP.MifdPompObject
     @test M2.pfobj.Np == M.pfobj.Np
 
@@ -59,6 +59,11 @@ using BenchmarkTools
     @test melt(coef(M)) == DataFrame(traces(M)[end,[keys(coef(M))...]])
     @test pomp(M) isa POMP.PompObject
     @test pfilter(M) isa POMP.PfilterdPompObject
+    @test eff_sample_size(M) isa Vector
+    @test all(eff_sample_size(M) .≤ 1000)
+    @test cond_logLik(M) isa Vector
+    @test all(cond_logLik(M) .< 0)
     @test_throws "Incorrect call" mif("hello!")
+    @test occursin(r"MifdPompObject .* Nmif=",sprint(show,M))
 
 end
