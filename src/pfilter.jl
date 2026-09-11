@@ -211,7 +211,7 @@ pfilter_step!(
     resample::AbstractArray{Bool,1},
     args...,
 ) where {W<:AbstractFloat,T<:Time,X<:NamedTuple,Y<:NamedTuple,I<:Integer} = begin
-    advance_particles!(
+    pfilter_advance_particles!(
         object, t0, @view(t[[k]]),
         x0, @view(xp[[k],:,:]),
         @view(y[[k]]),
@@ -230,12 +230,11 @@ pfilter_step!(
     nothing
 end
 
-advance_particles!(
+pfilter_advance_particles!(
     object, t0, times, x0, x, y, w,
-    params = coef(object),
 ) = begin
-    rprocess!(object, x; x0, t0, times, params)
-    logdmeasure!(object, w; times, y, x, params)
+    rprocess!(object, x; x0, t0, times)
+    logdmeasure!(object, w; times, y, x)
     nothing
 end
 

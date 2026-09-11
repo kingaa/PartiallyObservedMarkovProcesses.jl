@@ -237,7 +237,10 @@ mif_pfilt_step!(
     perm::AbstractArray{I,1},
     args...,
 ) where {T,X,Y,W,P,I} = begin
-    advance_particles!(object, t0, times, x0, xp, y, ell, params)
+    mif_advance_particles!(
+        object, t0, times,
+        x0, xp, y, ell, params,
+    )
     pfilt_step_comps!(
         cll, ess,
         @view(ell[1,:,1]),
@@ -250,6 +253,13 @@ mif_pfilt_step!(
     nothing
 end
 
+mif_advance_particles!(
+    object, t0, times, x0, x, y, w, params,
+) = begin
+    rprocess!(object, x; x0, t0, times, params)
+    logdmeasure!(object, w; times, y, x, params)
+    nothing
+end
 
 ## apply the perturbation kernel
 perturbn!(
