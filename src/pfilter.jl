@@ -84,16 +84,15 @@ pfilter(
         kwargs...,
     )
     trigger, target = proc_trig_targ(trigger, target)
-    x0 = POMP.rinit(object; nsim=Np)
-    xf, xp, logw, w, cll, ess, perm, resamp = pfilter_internal!(
-        object, x0,
+    x0, xf, xp, logw, w, cll, ess, perm, resamp = pfilter_internal!(
+        object, Np,
         trigger, target,
     )
     xt = similar(x0, length(times(object)))
     i = trace_ancestry!(xt, xf, perm, w)
     PfilterdPompObject(
         PompObject(object, init_state=x0[i], states=xt),
-        Np, vec(x0) ,xf, xp, resamp, logw, w,
+        Np, vec(x0), xf, xp, resamp, logw, w,
         ess, cll,
         trigger, target,
         sum(cll),
@@ -120,57 +119,50 @@ pfilter(_...) = error("Incorrect call to `pfilter`.")
 
 ## allocate memory and run main loop
 pfilter_internal!(
-    object, x0, args...,
+    object, Np, trigger, target,
 ) = begin
     t0 = timezero(object)
     t = times(object)
     y = obs(object)
-    Np = length(x0)
+    x0 = rinit(object; nsim=Np)
     xf = similar(x0,length(t),Np) # filter distribution
     xp = similar(x0,length(t),Np) # prediction distribution
     logw = Array{LogLik}(undef,length(t),Np) # log weights
     cll = similar(logw,length(t)) # conditional log likelihood
-    ess = similar(logw,length(t)) # effective sample size
+    ess = similar(cll)            # effective sample size
     perm = Array{Int}(undef,length(t),Np) # sampled indices
     resamp = Array{Bool}(undef,length(t)) # indicator of resampling
     w = ones(LogLik,Np)
     pfilter_loop!(
+        trigger, target, w,
         object,
-        t0, t, y, x0,
+        t0, t, x0,
         reshape(xf,length(t),1,Np),
         reshape(xp,length(t),1,Np),
         reshape(logw,length(t),1,Np),
-        w, ess, cll, perm, resamp,
-        args...,
+        y, ess, cll, perm, resamp,
     )
-    xf, xp, logw, w, cll, ess, perm, resamp
+    x0, xf, xp, logw, w, cll, ess, perm, resamp
 end
 
 ## main loop for weighted particle filter
 pfilter_loop!(
+    trigger::Float64,
+    target::Float64,
+    w::AbstractArray{W,1},
     object::AbstractPompObject,
     t0::T,
     t::AbstractArray{T,1},
-    y::AbstractArray{Y,1},
     x0::AbstractArray{X,2},
     xf::AbstractArray{X,3},
-    xp::AbstractArray{X,3},
-    logw::AbstractArray{W,3},
-    wprop::AbstractArray{W,1},
-    eff_sample_size::AbstractArray{W,1},
-    cond_logLik::AbstractArray{W,1},
-    perm::AbstractArray{I,2},
-    resample::AbstractArray{Bool,1},
-    trigger::Float64,
-    target::Float64,
-) where {T<:Time,X<:NamedTuple,W<:AbstractFloat,Y<:NamedTuple,I<:Integer} = begin
-    work = similar(wprop)
+    args...,
+) where {T<:Time,X<:NamedTuple,W<:AbstractFloat} = begin
+    work = similar(w)
     for k ∈ eachindex(t)
         pfilter_step!(
-            object, k, t0, t, y, x0, xp, xf,
-            logw, cond_logLik, eff_sample_size,
-            perm, resample, work,
-            wprop, trigger, target,
+            object, k, t0, t, x0, xf,
+            args..., work,
+            w, trigger, target,
         )
         t0 = t[k]
         x0 = view(xf,k,:,:)
@@ -180,28 +172,21 @@ end
 
 ## main loop for unweighted particle filter
 pfilter_loop!(
+    trigger::Missing,
+    target::Missing,
+    w::AbstractArray{W,1},
     object::AbstractPompObject,
     t0::T,
     t::AbstractArray{T,1},
-    y::AbstractArray{Y,1},
     x0::AbstractArray{X,2},
     xf::AbstractArray{X,3},
-    xp::AbstractArray{X,3},
-    logw::AbstractArray{W,3},
-    _::AbstractArray{W,1},
-    eff_sample_size::AbstractArray{W,1},
-    cond_logLik::AbstractArray{W,1},
-    perm::AbstractArray{I,2},
-    resample::AbstractArray{Bool,1},
-    trigger::Missing,
-    target::Missing,
-) where {T<:Time,X<:NamedTuple,W<:AbstractFloat,Y<:NamedTuple,I<:Integer} = begin
-    work = Array{W}(undef,size(x0,2))
+    args...,
+) where {T<:Time,X<:NamedTuple,W<:AbstractFloat} = begin
+    work = similar(w)
     for k ∈ eachindex(t)
         pfilter_step!(
-            object, k, t0, t, y, x0, xp, xf,
-            logw, cond_logLik, eff_sample_size,
-            perm, resample, work,
+            object, k, t0, t, x0, xf,
+            args..., work,
         )
         t0 = t[k]
         x0 = view(xf,k,:,:)
@@ -215,13 +200,13 @@ pfilter_step!(
     k::Integer,
     t0::T,
     t::AbstractArray{T,1},
-    y::AbstractArray{Y,1},
     x0::AbstractArray{X,2},
-    xp::AbstractArray{X,3},
     xf::AbstractArray{X,3},
+    xp::AbstractArray{X,3},
     logw::AbstractArray{W,3},
-    cond_logLik::AbstractArray{W,1},
+    y::AbstractArray{Y,1},
     eff_sample_size::AbstractArray{W,1},
+    cond_logLik::AbstractArray{W,1},
     perm::AbstractArray{I,2},
     resample::AbstractArray{Bool,1},
     args...,
@@ -246,8 +231,8 @@ pfilter_step!(
 end
 
 advance_particles!(object, t0, times, x0, x, y, w) = begin
-    rprocess!(object,x;x0,t0,times)
-    logdmeasure!(object,w;times,y,x)
+    rprocess!(object, x; x0, t0, times)
+    logdmeasure!(object, w; times, y, x)
     nothing
 end
 
@@ -425,6 +410,7 @@ systematic_resample!(
     nothing
 end
 
+## unweighted case
 systematic_resample!(
     p::AbstractArray{I,1},
     logw::AbstractArray{W,1},

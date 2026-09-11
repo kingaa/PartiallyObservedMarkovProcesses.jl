@@ -59,5 +59,6 @@ using BenchmarkTools
     @test melt(coef(M)) == DataFrame(traces(M)[end,[keys(coef(M))...]])
     @test pomp(M) isa POMP.PompObject
     @test pfilter(M) isa POMP.PfilterdPompObject
+    @test_throws "Incorrect call" mif("hello!")
 
 end

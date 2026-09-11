@@ -34,11 +34,10 @@ end
 
 pomp(object::MifdPompObject) = pomp(object.pfobj)
 logLik(object::MifdPompObject) = logLik(object.pfobj)
+eff_sample_size(object::MifdPompObject) = eff_sample_size(object.pfobj)
+cond_logLik(object::MifdPompObject) = cond_logLik(object.pfobj)
 
-pfilter(
-    object::MifdPompObject;
-    kwargs...,
-) = pfilter(object.pfobj; kwargs...)
+pfilter(object::MifdPompObject; kwargs...,) = pfilter(object.pfobj; kwargs...)
 
 traces(object::MifdPompObject) = begin
     insertcols!(melt(object.trace, :iteration), :logLik => [object.logLik...,missing])
@@ -65,48 +64,13 @@ mif(
         kwargs...,
     )
     trigger, target = proc_trig_targ(trigger, target)
-    t0 = timezero(object)
-    t = times(object)
-    y = obs(object)
-    trace = Array{P}(undef,Nmif+1)
-    params = fill(params,Np)
-    trace[1] = param_mean(params)
-    ell = Array{LogLik}(undef,1,Np,1)
-    cll = similar(ell,length(t))
-    ess = Array{LogLik}(undef)
-    ll = similar(ell,Nmif)
-    work = similar(ell,Np)
-    perm = Array{Int}(undef,Np)
-    pscale = cooling_schedule(0)
-    perturbn!(params, perturbation_kernel, pscale, 0)
-    x0 = POMP.rinit(object; params)
-    xp = similar(x0, 1, Np, 1)
-    xf = similar(x0, 1, Np, 1)
-    resample = Array{Bool}(undef)
-    for i ∈ 1:Nmif
-        t0 = timezero(object)
-        if i > 1
-            rinit!(object, x0; t0, params)
-        end
-        for j ∈ eachindex(t)
-            mif_pfilt_step!(
-                object,
-                ell, @view(cll[j]), ess,
-                xp, xf, params, x0,
-                t0, @view(t[[j]]),
-                @view(y[[j]]),
-                resample, perm, work,
-            )
-            if j < length(t) || i < Nmif
-                perturbn!(params, perturbation_kernel, pscale, j)
-            end
-            t0 = t[j]
-            x0 = view(xf,1,:,:)
-        end
-        ll[i] = sum(cll)
-        trace[i+1] = param_mean(params)
-        pscale = cooling_schedule(i)
-    end
+    ll, trace = mif_internal(
+        object, params,
+        Nmif, Np,
+        perturbation_kernel,
+        cooling_schedule,
+        trigger, target,
+    )
     MifdPompObject(
         pfilter(object; params=trace[end], Np, trigger, target),
         Nmif,
@@ -127,11 +91,95 @@ mif(
     kwargs...,
 ) = mif(
     pomp(object);
-    Np, Nmif, perturbation_kernel, cooling_schedule,
-    trigger, target, kwargs...,
+    Np, Nmif,
+    perturbation_kernel, cooling_schedule,
+    trigger, target,
+    kwargs...,
 )
 
 mif(_...) = error("Incorrect call to `mif`.")
+
+mif_internal(
+    object::PompObject{T,X,Y},
+    params::P,
+    Nmif::Integer,
+    Np::Integer,
+    perturbation_kernel::Function,
+    cooling_schedule::Function,
+    trigger::Union{Missing,Float64},
+    target::Union{Missing,Float64},
+) where {T,X,Y,P} = begin
+    t0 = timezero(object)
+    t = times(object)
+    y = obs(object)
+    params = fill(params,Np)
+    ell = Array{LogLik}(undef,1,Np,1)
+    cll = similar(ell,length(t))
+    ess = Array{LogLik}(undef)
+    pscale = cooling_schedule(0)
+    perturbn!(params, perturbation_kernel, pscale, 0)
+    x0 = rinit(object; params)
+    xp = similar(x0, 1, Np, 1)
+    xf = similar(x0, 1, Np, 1)
+    resample = Array{Bool}(undef)
+    perm = Array{Int}(undef,Np)
+    work = similar(ell,Np)
+    ll = similar(ell,Nmif)
+    trace = Array{P}(undef,Nmif+1)
+    trace[1] = param_mean(params)
+    mif_calc!(
+        trigger, target, Np,
+        object, trace, ll, Nmif, x0, xp, xf, t0, t, y, params,
+        ell, cll, ess, perturbation_kernel, cooling_schedule, pscale,
+        perm, resample, work,
+    )
+    ll, trace
+end
+
+mif_calc!(
+    trigger::Missing, target::Missing, Np::Integer, args...,
+) = mif_loop!(args...)
+
+mif_calc!(
+    trigger::Float64, target::Float64, Np::Integer, args...,
+) = begin
+    w = Array{LogLik}(undef,Np)
+    mif_loop!(args...,w,trigger,target,Np)
+end
+
+mif_loop!(
+    object, trace, ll,
+    Nmif, x0, xp, xf, t0, t, y, params,
+    ell, cll, ess,
+    perturbation_kernel, cooling_schedule, pscale,
+    args...,
+) = begin
+    for i ∈ 1:Nmif
+        t0 = timezero(object)
+        if i > 1
+            rinit!(object, x0; t0, params)
+        end
+        for j ∈ eachindex(t)
+            mif_pfilt_step!(
+                object,
+                ell, @view(cll[j]), ess,
+                xp, xf, params, x0,
+                t0, @view(t[[j]]),
+                @view(y[[j]]),
+                args...,
+            )
+            if j < length(t) || i < Nmif
+                perturbn!(params, perturbation_kernel, pscale, j)
+            end
+            t0 = t[j]
+            x0 = view(xf,1,:,:)
+        end
+        ll[i] = sum(cll)
+        trace[i+1] = param_mean(params)
+        pscale = cooling_schedule(i)
+    end
+    nothing
+end
 
 mif_pfilt_step!(
     object::PompObject{T,X,Y},
@@ -145,9 +193,7 @@ mif_pfilt_step!(
     t0::T,
     times::AbstractArray{T,1},
     y::AbstractArray{Y,1},
-    resample::AbstractArray{Bool,0},
     perm::AbstractArray{I,1},
-    work::AbstractArray{W,1},
     args...,
 ) where {T,X,Y,W,P,I} = begin
     rprocess!(object, xp; params, x0, t0, times)
@@ -158,8 +204,6 @@ mif_pfilt_step!(
         perm,
         @view(xp[1,:,1]),
         @view(xf[1,:,1]),
-        resample,
-        work,
         args...,
     )
     params .= params[perm]
