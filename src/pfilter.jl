@@ -136,11 +136,10 @@ pfilter_internal!(
     w = ones(LogLik,Np)
     pfilter_loop!(
         object,
-        t0, t, x0,
+        t0, t, y, x0,
         reshape(xf,length(t),1,Np),
         reshape(xp,length(t),1,Np),
-        reshape(y,length(t),1,1),
-        reshape(logw,length(t),1,Np,1),
+        reshape(logw,length(t),1,Np),
         w, ess, cll, perm, resamp,
         args...,
     )
@@ -152,11 +151,11 @@ pfilter_loop!(
     object::AbstractPompObject,
     t0::T,
     t::AbstractArray{T,1},
+    y::AbstractArray{Y,1},
     x0::AbstractArray{X,2},
     xf::AbstractArray{X,3},
     xp::AbstractArray{X,3},
-    y::AbstractArray{Y,3},
-    logw::AbstractArray{W,4},
+    logw::AbstractArray{W,3},
     wprop::AbstractArray{W,1},
     eff_sample_size::AbstractArray{W,1},
     cond_logLik::AbstractArray{W,1},
@@ -168,7 +167,7 @@ pfilter_loop!(
     work = similar(wprop)
     for k ∈ eachindex(t)
         pfilter_step!(
-            object, k, t0, t, x0, xp, xf, y,
+            object, k, t0, t, y, x0, xp, xf,
             logw, cond_logLik, eff_sample_size,
             perm, resample, work,
             wprop, trigger, target,
@@ -184,11 +183,11 @@ pfilter_loop!(
     object::AbstractPompObject,
     t0::T,
     t::AbstractArray{T,1},
+    y::AbstractArray{Y,1},
     x0::AbstractArray{X,2},
     xf::AbstractArray{X,3},
     xp::AbstractArray{X,3},
-    y::AbstractArray{Y,3},
-    logw::AbstractArray{W,4},
+    logw::AbstractArray{W,3},
     _::AbstractArray{W,1},
     eff_sample_size::AbstractArray{W,1},
     cond_logLik::AbstractArray{W,1},
@@ -200,7 +199,7 @@ pfilter_loop!(
     work = Array{W}(undef,size(x0,2))
     for k ∈ eachindex(t)
         pfilter_step!(
-            object, k, t0, t, x0, xp, xf, y,
+            object, k, t0, t, y, x0, xp, xf,
             logw, cond_logLik, eff_sample_size,
             perm, resample, work,
         )
@@ -216,11 +215,11 @@ pfilter_step!(
     k::Integer,
     t0::T,
     t::AbstractArray{T,1},
+    y::AbstractArray{Y,1},
     x0::AbstractArray{X,2},
     xp::AbstractArray{X,3},
     xf::AbstractArray{X,3},
-    y::AbstractArray{Y,3},
-    logw::AbstractArray{W,4},
+    logw::AbstractArray{W,3},
     cond_logLik::AbstractArray{W,1},
     eff_sample_size::AbstractArray{W,1},
     perm::AbstractArray{I,2},
@@ -230,13 +229,13 @@ pfilter_step!(
     advance_particles!(
         object, t0, @view(t[[k]]),
         x0, @view(xp[[k],:,:]),
-        @view(y[[k],:,:]),
-        @view(logw[[k],:,:,:]),
+        @view(y[[k]]),
+        @view(logw[[k],:,:]),
     )
     pfilt_step_comps!(
         @view(cond_logLik[k]),
         @view(eff_sample_size[k]),
-        @view(logw[k,1,:,1]),
+        @view(logw[k,1,:]),
         @view(perm[k,:]),
         @view(xp[k,1,:]),
         @view(xf[k,1,:]),

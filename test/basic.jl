@@ -70,17 +70,17 @@ using Test
     @test keys(y[17])==(:y,)
     @test_throws r"keyword argument .* not assigned" rmeasure(P,x=x[:,:,1],params=(a=1.0,))
 
-    ell = logdmeasure(P,x=x,y=y,params=[p1;p2]);
-    @test ell isa Array{POMP.LogLik,4}
-    @test size(ell)==(size(x)...,size(y,3))
+    ell = logdmeasure(P,x=x,y=y[:,1,1],params=[p1;p2]);
+    @test ell isa Array{POMP.LogLik,3}
+    @test size(ell)==size(x)
     @test all(ell.==0.0)
 
     P = pomp(P,logdmeasure=logdmeas);
-    ell = logdmeasure(P,x=x,y=y,params=[p1;p2]);
-    @test ell isa Array{POMP.LogLik,4}
-    @test size(ell)==(size(x)...,size(y,3))
+    ell = logdmeasure(P,x=x,y=y[:,1,3],params=[p1;p2]);
+    @test ell isa Array{POMP.LogLik,3}
+    @test size(ell)==size(x)
     @test all(ell.<=0)
-    @test_throws r"keyword argument .* not assigned" logdmeasure(P,y=y,x=x,params=(a=1.0,))
+    @test_throws r"keyword argument .* not assigned" logdmeasure(P,y=y[:,2,1],x=x,params=(a=1.0,))
 
     ell = logdprior(P,params=[p1;p2]);
     @test ell isa Array{POMP.LogLik,1}

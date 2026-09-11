@@ -4,11 +4,11 @@
 Stop makin' a fool outta me!
 Why don'cha come on over...?
 """
-val_array(x::Vector) = x
+val_array(x::AbstractVector) = x
 
-val_array(x::Array{X,N}) where {X,N} = vec(x)
+val_array(x::AbstractArray) = vec(x)
 
-val_array(x::Array{X,N}, dim::Integer...) where {X,N} = begin
+val_array(x::AbstractArray, dim::Integer...) = begin
     q,r = divrem(length(x),prod(dim))
     if r != 0
         error("in `val_array`: size mismatch.")

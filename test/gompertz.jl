@@ -33,8 +33,8 @@ using Test
     y1 = rmeasure(P,x=x[3,:,:],times=1970,params=p1);
     @test size(y1)==(1,1,5)
 
-    ell = logdmeasure(P,x=x,y=y,params=p1);
-    @test size(ell)==(27,1,5,5)
+    ell = logdmeasure(P,x=x,y=y[:,1,3],params=p1);
+    @test size(ell)==(27,1,5)
 
     p2 = (σₚ=0.7,σₘ=0.1,K=210.0,X0=150.0,r=4.5);
     p = [p1; p2];

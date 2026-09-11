@@ -1,7 +1,6 @@
 ## To-do List
 
-- iterated filtering
-- weighted particle filter
+- use Y type in `rmeasure`
 - remove all need for **RCall**
 - multiparameter particle filter? should be trivial from existing
 - potentially move `accumvars` to the rprocess plugin (closer to where it is used)

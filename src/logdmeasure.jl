@@ -8,16 +8,23 @@ measurement density.
 logdmeasure(
     object::AbstractPompObject;
     times::Union{T,AbstractVector{T}}=times(object),
-    y::Union{Y,AbstractArray{Y}}=obs(object),
+    y::Union{Y,AbstractVector{Y}}=obs(object),
     x::Union{X,AbstractArray{X}}=states(object),
     params::Union{P,AbstractVector{P}}=coef(object),
 ) where {T<:Time,Y<:NamedTuple,X<:NamedTuple,P<:NamedTuple} = begin
     times = val_array(times)
+    y = val_array(y)
     params = val_array(params)
     x = val_array(x, length(times), length(params))
-    y = val_array(y, length(times), length(params))
-    ell = similar(Array{LogLik}, size(x)..., size(y, 3))
-    logdmeasure!(object, ell; times, y, x, params)
+    @assert length(y)==length(times)
+    ell = Array{LogLik}(undef, size(x))
+    logdmeasure_internal!(
+        ell,
+        pomp(object).logdmeasure,
+        times,
+        y, x, params,
+        pomp(object).userdata
+    )
     ell
 end
 
@@ -31,20 +38,21 @@ all inputs.
 """
 logdmeasure!(
     object::AbstractPompObject,
-    ell::AbstractArray{W,4};
-    times::AbstractVector{T}=times(object),
-    y::AbstractArray{Y}=obs(object),
-    x::AbstractArray{X}=states(object),
+    ell::AbstractArray{W,3};
+    times::Union{T,AbstractVector{T}}=times(object),
+    y::Union{Y,AbstractVector{Y}}=obs(object),
+    x::Union{X,AbstractArray{X}}=states(object),
     params::Union{P,AbstractVector{P}}=coef(object),
 ) where {
     W<:AbstractFloat,T<:Time,Y<:NamedTuple,
     X<:NamedTuple,P<:NamedTuple
 } = begin
+    times = val_array(times)
+    y = val_array(y)
     params = val_array(params)
-    @assert length(times) == size(x, 1)
-    @assert length(times) == size(y, 1)
-    @assert length(params) == size(x, 2)
-    @assert length(params) == size(y, 2)
+    x = val_array(x, length(times), length(params))
+    @assert length(y)==length(times)
+    @assert size(ell)==size(x)
     logdmeasure_internal!(
         ell,
         pomp(object).logdmeasure,
@@ -57,7 +65,7 @@ end
 
 # COV_EXCL_START  (to bypass bug in LocalCoverage.jl)
 logdmeasure_internal!(
-    ell::AbstractArray{W,4},
+    ell::AbstractArray{W,3},
     f::Nothing,
     _...,
 ) where {W<:AbstractFloat} = begin
@@ -69,10 +77,10 @@ logdmeasure_internal!(
 end
 
 logdmeasure_internal!(
-    ell::AbstractArray{W,4},
+    ell::AbstractArray{W,3},
     f::Function,
     times::AbstractArray{T,1},
-    y::AbstractArray{Y,3},
+    y::AbstractArray{Y,1},
     x::AbstractArray{X,3},
     params::AbstractArray{P,1},
     userdata::U,
@@ -80,8 +88,8 @@ logdmeasure_internal!(
     W<:AbstractFloat,T<:Time,Y<:NamedTuple,X<:NamedTuple,
     P<:NamedTuple,U<:NamedTuple
 } = begin
-    for i ∈ eachindex(times), j ∈ eachindex(params), kx ∈ axes(x, 3), ky ∈ axes(y, 3)
-        ell[i, j, kx, ky] = W(f(; t=times[i], y[i, j, ky]..., x[i, j, kx]..., params[j]..., userdata...))
+    for i ∈ axes(ell,1), j ∈ axes(ell,2), k ∈ axes(ell,3)
+        ell[i,j,k] = W(f(; t=times[i], y[i]..., x[i,j,k]..., params[j]..., userdata...))
     end
     nothing
 end

@@ -33,9 +33,10 @@ rprocess!(
     x::AbstractArray{X,3};
     x0::AbstractArray{X,2} = init_state(object),
     t0::T = timezero(object),
-    times::AbstractVector{T} = times(object),
+    times::Union{T,AbstractVector{T}} = times(object),
     params::Union{P,AbstractVector{P}} = coef(object),
 ) where {T<:Time,X<:NamedTuple,P<:NamedTuple} = begin
+    times = val_array(times)
     params = val_array(params)
     @assert length(times)==size(x,1)
     @assert length(params)==size(x,2)
