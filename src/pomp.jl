@@ -217,7 +217,7 @@ const ValidPompData = Union{
 - `t0`: zero time, t₀.
 - `times`: observation times. If `data` is supplied as a DataFrame
   (or AbstractDataFrame), `times` should be a Symbol which denotes the
-  time variable in the DfataFrame. NB: the types of `times` and `t0` must
+  time variable in the DataFrame. NB: the types of `times` and `t0` must
   match, or an error will be generated.
 - `timevar`: optional symbol.  Name of the time variable.
 - `params`: parameters. A NamedTuple or vector of NamedTuples.

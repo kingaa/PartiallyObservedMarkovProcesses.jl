@@ -51,5 +51,5 @@ brownian_motion = function(
             logpdf(MvNormal(x,transpose(τ)*τ),y)
         end,
         nsim=1
-    )[1]
+    )[]
 end

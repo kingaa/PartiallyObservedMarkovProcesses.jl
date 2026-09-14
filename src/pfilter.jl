@@ -45,9 +45,27 @@ struct PfilterdPompObject{
 end
 
 pomp(object::PfilterdPompObject) = object.pompobj
-logLik(object::PfilterdPompObject) = object.logLik
+
+"""
+    eff_sample_size(object::PfilterdPompObject)
+
+Returns the time series of effective sample sizes from the particle filter computation stored in `object`.
+"""
 eff_sample_size(object::PfilterdPompObject) = object.eff_sample_size
+
+"""
+    cond_logLik(object::PfilterdPompObject)
+
+Returns the time series of conditional log likelihoods from the particle filter computation stored in `object`.
+"""
 cond_logLik(object::PfilterdPompObject) = object.cond_logLik
+
+"""
+    logLik(object::PfilterdPompObject)
+
+Returns the estimated log likelihood resulting from the particle filter computation stored in `object`.
+"""
+logLik(object::PfilterdPompObject) = object.logLik
 
 """
     pfilter(object; Np = 1, params, rinit, rprocess, logmeasure,

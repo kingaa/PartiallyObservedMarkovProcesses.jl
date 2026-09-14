@@ -25,7 +25,7 @@ struct MifdPompObject{
     "cooling function"
     cooling_schedule::Function
     "perturbation kernel"
-    perturbation_kernel::Function
+    perturbations::Function
     "traces"
     trace::Array{P,1}
     "logLik trace"
@@ -33,9 +33,15 @@ struct MifdPompObject{
 end
 
 pomp(object::MifdPompObject) = pomp(object.pfobj)
-logLik(object::MifdPompObject) = logLik(object.pfobj)
 eff_sample_size(object::MifdPompObject) = eff_sample_size(object.pfobj)
 cond_logLik(object::MifdPompObject) = cond_logLik(object.pfobj)
+
+"""
+    logLik(object::MifdPompObject)
+
+Returns the esimated log likelihood obtained using a [`pfilter`](@ref `pfilter`) computation after the final `mif` iteration.
+"""
+logLik(object::MifdPompObject) = logLik(object.pfobj)
 
 """
     traces(object)
@@ -59,20 +65,22 @@ optionally modify these.
 pfilter(object::MifdPompObject; kwargs...,) = pfilter(object.pfobj; kwargs...)
 
 """
-    mif(object; Np = 1, Nmif = 1, perturbation_kernel, cooling_schedule,
+    mif(object; Np = 1, Nmif = 1, perturbations, cooling_schedule,
         trigger, target, params, rinit, rprocess, logdmeasure, kwargs...)
 
 Iterated filtering.  In addition to the components needed for a
 [`pfilter`](@ref `pfilter`) (i.e., `Np`, `trigger`, `target`), one
-must specify a perturbation kernel, cooling schedule, and number of iterations.
+must specify a perturbations function, cooling schedule, and number of
+iterations.  After performing the requested `Nmif` iterations, `mif`
+runs a particle filter using the estimated parameters.
 
 ## Arguments
 
 - `object`: A `DataFrame`, `PompObject`, or vector of data.
 - `Np`: number of particles to use in the filtering.
 - `Nmif`: number of MIF iterations to perform.
-- `perturbation_kernel`: a function that returns perturbed versions of
-  some or all of the model parameters. See below for details.
+- `perturbations`: a function that returns perturbed versions of some
+  or all of the model parameters. See below for details.
 - `cooling_schedule`: a function that specifies the MIF cooling
   schedule. See below for details.
 - `trigger`, `target`: see [`pfilter`](@ref `pfilter`).
@@ -80,15 +88,80 @@ must specify a perturbation kernel, cooling schedule, and number of iterations.
 - `rinit`, `rprocess`, `logdmeasure`: necessary basic model components.
 - `kwargs...`: other arguments are passed to [`pomp`](@ref `pomp`).
 
+## Return value
+
+`mif` returns a `MifdPompObject`.  This contains the
+`PfilterdPompObject` containing the results of the final particle
+filter computation.  It also records the algorithmic parameters (i.e.,
+`Np`, `Nmif`, `perturbations` and `cooling_schedule` functions,
+`trigger` and `target`).
+
 ## Perturbation kernel
 
+Iterated filtering works by applying a random perturbation to some or
+all of the model parameters during a particle-filter computation. The
+`perturbations` argument specifies the nature of the perturbations to
+be applied.  Specifically, it should be function with signature
+`f(scale, lag; params...)` where `scale` is the relative scale of the
+perturbations (a fraction between 0 and 1) and `lag` is an integer
+indicating the observation number (ranging from 1 to `n` if there are
+`n` observations); at the initial time, `lag = 0`.  The named
+arguments `params` should be the model parameters to be perturbed.  In
+particular, when the function is called, these arguments will contain
+the values of the corresponding model parameters.
+
+The function should return a `NamedTuple` containing the perturbed
+parameters.  Thus, for example, if one is attempting to estimate
+parameters `α` and `β`, while leaving parameters `γ` and `δ` fixed,
+one might furnish a function such as the following as the
+`perturbations` argument to `mif`:
+```
+    p(scale, lag; α, β, _...) = begin
+        α=rand(LogNormal(log(α),scale*0.02))
+        β=rand(LogNormal(log(β),scale*0.02))
+        (;α,β)
+    end
+```
+Note that this function allows for, but ignores, additional arguments
+(`_...`).
+
+## Initial value parameters
+
+For certain types of parameters, one does not wish to apply the
+perturbations at every lag. For example, parameters that specify the
+initial conditions of the latent state process should have
+perturbations applied only at lag 0. One can use the `lag` argument of
+the `perturbations` function to accommodate these cases. For example,
+suppose the perameters `α`, `β`, `γ`, and `δ` mentioned above are
+regular parameters, but that `x₀` is a parameter that fixes the value
+of the latent state at the zero-time. Then the following perturbations
+function might be appropriate
+```
+    p(scale, lag; α, β, x₀, _...) = begin
+        α=rand(LogNormal(log(α),scale*0.02))
+        β=rand(LogNormal(log(β),scale*0.02))
+        x₀ = (lag == 0) ? rand(LogNormal(log(x₀),scale*0.05)) : x₀
+        (;α,β,x₀)
+    end
+```
+Note that the perturbations are only applied to `x₀` at lag 0, i.e.,
+at the zero-time.
+
 ## Cooling schedule
+
+The cooling schedule is specified by a function which, when furnished
+a non-negative integer `n`, returns the fractional reduction of
+perturbation scale (relative to that determined by the perturbation
+kernel) that are to be applied in the `n`-th mif iteration.  The
+function [`geometric_cooling`](@ref `geometric_cooling`) produces such
+a function, but the user is free to specify alternative cooling
+schedules.
 """
 mif(
     object::ValidPompData;
     Np::Integer = 1,
     Nmif::Integer = 1,
-    perturbation_kernel::Function,
+    perturbations::Function,
     cooling_schedule::Function,
     trigger::Union{Real,Missing} = missing,
     target::Union{Real,Missing} = missing,
@@ -108,7 +181,7 @@ mif(
     ll, trace = mif_internal(
         object, params,
         Nmif, Np,
-        perturbation_kernel,
+        perturbations,
         cooling_schedule,
         trigger, target,
     )
@@ -116,7 +189,7 @@ mif(
         pfilter(object; params=trace[end], Np, trigger, target),
         Nmif,
         cooling_schedule,
-        perturbation_kernel,
+        perturbations,
         trace, ll,
     )
 end
@@ -125,7 +198,7 @@ mif(
     object::MifdPompObject;
     Np::Integer = object.pfobj.Np,
     Nmif::Integer = object.Nmif,
-    perturbation_kernel::Function = object.perturbation_kernel,
+    perturbations::Function = object.perturbations,
     cooling_schedule::Function = object.cooling_schedule,
     trigger::Union{Real,Missing} = object.pfobj.trigger,
     target::Union{Real,Missing} = object.pfobj.target,
@@ -133,7 +206,7 @@ mif(
 ) = mif(
     pomp(object);
     Np, Nmif,
-    perturbation_kernel, cooling_schedule,
+    perturbations, cooling_schedule,
     trigger, target,
     kwargs...,
 )
@@ -145,7 +218,7 @@ mif_internal(
     params::P,
     Nmif::Integer,
     Np::Integer,
-    perturbation_kernel::Function,
+    perturbations::Function,
     cooling_schedule::Function,
     trigger::Union{Missing,Float64},
     target::Union{Missing,Float64},
@@ -158,7 +231,7 @@ mif_internal(
     cll = similar(ell,length(t))
     ess = Array{LogLik}(undef)
     pscale = cooling_schedule(0)
-    perturbn!(params, perturbation_kernel, pscale, 0)
+    perturbn!(params, perturbations, pscale, 0)
     x0 = rinit(object; params)
     xp = similar(x0, 1, Np, 1)
     xf = similar(x0, 1, Np, 1)
@@ -171,7 +244,7 @@ mif_internal(
     mif_calc!(
         trigger, target, Np,
         object, trace, ll, Nmif, x0, xp, xf, t0, t, y, params,
-        ell, cll, ess, perturbation_kernel, cooling_schedule, pscale,
+        ell, cll, ess, perturbations, cooling_schedule, pscale,
         perm, resample, work,
     )
     ll, trace
@@ -192,7 +265,7 @@ mif_loop!(
     object, trace, ll,
     Nmif, x0, xp, xf, t0, t, y, params,
     ell, cll, ess,
-    perturbation_kernel, cooling_schedule, pscale,
+    perturbations, cooling_schedule, pscale,
     args...,
 ) = begin
     for i ∈ 1:Nmif
@@ -210,7 +283,7 @@ mif_loop!(
                 args...,
             )
             if j < length(t) || i < Nmif
-                perturbn!(params, perturbation_kernel, pscale, j)
+                perturbn!(params, perturbations, pscale, j)
             end
             t0 = t[j]
             x0 = view(xf,1,:,:)
@@ -286,4 +359,19 @@ pretty_string(object::MifdPompObject) = begin
         ", Nmif=$(object.Nmif)" *
         ", Np=$(object.pfobj.Np)" *
         ", logLik=$(round(logLik(object),digits=2))"
+end
+
+"""
+    geometric_cooling(frac)
+
+Returns a geometric cooling schedule under which the perturbations are
+at a fraction `frac` of their original magnitude after 50 iterations.
+"""
+geometric_cooling(
+    frac::AbstractFloat,
+) = begin
+    frac = Float64(frac)
+    @assert 0 < frac ≤ 1 "`frac` must be ∈ (0,1]"
+    speed = log(frac)/50
+    n -> exp(speed*n)
 end

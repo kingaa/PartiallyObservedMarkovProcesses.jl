@@ -97,5 +97,5 @@ drmca = function(
         logdmeasure = function (;n,p,X,Y,σ,_...)
             logpdf(LogNormal(X,σ),n)+logpdf(LogNormal(Y,σ),p)
         end
-    )[1]
+    )[]
 end

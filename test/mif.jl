@@ -30,17 +30,13 @@ using Test
         (;β,γ,S0,I0,R0,)
     end
 
-    cool(k) = begin
-        0.5^(Float64(k)/50)
-    end
-
     p1 = merge(coef(P),(β=1.0,γ=0.2,S0=0.8))
     Pf0 = pfilter(Pf,params=p1)
     
     M = mif(
         P,params=p1,Np=10,Nmif=2,
-        perturbation_kernel=pkern,
-        cooling_schedule=cool,
+        perturbations=pkern,
+        cooling_schedule=geometric_cooling(0.5)
     )
     @time M = mif(M,Np=1000,Nmif=200,)
     @test M isa POMP.MifdPompObject
