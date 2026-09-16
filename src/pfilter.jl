@@ -469,8 +469,8 @@ trace_ancestry!(
     @assert size(traj,1)==size(perm,1)
     @assert size(weights,1)==size(perm,2)
     @assert size(filt)==size(perm)
-    r::W = length(weights)*rand(W) ## this relies on mean(weights)=1
-    j::I = 1                       ## choose a random particle
+    r::W = rand(W) ## this relies on sum(weights)=1
+    j::I = 1       ## choose a random particle
     while r > weights[j] && j < length(weights)
         r -= weights[j]
         j += 1
