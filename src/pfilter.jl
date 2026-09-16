@@ -1,5 +1,3 @@
-import Statistics: mean
-
 """
     PfilterdPompObject
 
@@ -150,7 +148,7 @@ pfilter_internal!(
     ess = similar(cll)            # effective sample size
     perm = Array{Int}(undef,length(t),Np) # sampled indices
     resamp = Array{Bool}(undef,length(t)) # indicator of resampling
-    w = ones(LogLik,Np)
+    w = fill(1.0/LogLik(Np),Np)
     pfilter_loop!(
         trigger, target, w,
         object,
@@ -276,7 +274,7 @@ pfilt_step_comps!(
 ) where {W<:AbstractFloat,I<:Integer,X<:NamedTuple} = begin
     logwmax = compute_ess_logLik!(ess, logLik, logw, w)
     if isfinite(logwmax) && ess[] ≤ trigger*n
-        systematic_resample!(p, w, work, target)
+        systematic_resample!(p, w, work, logLik, target)
         resample[] = true
         xf .= xp[p]
     else
@@ -318,8 +316,8 @@ end
 ## likelihood (logLik).  It applies the weights in `w` to the
 ## log-weights in `logw`, over-writing both. On return, `w =
 ## exp(logw)`. It returns the maximum of `logw`. The correctness of
-## this function depends on `w` having unit mean on call. It is
-## guaranteed to have unit mean on exit.
+## this function depends on `w` having unit sum on call. It is
+## guaranteed to have unit sum on exit.
 compute_ess_logLik!(
     ess::AbstractArray{W,0},
     logLik::AbstractArray{W,0},
@@ -342,17 +340,17 @@ compute_ess_logLik!(
             ss += v*v
             w[k] = v
         end
-        lik = s/length(w)       # unit-mean assumption is needed here
+        lik = s
         ess[] = s*s/ss
-        s = log(lik)
+        s = log(lik)            # unit-sum assumption is needed here
         logLik[] = logwmax+s
-        logw .-= s
-        w ./= lik               # enforces unit-mean on return
+        logw .-= s              # enforces sum(exp(logw))=1
+        w ./= lik               # enforces sum(w)=1 on return
     else
         ess[] = 0
         logLik[] = W(-Inf)
-        logw .= zero(W)
-        w .= one(W)
+        logw .= -log(W(length(w)))
+        w .= one(W)/W(length(w))
     end
     logwmax
 end
@@ -389,58 +387,64 @@ compute_ess_logLik!(
     logwmax
 end
 
+## Systematic resampling: weighted case.
 ## This function performs resampling. The indices of the selected
 ## particles are returned in `p`, and the weights given in `w` are
-## renormalized upon return. The vector `ucum` is working memory that
+## renormalized upon return. The vector `work` is working memory that
 ## is overwritten.
 systematic_resample!(
     p::AbstractArray{I,1},
     w::AbstractArray{W,1},
-    ucum::AbstractArray{W,1},
+    work::AbstractArray{W,1},
+    logLik::AbstractArray{W,0},
     β::Float64,  # the power to which the weights will be renormalized
 ) where {I,W} = begin
-    @assert length(ucum)==length(w)==length(p)
-    s::W = 0
-    α = 1-β
-    for j ∈ eachindex(w)
-        s += w[j]^α
-        ucum[j] = s
-    end
+    @assert length(work)==length(w)==length(p)
     n::I = length(w)
+    s::W = 0
+    u::W = 0
+    for j ∈ eachindex(w)
+        u = w[j]^β
+        s += u > 0 ? w[j]/u : 0
+        work[j] = s
+        w[j] = u
+    end
     i::I = 1
     du::W = s/n
-    u::W = -du*rand(W)
+    u = -du*rand(W)
     for j ∈ eachindex(p)
         u += du
-        while (u > ucum[i] && i < n)
+        while (u > work[i] && i < n)
             i += 1
         end
         p[j] = i
     end
-    n = 0
+    i = 0
     for j ∈ eachindex(p)
-        if n ≠ p[j]
-            n = p[j]
-            s = w[n]^β
+        if i ≠ p[j]
+            i = p[j]
+            u = w[i]
         end
-        ucum[j] = s
+        work[j] = u
     end
-    w .= ucum
-    w ./= mean(w) # Other functions rely on the weights having unit mean.
+    w .= work
+    s = sum(w)
+    w ./= s    # Other functions rely on the weights having unit sum.
+    logLik[] += log(s*du)
     nothing
 end
 
-## unweighted case
+## Systematic resampling: unweighted case
 systematic_resample!(
     p::AbstractArray{I,1},
     logw::AbstractArray{W,1},
-    ucum::AbstractArray{W,1},
+    work::AbstractArray{W,1},
 ) where {I,W} = begin
-    @assert length(ucum)==length(logw)==length(p)
+    @assert length(work)==length(logw)==length(p)
     s::W = 0
     for j ∈ eachindex(logw)
         s += exp(logw[j])
-        ucum[j] = s
+        work[j] = s
     end
     n::I = length(logw)
     i::I = 1
@@ -448,7 +452,7 @@ systematic_resample!(
     u::W = -du*rand(W)
     for j ∈ eachindex(p)
         u += du
-        while (u > ucum[i] && i < n)
+        while (u > work[i] && i < n)
             i += 1
         end
         p[j] = i

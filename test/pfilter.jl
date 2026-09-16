@@ -41,8 +41,7 @@ using BenchmarkTools
         rprocess=discrete_time(rlin,dt=1),
         rmeasure=rmeas,
         logdmeasure=logdmeas
-    );
-    P = P[1];
+    )[];
     @test_throws r"keyword argument .* not assigned" simulate(P,params=(a=1.5,k=7.0))
 
     P = pomp(
