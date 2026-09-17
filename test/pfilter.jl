@@ -120,5 +120,7 @@ using BenchmarkTools
     @test logmeanexp(logLik.(Q2),ess=true) isa @NamedTuple{est::Float64,ess::Float64}
     @test logmeanexp(logLik.(Q2),ess=true,se=true) isa @NamedTuple{est::Float64,se::Float64,ess::Float64}
     @test logmeanexp(logLik.(Q2)) > mean(logLik.(Q2))
+    @test logmeanexp([-Inf, -Inf, -Inf]) == -Inf
+    @test logmeanexp([Inf, -Inf, -Inf]) == Inf
 
 end

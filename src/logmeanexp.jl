@@ -1,26 +1,31 @@
-import Statistics: std
+using Statistics: std
+using DataFrames: Not
 
-logmeanexp1(x) = begin
+logmeanexp1(x::AbstractVector{W}) where {W <: Real} = begin
     xmax = maximum(x)
-    xmax + log(sum(exp.(x .- xmax))) - log(length(x))
+    if isfinite(xmax)
+        xmax + log(sum(exp.(x .- xmax))) - log(length(x))
+    else
+        xmax
+    end
 end
 
 logmeanexp1(x, drop) = begin
-    xv = @views vcat(x[begin:drop-1], x[drop+1:end])
-    logmeanexp(xv)
+    logmeanexp1(@view(x[Not(drop)]))
 end
 
 ess1(x) = begin
-    w = exp.(x .- maximum(x))
+    xmax = maximum(x)
+    w = exp.(x .- xmax)
     sum(w)^2/sum(w.^2)
 end
 
 """
     logmeanexp(x; se = false, ess = false)
 
-Compute the log-mean-exp of `x`. Optionally, return a jack-knife estimate
+Compute `log(mean(exp(x)))`. Optionally, return a jack-knife estimate
  of the standard error (`se = true`) and/or the effective sample size
-(`ess = true`).
+ (`ess = true`).
 """
 logmeanexp(
     x;
@@ -30,12 +35,11 @@ logmeanexp(
     lme = logmeanexp1(x)
     if se
         n = length(x)
-        jk = [logmeanexp1(x,i) for i ∈ eachindex(x)]
-        xse = (n-1)*std(jk)/sqrt(n)
+        jk = (n-1)*std(logmeanexp1(x,i) for i ∈ eachindex(x))/sqrt(n)
         if ess
-            (est=lme, se=xse, ess=ess1(x))
+            (est=lme, se=jk, ess=ess1(x))
         else
-            (est=lme, se=xse)
+            (est=lme, se=jk)
         end
     elseif ess
         (est=lme, ess=ess1(x))
