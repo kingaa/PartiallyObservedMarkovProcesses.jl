@@ -148,7 +148,7 @@ pfilter_internal!(
     ess = similar(cll)            # effective sample size
     perm = Array{Int}(undef,length(t),Np) # sampled indices
     resamp = Array{Bool}(undef,length(t)) # indicator of resampling
-    w = fill(1.0/LogLik(Np),Np)
+    w = fill(LogLik(1.0)/Np,Np)           # must sum to 1
     pfilter_loop!(
         trigger, target, w,
         object,
@@ -221,10 +221,10 @@ pfilter_step!(
     xp::AbstractArray{X,3},
     logw::AbstractArray{W,3},
     y::AbstractArray{Y,1},
-    eff_sample_size::AbstractArray{W,1},
-    cond_logLik::AbstractArray{W,1},
+    ess::AbstractArray{W,1},
+    cll::AbstractArray{W,1},
     perm::AbstractArray{I,2},
-    resample::AbstractArray{Bool,1},
+    resamp::AbstractArray{Bool,1},
     args...,
 ) where {W<:AbstractFloat,T<:Time,X<:NamedTuple,Y<:NamedTuple,I<:Integer} = begin
     pfilter_advance_particles!(
@@ -234,13 +234,13 @@ pfilter_step!(
         @view(logw[[k],:,:]),
     )
     pfilt_step_comps!(
-        @view(cond_logLik[k]),
-        @view(eff_sample_size[k]),
+        @view(cll[k]),
+        @view(ess[k]),
         @view(logw[k,1,:]),
         @view(perm[k,:]),
         @view(xp[k,1,:]),
         @view(xf[k,1,:]),
-        @view(resample[k]),
+        @view(resamp[k]),
         args...,
     )
     nothing
@@ -350,7 +350,7 @@ compute_ess_logLik!(
         ess[] = 0
         logLik[] = W(-Inf)
         logw .= -log(W(length(w)))
-        w .= one(W)/W(length(w))
+        w .= one(W)/length(w)
     end
     logwmax
 end
@@ -382,16 +382,16 @@ compute_ess_logLik!(
     else
         ess[] = 0
         logLik[] = W(-Inf)
-        logw .= zero(W)
+        logw .= -log(W(length(logw)))
     end
     logwmax
 end
 
-## Systematic resampling: weighted case.
-## This function performs resampling. The indices of the selected
-## particles are returned in `p`, and the weights given in `w` are
-## renormalized upon return. The vector `work` is working memory that
-## is overwritten.
+## Systematic resampling: weighted case.  This function performs
+## resampling with annealing.  The indices of the selected particles
+## are returned in `p`, and the weights given in `w` are renormalized
+## upon return. The vector `work` is working memory that is
+## overwritten.
 systematic_resample!(
     p::AbstractArray{I,1},
     w::AbstractArray{W,1},
@@ -419,15 +419,7 @@ systematic_resample!(
         end
         p[j] = i
     end
-    i = 0
-    for j ∈ eachindex(p)
-        if i ≠ p[j]
-            i = p[j]
-            u = w[i]
-        end
-        work[j] = u
-    end
-    w .= work
+    w .= w[p]
     s = sum(w)
     w ./= s    # Other functions rely on the weights having unit sum.
     logLik[] += log(s*du)

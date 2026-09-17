@@ -12,7 +12,7 @@ const Empty = @NamedTuple{}
 ## We may at some point need more precision....
 const LogLik = Float64
 
-export pomp, AbstractPompObject, PompPlugin, paramsymbs
+export pomp, AbstractPompObject, PompPlugin
 include("pomp.jl")
 
 export times, timezero, obs, init_state, states, coef

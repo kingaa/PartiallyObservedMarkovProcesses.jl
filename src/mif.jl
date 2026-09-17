@@ -24,7 +24,7 @@ struct MifdPompObject{
     Nmif::Int
     "cooling function"
     cooling_schedule::Function
-    "perturbation kernel"
+    "perturbations function"
     perturbations::Function
     "traces"
     trace::Array{P,1}
@@ -96,7 +96,7 @@ filter computation.  It also records the algorithmic parameters (i.e.,
 `Np`, `Nmif`, `perturbations` and `cooling_schedule` functions,
 `trigger` and `target`).
 
-## Perturbation kernel
+## Perturbations
 
 Iterated filtering works by applying a random perturbation to some or
 all of the model parameters during a particle-filter computation. The
