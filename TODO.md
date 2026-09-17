@@ -1,8 +1,7 @@
 ## To-do List
 
-- use Y type in `rmeasure`
+- use Y type in `rmeasure`?
 - remove all need for **RCall**
-- multiparameter particle filter? should be trivial from existing
 - potentially move `accumvars` to the rprocess plugin (closer to where it is used)
 - panel pfilter? may be trivial from existing (would need independent resampling)
   - is a panel pomp simply a vector of pomps with a parameter embedding?
