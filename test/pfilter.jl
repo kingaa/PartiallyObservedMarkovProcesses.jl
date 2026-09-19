@@ -68,8 +68,8 @@ using BenchmarkTools
     @test occursin(r"PfilterdPompObject .* Np=",sprint(show,Q))
     @test all(Q.x0.==Q.pred[1,:])
     @test_throws r"keyword argument .* not assigned" pfilter(Q,params=(a=1.5,k=7.0));
-    @btime pfilter($Q,params=(a=1.5,k=7.0,x0=5.0));
-    @btime pfilter($Q,params=(k=7.0,a=1.5,x0=5.0));
+    @time pfilter(Q,params=(a=1.5,k=7.0,x0=5.0));
+    @time pfilter(Q,params=(k=7.0,a=1.5,x0=5.0));
     x0 = rinit(Q,nsim=5)
     @test x0 isa Array{<:NamedTuple}
     @test size(x0)==(1,5)

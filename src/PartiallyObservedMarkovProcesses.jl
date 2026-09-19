@@ -56,6 +56,12 @@ include("pfilter.jl")
 export mif, traces, geometric_cooling
 include("mif.jl")
 
+export logit, expit, barycentric
+include("logit.jl")
+
+export @perturbn, @ivp, @normal, @lognormal, @logitnormal, @logbarynormal
+include("perturbn.jl")
+
 export traj_match_objfun
 include("trajmatch.jl")
 

@@ -22,8 +22,8 @@ struct MifdPompObject{
     pfobj::Q
     "number of iterations"
     Nmif::Int
-    "cooling function"
-    cooling_schedule::Function
+    "cooling schedule function"
+    cooling::Function
     "perturbations function"
     perturbations::Function
     "traces"
@@ -65,7 +65,7 @@ optionally modify these.
 pfilter(object::MifdPompObject; kwargs...,) = pfilter(object.pfobj; kwargs...)
 
 """
-    mif(object; Np = 1, Nmif = 1, perturbations, cooling_schedule,
+    mif(object; Np = 1, Nmif = 1, perturbations, cooling,
         trigger, target, params, rinit, rprocess, logdmeasure, kwargs...)
 
 Iterated filtering.  In addition to the components needed for a
@@ -81,8 +81,8 @@ runs a particle filter using the estimated parameters.
 - `Nmif`: number of MIF iterations to perform.
 - `perturbations`: a function that returns perturbed versions of some
   or all of the model parameters. See below for details.
-- `cooling_schedule`: a function that specifies the MIF cooling
-  schedule. See below for details.
+- `cooling`: a function that specifies the MIF cooling schedule. See
+  below for details.
 - `trigger`, `target`: see [`pfilter`](@ref `pfilter`).
 - `params`: `NamedTuple` of model parameters.
 - `rinit`, `rprocess`, `logdmeasure`: necessary basic model components.
@@ -93,7 +93,7 @@ runs a particle filter using the estimated parameters.
 `mif` returns a `MifdPompObject`.  This contains the
 `PfilterdPompObject` containing the results of the final particle
 filter computation.  It also records the algorithmic parameters (i.e.,
-`Np`, `Nmif`, `perturbations` and `cooling_schedule` functions,
+`Np`, `Nmif`, `perturbations` and `cooling` functions,
 `trigger` and `target`).
 
 ## Perturbations
@@ -162,7 +162,7 @@ mif(
     Np::Integer = 1,
     Nmif::Integer = 1,
     perturbations::Function,
-    cooling_schedule::Function,
+    cooling::Function,
     trigger::Union{Real,Missing} = missing,
     target::Union{Real,Missing} = missing,
     params::P = coef(object),
@@ -182,13 +182,13 @@ mif(
         object, params,
         Nmif, Np,
         perturbations,
-        cooling_schedule,
+        cooling,
         trigger, target,
     )
     MifdPompObject(
         pfilter(object; params=trace[end], Np, trigger, target),
         Nmif,
-        cooling_schedule,
+        cooling,
         perturbations,
         trace, ll,
     )
@@ -199,15 +199,27 @@ mif(
     Np::Integer = object.pfobj.Np,
     Nmif::Integer = object.Nmif,
     perturbations::Function = object.perturbations,
-    cooling_schedule::Function = object.cooling_schedule,
+    cooling::Function = object.cooling,
     trigger::Union{Real,Missing} = object.pfobj.trigger,
     target::Union{Real,Missing} = object.pfobj.target,
     kwargs...,
 ) = mif(
     pomp(object);
     Np, Nmif,
-    perturbations, cooling_schedule,
+    perturbations, cooling,
     trigger, target,
+    kwargs...,
+)
+
+mif(
+    object::PfilterdPompObject;
+    Np::Integer = object.Np,
+    trigger::Union{Real,Missing} = object.trigger,
+    target::Union{Real,Missing} = object.target,
+    kwargs...,
+) = mif(
+    pomp(object);
+    Np, trigger, target,
     kwargs...,
 )
 
@@ -219,7 +231,7 @@ mif_internal(
     Nmif::Integer,
     Np::Integer,
     perturbations::Function,
-    cooling_schedule::Function,
+    cooling::Function,
     trigger::Union{Missing,Float64},
     target::Union{Missing,Float64},
 ) where {T,X,Y,P} = begin
@@ -230,7 +242,7 @@ mif_internal(
     ell = Array{LogLik}(undef,1,Np,1)
     cll = similar(ell,length(t))
     ess = Array{LogLik}(undef)
-    pscale = cooling_schedule(0)
+    pscale = cooling(0)
     perturbn!(params, perturbations, pscale, 0)
     x0 = rinit(object; params)
     xp = similar(x0, 1, Np, 1)
@@ -244,7 +256,7 @@ mif_internal(
     mif_calc!(
         trigger, target, Np,
         object, trace, ll, Nmif, x0, xp, xf, t0, t, y, params,
-        ell, cll, ess, perturbations, cooling_schedule, pscale,
+        ell, cll, ess, perturbations, cooling, pscale,
         perm, resample, work,
     )
     ll, trace
@@ -265,7 +277,7 @@ mif_loop!(
     object, trace, ll,
     Nmif, x0, xp, xf, t0, t, y, params,
     ell, cll, ess,
-    perturbations, cooling_schedule, pscale,
+    perturbations, cooling, pscale,
     args...,
 ) = begin
     for i ∈ 1:Nmif
@@ -290,7 +302,7 @@ mif_loop!(
         end
         ll[i] = sum(cll)
         trace[i+1] = param_mean(params)
-        pscale = cooling_schedule(i)
+        pscale = cooling(i)
     end
     nothing
 end

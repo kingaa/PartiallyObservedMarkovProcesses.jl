@@ -129,7 +129,7 @@ P |>
 
     @info h2("POMP.jl simulate_array times (SIR)")
     @btime simulate_array(
-        $P,nsim=5,
+        $P,nsim=500,
         params=[
             (γ=0.25,ρ=0.3,k=10,β=0.5,N=10000,S0=0.9,I0=0.01,R0=0.1);
             (γ=0.5,ρ=0.3,k=10,β=0.25,N=10000,S0=0.9,I0=0.01,R0=0.1);

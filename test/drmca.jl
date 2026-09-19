@@ -42,8 +42,9 @@ $(melt(P)) |>
 
     @info h2("POMP.jl simulation scaling (det Rosenzweig-MacArthur)")
     S = simulate(P,rmeasure=nothing,nsim=1)[1]
-    @btime simulate_array($S,nsim=1)
-    @btime simulate_array($S,nsim=10)
-    @btime simulate_array($S,nsim=100)
+    simulate_array(S,nsim=1)
+    @time simulate_array(S,nsim=1)
+    @time simulate_array(S,nsim=10)
+    @time simulate_array(S,nsim=100)
 
 end

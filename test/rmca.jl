@@ -45,7 +45,8 @@ $(melt(P)) |>
     P = rmca(δt=0.1,σ=0.1,times=range(1.0,20.0,step=1.0))
     Pf = pfilter(P,Np=1000)
     @test Pf isa POMP.PfilterdPompObject
-    @btime pfilter($P,Np=1000)
+    pfilter(Pf)
+    @time pfilter(Pf)
     @info h2("POMP.jl likelihood estimate (stoch Rosenzweig-MacArthur): $(round(logLik(Pf),digits=2))")
 
 end
