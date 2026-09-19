@@ -65,8 +65,8 @@ optionally modify these.
 pfilter(object::MifdPompObject; kwargs...,) = pfilter(object.pfobj; kwargs...)
 
 """
-    mif(object; Np = 1, Nmif = 1, perturbations, cooling,
-        trigger, target, params, rinit, rprocess, logdmeasure, kwargs...)
+    mif(object; Np = 1, Nmif = 1, perturbations, cooling, trigger,
+        target, params, rinit, rprocess, logdmeasure, kwargs...)
 
 Iterated filtering.  In addition to the components needed for a
 [`pfilter`](@ref `pfilter`) (i.e., `Np`, `trigger`, `target`), one
@@ -125,6 +125,14 @@ one might furnish a function such as the following as the
 Note that this function allows for, but ignores, additional arguments
 (`_...`).
 
+The package provides a number of macros to facilitate construction of
+perturbation functions.  See [`@perturbn`](@ref `@perturbn`) and
+[`@ivp`](@ref `@ivp`) in particular.  Thus for example the function
+`p` above can be constructed so:
+```
+    p = @perturbn @lognormal(α,0.02) @lognormal(β,0.02)
+```
+
 ## Initial value parameters
 
 For certain types of parameters, one does not wish to apply the
@@ -146,6 +154,16 @@ function might be appropriate
 ```
 Note that the perturbations are only applied to `x₀` at lag 0, i.e.,
 at the zero-time.
+
+Using the [`@perturbn`](@ref `@perturbn`) macro, the same function is
+constructed via
+```
+    p = @perturbn(
+            @lognormal(α,0.02),
+            @lognormal(β,0.02),
+            @ivp @lognormal(x₀,0.05)
+        )
+```
 
 ## Cooling schedule
 
@@ -283,6 +301,7 @@ mif_loop!(
     for i ∈ 1:Nmif
         t0 = timezero(object)
         if i > 1
+            perturbn!(params, perturbations, pscale, 0)
             rinit!(object, x0; t0, params)
         end
         for j ∈ eachindex(t)

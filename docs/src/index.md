@@ -49,6 +49,9 @@ pfilter
 
 ```@docs
 mif
+@perturbn
+@ivp
+geometric_cooling
 ```
 
 ### Trajectory matching

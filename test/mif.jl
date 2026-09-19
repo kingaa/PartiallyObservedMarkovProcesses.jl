@@ -23,7 +23,7 @@ using Test
         perturbations=@perturbn(
             @lognormal(β,0.05),
             @lognormal(γ,0.05),
-            @ivp(@logbarynormal((S0,I0,R0),0.3)),
+            @ivp(@logbarynormal((S0,I0,R0),0.1)),
         ),
         cooling=geometric_cooling(0.5)
     )
