@@ -287,7 +287,7 @@ mif_calc!(
 mif_calc!(
     trigger::Float64, target::Float64, Np::Integer, args...,
 ) = begin
-    w = ones(LogLik,Np)
+    w = fill(LogLik(1.0)/Np,Np) # must sum to 1
     mif_loop!(args...,w,trigger,target,Np)
 end
 
