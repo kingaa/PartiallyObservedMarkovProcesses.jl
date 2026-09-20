@@ -133,6 +133,8 @@ perturbation functions.  See [`@perturbn`](@ref `@perturbn`) and
     p = @perturbn @lognormal(α,0.02) @lognormal(β,0.02)
 ```
 
+**Note that the `@perturbn` macro is experimental: the interface may change without warning.**
+
 ## Initial value parameters
 
 For certain types of parameters, one does not wish to apply the

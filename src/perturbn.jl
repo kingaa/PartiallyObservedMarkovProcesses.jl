@@ -49,6 +49,7 @@ end
     @ivp(expr, lag = 0)
 
 Construct an initial-value parameter perturbation. The perturbation will be applied only at the specified lag. Thus, by default, the perturbation is applied at the zero-time (`lag = 0`) and if `lag = k`, then it will be applied after the `k`-th observation (but never after the final observation).
+**This facility is experimental: the interface may change without warning.**
 """
 macro ivp(expr, lag = 0)
     expr = eval(expr)
@@ -76,7 +77,7 @@ flatten(a::Symbol, b...) = [a, flatten(b...)...]
 """
     @perturbn
 
-Constructs a function suitable for use as the `perturbations` argument in [`mif`](@ref `mif`). For example, the following corresponds to log-normal perturbations of parameter `β`, logit-normal perturbations of parameter `p`, and log-barycentric-normal perturbations of `S₀,I₀,R₀`.  The latter is treated as an initial-value parameter.
+Constructs a function suitable for use as the `perturbations` argument in [`mif`](@ref `mif`). For example, the following corresponds to log-normal perturbations of parameter `β`, logit-normal perturbations of parameter `p`, and log-barycentric-normal perturbations of `S₀,I₀,R₀`.  The latter is treated as an initial-value parameter.  **This facility is experimental: the interface may change without warning.**
 ```
     @perturbn(
         @lognormal(β,0.02),
