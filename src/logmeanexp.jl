@@ -1,4 +1,4 @@
-using Statistics: std
+using Statistics: mean, std
 using DataFrames: Not
 
 logmeanexp1(x::AbstractVector{W}) where {W <: Real} = begin
@@ -46,4 +46,8 @@ logmeanexp(
     else
         lme
     end
+end
+
+@generated geomean(x) = quote
+    exp(mean(log.(x)))
 end

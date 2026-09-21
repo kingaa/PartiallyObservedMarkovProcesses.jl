@@ -61,6 +61,10 @@ using Test
     @test_throws "Incorrect call" mif("hello!")
     @test occursin(r"MifdPompObject .* Nmif=",sprint(show,M))
 
+end
+
+@testset verbose=true "@perturbn" begin
+
     ex = @perturbn @lognormal(a,0.1) @ivp(@lognormal(b,1),0) @logitnormal(p,0.1) @normal(c,10) @ivp(@normal(d,10),1) @ivp(@logbarynormal((e,f),1)) @logbarynormal((g,h,i),(1,2,3))
 
     x = ex(1, 0, a=1, b=10, c=0, d=3, p=0.8, e=1, f=3, g=3, h=1, i=1)

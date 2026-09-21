@@ -22,10 +22,12 @@ struct MifdPompObject{
     pfobj::Q
     "number of iterations"
     Nmif::Int
-    "cooling schedule function"
-    cooling::Function
     "perturbations function"
     perturbations::Function
+    "cooling schedule function"
+    cooling::Function
+    "averaging function"
+    avfun::Function
     "traces"
     trace::Array{P,1}
     "logLik trace"
@@ -65,8 +67,9 @@ optionally modify these.
 pfilter(object::MifdPompObject; kwargs...,) = pfilter(object.pfobj; kwargs...)
 
 """
-    mif(object; Np = 1, Nmif = 1, perturbations, cooling, trigger,
-        target, params, rinit, rprocess, logdmeasure, kwargs...)
+    mif(object; Np = 1, Nmif = 1, perturbations, cooling, avfun,
+        trigger, target, params, rinit, rprocess, logdmeasure,
+        kwargs...)
 
 Iterated filtering.  In addition to the components needed for a
 [`pfilter`](@ref `pfilter`) (i.e., `Np`, `trigger`, `target`), one
@@ -83,6 +86,9 @@ runs a particle filter using the estimated parameters.
   or all of the model parameters. See below for details.
 - `cooling`: a function that specifies the MIF cooling schedule. See
   below for details.
+- `avfun`: a function that takes averages on the parameter space. This
+  is used t reduce the swarm of particles to a centroid, for use as a
+  point estimate. By default, the geometric mean is used.
 - `trigger`, `target`: see [`pfilter`](@ref `pfilter`).
 - `params`: `NamedTuple` of model parameters.
 - `rinit`, `rprocess`, `logdmeasure`: necessary basic model components.
@@ -183,6 +189,7 @@ mif(
     Nmif::Integer = 1,
     perturbations::Function,
     cooling::Function,
+    avfun::Function = geomean,
     trigger::Union{Real,Missing} = missing,
     target::Union{Real,Missing} = missing,
     params::P = coef(object),
@@ -201,15 +208,12 @@ mif(
     ll, trace = mif_internal(
         object, params,
         Nmif, Np,
-        perturbations,
-        cooling,
+        perturbations, cooling, avfun,
         trigger, target,
     )
     MifdPompObject(
         pfilter(object; params=trace[end], Np, trigger, target),
-        Nmif,
-        cooling,
-        perturbations,
+        Nmif, perturbations, cooling, avfun,
         trace, ll,
     )
 end
@@ -220,13 +224,14 @@ mif(
     Nmif::Integer = object.Nmif,
     perturbations::Function = object.perturbations,
     cooling::Function = object.cooling,
+    avfun::Function = object.avfun,
     trigger::Union{Real,Missing} = object.pfobj.trigger,
     target::Union{Real,Missing} = object.pfobj.target,
     kwargs...,
 ) = mif(
     pomp(object);
     Np, Nmif,
-    perturbations, cooling,
+    perturbations, cooling, avfun,
     trigger, target,
     kwargs...,
 )
@@ -245,6 +250,9 @@ mif(
 
 mif(_...) = error("Incorrect call to `mif`.")
 
+## This function initializes the algorithm, including allocating
+## memory and setting initial state-variables and parameters vectors,
+## and then calls the main loop.
 mif_internal(
     object::PompObject{T,X,Y},
     params::P,
@@ -252,6 +260,7 @@ mif_internal(
     Np::Integer,
     perturbations::Function,
     cooling::Function,
+    avfun::Function,
     trigger::Union{Missing,Float64},
     target::Union{Missing,Float64},
 ) where {T,X,Y,P} = begin
@@ -262,6 +271,7 @@ mif_internal(
     ell = Array{LogLik}(undef,1,Np,1)
     cll = similar(ell,length(t))
     ess = Array{LogLik}(undef)
+    ## NB: `pscale` and `params` are initialized here.
     pscale = cooling(0)
     perturbn!(params, perturbations, pscale, 0)
     x0 = rinit(object; params)
@@ -272,11 +282,11 @@ mif_internal(
     work = similar(ell,Np)
     ll = similar(ell,Nmif)
     trace = Array{P}(undef,Nmif+1)
-    trace[1] = param_mean(params)
+    trace[1] = param_mean(params,avfun)
     mif_calc!(
         trigger, target, Np,
         object, trace, ll, Nmif, x0, xp, xf, t0, t, y, params,
-        ell, cll, ess, perturbations, cooling, pscale,
+        ell, cll, ess, perturbations, cooling, avfun, pscale,
         perm, resample, work,
     )
     ll, trace
@@ -297,12 +307,14 @@ mif_loop!(
     object, trace, ll,
     Nmif, x0, xp, xf, t0, t, y, params,
     ell, cll, ess,
-    perturbations, cooling, pscale,
+    perturbations, cooling, avfun, pscale,
     args...,
 ) = begin
     for i ∈ 1:Nmif
         t0 = timezero(object)
         if i > 1
+            ## NB: for i = 0, `pscale`, `params`, `x0` have been
+            ## initialized in the top-level function
             perturbn!(params, perturbations, pscale, 0)
             rinit!(object, x0; t0, params)
         end
@@ -322,7 +334,7 @@ mif_loop!(
             x0 = view(xf,1,:,:)
         end
         ll[i] = sum(cll)
-        trace[i+1] = param_mean(params)
+        trace[i+1] = param_mean(params,avfun)
         pscale = cooling(i)
     end
     nothing
@@ -379,10 +391,11 @@ end
 
 param_mean(
     params::Vector{P},
+    avfun::Function,
 ) where {P <: NamedTuple} = begin
     names = fieldnames(P)
     means = map(names) do n
-        mean(getfield.(params,n))
+        avfun(getfield.(params,n))
     end
     (;zip(names,means)...)
 end

@@ -68,7 +68,7 @@ include("trajmatch.jl")
 export melt
 include("melt.jl")
 
-export logmeanexp
+export logmeanexp, geomean
 include("logmeanexp.jl")
 
 export paramsymbs
