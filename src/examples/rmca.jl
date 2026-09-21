@@ -79,12 +79,7 @@ rmca = function(
     δt = 0.01, times=range(start=0,stop=500,step=0.2)
     )
     simulate(
-        params=(
-            ;r = Float64(r), K = Float64(K), A = Float64(A),
-            b = Float64(b), c = Float64(c), m = Float64(m),
-            N0 = Float64(N0), P0 = Float64(P0),
-            V = Float64(V), σ = Float64(σ)
-        ),
+        params=map(Float64, (;r, K, A, b, c, m, N0, P0, V, σ)),
         t0=t0,
         times=times,
         init_state=(X=zero(Float64),Y=zero(Float64),),

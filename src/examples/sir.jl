@@ -31,11 +31,7 @@ sir = function(
     times = range(start=1.0,stop=90,step=1.0)
     )
     simulate(
-        params = (
-            β=β,γ=γ,N=N,
-            ρ=ρ,k=k,
-            S0=S0,I0=I0,R0=R0,
-        ),
+        params = map(Float64, (;β,γ,N,ρ,k,S0,I0,R0)),
         t0 = t0,
         times = times,
         accumvars = (C=zero(Int64),),
