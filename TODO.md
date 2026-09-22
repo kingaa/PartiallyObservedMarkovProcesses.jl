@@ -1,5 +1,6 @@
 ## To-do List
 
+- `continue` for `mif`
 - macro for specifying `perturbations` in `mif`
 - use Y type in `rmeasure`?
 - remove all need for **RCall**
