@@ -21,7 +21,7 @@ Project Euclidean coordinates onto the unit simplex.
 """
 @generated barycentric(x, n = 1) = quote
     m = n/sum(x)
-    n.*x
+    m.*x
 end
 
 barycentric(x::X, n = 1) where {X <: NamedTuple} = begin
