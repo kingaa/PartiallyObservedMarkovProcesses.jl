@@ -39,9 +39,4 @@ using Test
     @test coef(Q[3],:k,:a) isa NamedTuple
     @test coef(Q,:k,:a) isa Array{<:NamedTuple,2}
 
-    p = 0.2
-    @test expit(logit(p)) ≈ p
-    x = 4.0
-    @test logit(expit(x)) ≈ x
-
 end

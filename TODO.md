@@ -1,7 +1,7 @@
 ## To-do List
 
 - `continue` for `mif`
-- macro for specifying `perturbations` in `mif`
+- improve macro for specifying `perturbations` in `mif`
 - use Y type in `rmeasure`?
 - remove all need for **RCall**
 - potentially move `accumvars` to the rprocess plugin (closer to where it is used)
