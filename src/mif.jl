@@ -254,16 +254,11 @@ mif(_...) = error("Incorrect call to `mif`.")
 ## memory and setting initial state-variables and parameters vectors,
 ## and then calls the main loop.
 mif_internal(
-    object::PompObject{T,X,Y},
-    params::P,
-    Nmif::Integer,
-    Np::Integer,
-    perturbations::Function,
-    cooling::Function,
-    avfun::Function,
+    object, params::P, Nmif, Np,
+    perturbations, cooling, avfun,
     trigger::Union{Missing,Float64},
     target::Union{Missing,Float64},
-) where {T,X,Y,P} = begin
+) where P = begin
     t0 = timezero(object)
     t = times(object)
     y = obs(object)
@@ -340,8 +335,11 @@ mif_loop!(
     nothing
 end
 
+## The latent-state type `X` is taken from the particles, not from the
+## model: a model built without `init_state` declares the empty state
+## type, while its particles carry the states `rinit` returns.
 mif_pfilt_step!(
-    object::PompObject{T,X,Y},
+    object::PompObject{T,<:Any,Y},
     ell::AbstractArray{W,3},
     cll::AbstractArray{W,0},
     ess::AbstractArray{W,0},
