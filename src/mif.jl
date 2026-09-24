@@ -254,16 +254,11 @@ mif(_...) = error("Incorrect call to `mif`.")
 ## memory and setting initial state-variables and parameters vectors,
 ## and then calls the main loop.
 mif_internal(
-    object::PompObject{T,X,Y},
-    params::P,
-    Nmif::Integer,
-    Np::Integer,
-    perturbations::Function,
-    cooling::Function,
-    avfun::Function,
+    object, params::P, Nmif, Np,
+    perturbations, cooling, avfun,
     trigger::Union{Missing,Float64},
     target::Union{Missing,Float64},
-) where {T,X,Y,P} = begin
+) where P = begin
     t0 = timezero(object)
     t = times(object)
     y = obs(object)
