@@ -37,13 +37,8 @@ sir = function(
         accumvars = (C=zero(Int64),),
         init_state = (S=zero(Int64),I=zero(Int64),R=zero(Int64),C=zero(Int64)),
         rinit = function (;S0,I0,R0,N,_...)
-            (S,I,R) = barycentric((S0,I0,R0),N)
-            (
-                S=round(Int64,S),
-                I=round(Int64,I),
-                R=round(Int64,R),
-                C=zero(Int64),
-            )
+            (S,I,R) = barycentric(Int64,(S0,I0,R0),N)
+            (;S,I,R,C=zero(Int64),)
         end,
         rprocess = euler(
             function (;t,S,I,R,C,N,β,γ,dt,_...)
