@@ -406,16 +406,16 @@ pretty_string(object::MifdPompObject) = begin
 end
 
 """
-    geometric_cooling(frac)
+    geometric_cooling(frac, n = 50)
 
 Returns a geometric cooling schedule under which the perturbations are
-at a fraction `frac` of their original magnitude after 50 iterations.
+at a fraction `frac` of their original magnitude after `n` iterations.
 """
 geometric_cooling(
-    frac::AbstractFloat,
+    frac::AbstractFloat, n = 50,
 ) = begin
     frac = Float64(frac)
     @assert 0 < frac ≤ 1 "`frac` must be ∈ (0,1]"
-    speed = log(frac)/50
-    n -> exp(speed*n)
+    speed = log(frac/n)
+    k -> exp(speed * k)
 end
