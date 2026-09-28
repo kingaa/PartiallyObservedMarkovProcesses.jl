@@ -59,7 +59,7 @@ include("mif.jl")
 export logit, expit, barycentric
 include("logit.jl")
 
-export @perturbn, @ivp, @normal, @lognormal, @logitnormal, @logbarynormal
+export @perturbn
 include("perturbn.jl")
 
 export traj_match_objfun

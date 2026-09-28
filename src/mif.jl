@@ -131,12 +131,11 @@ one might furnish a function such as the following as the
 Note that this function allows for, but ignores, additional arguments
 (`_...`).
 
-The package provides a number of macros to facilitate construction of
-perturbation functions.  See [`@perturbn`](@ref `@perturbn`) and
-[`@ivp`](@ref `@ivp`) in particular.  Thus for example the function
-`p` above can be constructed so:
+The package provides a macro to facilitate construction of
+perturbation functions: see [`@perturbn`](@ref `@perturbn`).  Thus for
+example the function `p` above can be constructed so:
 ```
-    p = @perturbn @lognormal(α,0.02) @lognormal(β,0.02)
+    p = @perturbn α ~ LogNormal(0.02) β ~ LogNormal(0.02)
 ```
 
 **Note that the `@perturbn` macro is experimental: the interface may change without warning.**
@@ -167,9 +166,9 @@ Using the [`@perturbn`](@ref `@perturbn`) macro, the same function is
 constructed via
 ```
     p = @perturbn(
-            @lognormal(α,0.02),
-            @lognormal(β,0.02),
-            @ivp @lognormal(x₀,0.05)
+            α ~ LogNormal(0.02),
+            β ~ Lognormal(0.02),
+            x₀ ~ ivp(LogNormal(0.05))
         )
 ```
 

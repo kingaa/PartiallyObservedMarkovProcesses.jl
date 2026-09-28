@@ -21,9 +21,9 @@ using Test
     M = mif(
         P,params=p1,Np=10,Nmif=2,
         perturbations=@perturbn(
-            @lognormal(β,0.05),
-            @lognormal(γ,0.05),
-            @ivp(@logbarynormal((S0,I0,R0),0.1)),
+            β ~ LogNormal(0.05),
+            γ ~ LogNormal(0.05),
+            (S0,I0,R0) ~ ivp(LogBaryNormal(0.1)),
         ),
         cooling=geometric_cooling(0.5)
     )
@@ -65,13 +65,16 @@ end
 
 @testset verbose=true "@perturbn" begin
 
-    ex = @perturbn @lognormal(a,0.1) @ivp(@lognormal(b,1),0) @logitnormal(p,0.1) @normal(c,10) @ivp(@normal(d,10),1) @ivp(@logbarynormal((e,f),1)) @logbarynormal((g,h,i),(1,2,3))
+    ex = @perturbn a~LogNormal(0.1) b~ivp(LogNormal(1),0) p~LogitNormal(0.1) c~Normal(10) d~ivp(Normal(10),1) (e,f)~ivp(LogBaryNormal(1))
 
     x = ex(1, 0, a=1, b=10, c=0, d=3, p=0.8, e=1, f=3, g=3, h=1, i=1)
-    @test x.b != 10 && x.d == 3
+    @test x.b != 10 && x.d == 3 && x.e+x.f ≈ 1
     x = ex(1, 1, p=0.8, a=1, b=10, c=0, d=7, e=1, f=3, g=3, h=1, i=1)
-    @test x.b == 10 && x.d != 7 && x.e == 1
+    @test x.b == 10 && x.d != 7 && x.e == 1 && x.f == 3
     x = ex(1, 10, a=1, b=10, c=0, p=0.8, d=5, e=1, f=3, g=3, h=1, i=1)
     @test x.b == 10 && x.d == 5
+
+    @test_throws "Unrecognized perturbation specification" eval(:(@perturbn(p ~ LogCabin(0.1))))
+    @test_throws "Unrecognized perturbation specification" eval(:(@perturbn(p ~ ivp(LogCabin(0.1)))))
 
 end
