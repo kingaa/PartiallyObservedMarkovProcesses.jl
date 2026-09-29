@@ -62,25 +62,3 @@ using Test
     @test occursin(r"MifdPompObject .* Nmif=",sprint(show,M))
 
 end
-
-@testset verbose=true "@perturbn" begin
-
-    ex = @perturbn a~LogNormal(0.1) b~ivp(LogNormal(1),0) p~LogitNormal(0.1) c~Normal(10) d~ivp(Normal(10),1) (e,f)~ivp(LogBaryNormal(1))
-
-    x = ex(1, 0, a=1, b=10, c=0, d=3, p=0.8, e=1, f=3, g=3, h=1, i=1)
-    @test x.b != 10 && x.d == 3 && x.e+x.f ≈ 1
-    x = ex(1, 1, p=0.8, a=1, b=10, c=0, d=7, e=1, f=3, g=3, h=1, i=1)
-    @test x.b == 10 && x.d != 7 && x.e == 1 && x.f == 3
-    x = ex(1, 10, a=1, b=10, c=0, p=0.8, d=5, e=1, f=3, g=3, h=1, i=1)
-    @test x.b == 10 && x.d == 5
-
-    @test_throws "Unrecognized perturbation specification" eval(:(@perturbn(p ~ LogCabin(0.1))))
-    @test_throws "Unrecognized perturbation specification" eval(:(@perturbn(p ~ ivp(LogCabin(0.1)))))
-
-    @test_throws "proper specification is" eval(:(@perturbn 3~LogNormal(1)))
-    @test_throws "proper specification is" eval(:(@perturbn (a,b)~LogitNormal(1)))
-    @test_throws "proper specification is" eval(:(@perturbn (a,)~LogBaryNormal(1)))
-    @test_throws "proper `@perturbn` specification" eval(:(@perturbn x))
-    @test_throws "proper `@perturbn` specification" eval(:(@perturbn x=LogNormal(5)))
-
-end

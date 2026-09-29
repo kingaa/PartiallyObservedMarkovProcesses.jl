@@ -34,12 +34,15 @@ logbarynormalpert(params, sd) = begin
     )
     draws = map(params.args) do p
         @assert p isa Symbol "invalid parameter `$p`"
-        :($p = $p * rand(LogNormal(0, scale * $sd)))
+        :($p *= rand(LogNormal(0, scale * $sd)))
     end
     names = Expr(:tuple, Expr(:parameters, params.args...))
     draw = quote
-        $(draws...)
-        barycentric($names)
+        $names = begin
+            $(draws...)
+            barycentric($names)
+        end
+        $names
     end
     (;param=params.args,draw,)
 end
