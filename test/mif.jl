@@ -77,4 +77,10 @@ end
     @test_throws "Unrecognized perturbation specification" eval(:(@perturbn(p ~ LogCabin(0.1))))
     @test_throws "Unrecognized perturbation specification" eval(:(@perturbn(p ~ ivp(LogCabin(0.1)))))
 
+    @test_throws "proper specification is" eval(:(@perturbn 3~LogNormal(1)))
+    @test_throws "proper specification is" eval(:(@perturbn (a,b)~LogitNormal(1)))
+    @test_throws "proper specification is" eval(:(@perturbn (a,)~LogBaryNormal(1)))
+    @test_throws "proper `@perturbn` specification" eval(:(@perturbn x))
+    @test_throws "proper `@perturbn` specification" eval(:(@perturbn x=LogNormal(5)))
+
 end
