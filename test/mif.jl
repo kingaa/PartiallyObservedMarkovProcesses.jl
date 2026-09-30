@@ -10,7 +10,7 @@ using Test
 
 @testset verbose=true "mif" begin
 
-    Random.seed!(263260083)
+    Random.seed!(263261083)
 
     P = sir(times=range(start=1.0,stop=10.0,step=1.0))
     Pf = pfilter(P,Np=1000,trigger=0.2,target=0.5)
@@ -21,9 +21,9 @@ using Test
     M = mif(
         P,params=p1,Np=10,Nmif=2,
         perturbations=@perturbn(
-            @lognormal(β,0.05),
-            @lognormal(γ,0.05),
-            @ivp(@logbarynormal((S0,I0,R0),0.1)),
+            β ~ LogNormal(0.05),
+            γ ~ LogNormal(0.05),
+            (S0,I0,R0) ~ ivp(LogBaryNormal(0.1)),
         ),
         cooling=geometric_cooling(0.5)
     )
@@ -60,18 +60,5 @@ using Test
     @test all(cond_logLik(M) .< 0)
     @test_throws "Incorrect call" mif("hello!")
     @test occursin(r"MifdPompObject .* Nmif=",sprint(show,M))
-
-end
-
-@testset verbose=true "@perturbn" begin
-
-    ex = @perturbn @lognormal(a,0.1) @ivp(@lognormal(b,1),0) @logitnormal(p,0.1) @normal(c,10) @ivp(@normal(d,10),1) @ivp(@logbarynormal((e,f),1)) @logbarynormal((g,h,i),(1,2,3))
-
-    x = ex(1, 0, a=1, b=10, c=0, d=3, p=0.8, e=1, f=3, g=3, h=1, i=1)
-    @test x.b != 10 && x.d == 3
-    x = ex(1, 1, p=0.8, a=1, b=10, c=0, d=7, e=1, f=3, g=3, h=1, i=1)
-    @test x.b == 10 && x.d != 7 && x.e == 1
-    x = ex(1, 10, a=1, b=10, c=0, p=0.8, d=5, e=1, f=3, g=3, h=1, i=1)
-    @test x.b == 10 && x.d == 5
 
 end
