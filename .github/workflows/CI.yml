@@ -6,6 +6,7 @@ on:
     paths:
       - Project.toml
       - src/**
+      - ext/**
       - test/**
   pull_request:
   workflow_dispatch:
