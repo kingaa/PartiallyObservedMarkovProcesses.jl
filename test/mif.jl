@@ -10,7 +10,7 @@ using Test
 
 @testset verbose=true "mif" begin
 
-    Random.seed!(263260083)
+    Random.seed!(263261083)
 
     P = sir(times=range(start=1.0,stop=10.0,step=1.0))
     Pf = pfilter(P,Np=1000,trigger=0.2,target=0.5)
@@ -60,5 +60,19 @@ using Test
     @test all(cond_logLik(M) .< 0)
     @test_throws "Incorrect call" mif("hello!")
     @test occursin(r"MifdPompObject .* Nmif=",sprint(show,M))
+
+    @testset "geometric_cooling" begin
+        ## the scale falls geometrically, to `frac` after `n` iterations
+        c = geometric_cooling(0.5)
+        @test c(0) == 1
+        @test c(25) ≈ sqrt(0.5)
+        @test c(50) ≈ 0.5
+        c = geometric_cooling(0.1,20)
+        @test c(10) ≈ sqrt(0.1)
+        @test c(20) ≈ 0.1
+        ## frac = 1 means no cooling at all
+        @test all(geometric_cooling(1.0)(k) == 1 for k ∈ 0:100)
+        @test_throws "frac" geometric_cooling(0.0)
+    end
 
 end
