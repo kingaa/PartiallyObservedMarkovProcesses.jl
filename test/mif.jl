@@ -10,7 +10,7 @@ using Test
 
 @testset verbose=true "mif" begin
 
-    Random.seed!(263261083)
+    Random.seed!(263260083)
 
     P = sir(times=range(start=1.0,stop=10.0,step=1.0))
     Pf = pfilter(P,Np=1000,trigger=0.2,target=0.5)
