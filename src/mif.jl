@@ -434,6 +434,6 @@ geometric_cooling(
 ) = begin
     frac = Float64(frac)
     @assert 0 < frac ≤ 1 "`frac` must be ∈ (0,1]"
-    speed = log(frac/n)
+    speed = log(frac)/n
     k -> exp(speed * k)
 end
