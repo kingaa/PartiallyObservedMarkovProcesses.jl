@@ -73,6 +73,21 @@ include("melt.jl")
 export logmeanexp, geomean
 include("logmeanexp.jl")
 
+export slice_design, profile_design, runif_design, sobol_design
+include("design.jl")
+
+export pfilter_loglik, slice, profile
+include("profile.jl")
+
+export mcap, MCAP
+include("mcap.jl")
+
+export hyperbolic_cooling, resampled, monitor
+include("monitor.jl")
+
+export sliceplot, mcapplot, traceplot, filterplot
+include("plots.jl")
+
 export paramsymbs
 include("paramsymbs.jl")
 
