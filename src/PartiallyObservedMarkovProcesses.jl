@@ -18,6 +18,9 @@ include("pomp.jl")
 export times, timezero, obs, init_state, states, coef
 include("helpers.jl")
 
+export @with
+include("with.jl")
+
 @reexport using Random
 @reexport using Serialization: serialize, deserialize
 export @bake, @freeze
