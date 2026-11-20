@@ -101,6 +101,7 @@ timezero
 melt
 logmeanexp
 traces
+@with
 ```
 
 ### Reproducibility tools
